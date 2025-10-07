@@ -47,21 +47,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </Button>
         </SheetClose>
       )}
-      {/* Logo */}
-      <div className="px-6 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-sollux-red rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">S</span>
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-white">SOLLUX</h1>
-            <p className="text-xs text-gray-400">Business Platform</p>
-          </div>
-        </div>
-      </div>
+      {/* O bloco do logo e nome da empresa foi removido daqui */}
 
       {/* Navegação */}
-      <nav className="space-y-1 px-3 flex-1">
+      <nav className="space-y-1 px-3 flex-1 mt-8"> {/* Adicionado mt-8 para espaçamento superior */}
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.to;
