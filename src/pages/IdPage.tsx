@@ -37,7 +37,7 @@ const IdPage: React.FC = () => {
               title="Gerenciar Usuários"
               description="Adicione e gerencie usuários dentro das suas empresas."
               icon={Users}
-              onClick={handleManageUsersClick} {/* Atualizado para a nova rota */}
+              onClick={handleManageUsersClick}
             />
             <FeatureCard
               title="Configurações de ID"
