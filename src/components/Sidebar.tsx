@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Home, 
   HeartPulse, 
   Fingerprint, 
   Link as LinkIcon, 
@@ -9,15 +8,15 @@ import {
   Box,
   Info, 
   X,
-  Building2, // Importado para o seletor de empresa
-  ChevronDown // Importado para o seletor de empresa
+  Building2,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Importado para o seletor de empresa
-import { useCompany } from '@/components/CompanyContext'; // Importado para o seletor de empresa
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCompany } from '@/components/CompanyContext';
 
 interface NavItem {
   icon: React.ElementType;
@@ -100,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
         </nav>
 
         {/* Seletor de Empresa - Movido para a parte inferior */}
-        <div className="px-2 mt-auto pt-4 border-t border-gray-700"> {/* Adicionado mt-auto para empurrar para baixo */}
+        <div className="px-2 mt-auto pt-4 border-t border-gray-700">
           <Tooltip>
             <TooltipTrigger asChild>
               <Select
@@ -108,9 +107,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                 onValueChange={handleCompanyChange}
                 disabled={isLoadingCompanies || companies.length === 0}
               >
-                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
-                  <Building2 className="h-6 w-6" />
-                  <ChevronDown className="h-4 w-4 opacity-50 ml-1" />
+                <SelectTrigger className="w-full h-12 flex items-center justify-between bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0 px-3">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5" />
+                    <SelectValue placeholder="Empresa" />
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
                 </SelectTrigger>
                 <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
                   {isLoadingCompanies ? (
@@ -134,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
         </div>
 
         {/* Seção de informação na parte inferior */}
-        <div className="px-2 pt-2"> {/* Ajustado o padding superior */}
+        <div className="px-2 pt-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="w-full h-12 text-gray-300 hover:bg-gray-700 rounded-lg">
