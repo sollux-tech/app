@@ -1,130 +1,90 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Menu, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { 
+  Home, 
+  HeartPulse, 
+  Fingerprint, 
+  Link as LinkIcon, 
+  Settings, 
+  Box,
+  ChevronRight
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { useSidebar } from './SidebarContext'; // Importar useSidebar
 
-interface NavItemProps {
+interface NavItem {
   icon: React.ElementType;
   label: string;
   to: string;
-  isActive: boolean;
-  isExpanded: boolean; // Adicionado prop para controlar a expansão
-  onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, to, isActive, isExpanded, onClick }) => (
-  <Tooltip delayDuration={0}> {/* Delay 0 para tooltips */}
-    <TooltipTrigger asChild>
-      <Link
-        to={to}
-        onClick={onClick}
-        className={cn(
-          "flex items-center h-12 rounded-xl transition-all duration-300",
-          "text-sollux-white opacity-70 hover:opacity-100 hover:bg-white/10",
-          isActive && "bg-white/15 opacity-100 shadow-md",
-          isExpanded ? "justify-start px-4 w-full" : "justify-center w-12"
-        )}
-      >
-        <Icon className="h-6 w-6" />
-        {isExpanded && <span className="ml-3 text-sm font-medium">{label}</span>}
-      </Link>
-    </TooltipTrigger>
-    {!isExpanded && ( // Mostrar tooltip apenas quando recolhido
-      <TooltipContent side="right" className="bg-sollux-black/70 text-sollux-white text-xs rounded-md px-2 py-1">
-        {label}
-      </TooltipContent>
-    )}
-  </Tooltip>
-);
+const navItems: NavItem[] = [
+  { icon: Home, label: 'Dashboard', to: '/' },
+  { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
+  { icon: Fingerprint, label: 'ID', to: '/id' },
+  { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
+  { icon: Settings, label: 'OPS', to: '/ops' },
+  { icon: Box, label: 'CORE', to: '/core' },
+];
 
 const Sidebar: React.FC = () => {
-  const isMobile = useIsMobile();
-  const { isExpanded, toggleSidebar, sidebarWidthClass } = useSidebar(); // Usar o contexto da sidebar
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const location = useLocation();
 
-  const navItems = [
-    { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
-    { icon: Fingerprint, label: 'ID', to: '/id' },
-    { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
-    { icon: Settings, label: 'OPS', to: '/ops' },
-    { icon: Box, label: 'CORE', to: '/core' },
-  ];
-
-  const handleNavItemClick = () => {
-    if (isMobile) {
-      setIsSheetOpen(false);
-    }
-  };
-
-  const sidebarContent = (
-    <div className="flex flex-col items-center justify-between h-full py-6">
-      {/* SOLLUX Logo */}
-      <div className={cn("flex items-center mb-8", isExpanded ? "justify-start px-4 w-full" : "justify-center w-12")}>
-        <Link to="/" className="flex items-center">
-          <span className="text-3xl font-extrabold text-sollux-red tracking-wide">S</span>
-          {isExpanded && <span className="ml-2 text-xl font-extrabold text-sollux-red tracking-wide">OLLUX</span>}
-        </Link>
+  return (
+    <div className="h-full py-6">
+      {/* Logo */}
+      <div className="px-6 mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">S</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-900">SOLLUX</h1>
+            <p className="text-xs text-gray-500">Business Platform</p>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col space-y-4 flex-1 w-full px-2"> {/* Adicionado px-2 para espaçamento interno */}
-        {navItems.map((item) => (
-          <NavItem
-            key={item.label}
-            icon={item.icon}
-            label={item.label}
-            to={item.to}
-            isActive={location.pathname.startsWith(item.to)}
-            isExpanded={isExpanded}
-            onClick={handleNavItemClick}
-          />
-        ))}
-      </div>
+      {/* Navegação */}
+      <nav className="space-y-1 px-3">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname === item.to;
+          
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
+                "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
+                isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-sm font-medium">{item.label}</span>
+              {isActive && (
+                <ChevronRight className="h-4 w-4 ml-auto text-blue-700" />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
 
-      {/* Botão de expandir/recolher */}
-      <div className={cn("mt-auto w-full", isExpanded ? "px-4" : "flex justify-center")}>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className={cn(
-            "text-sollux-white opacity-70 hover:opacity-100 hover:bg-white/10 rounded-xl",
-            isExpanded ? "w-full justify-end" : "w-12"
-          )}
-        >
-          {isExpanded ? <ChevronLeft className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
-        </Button>
+      {/* Seção de usuário */}
+      <div className="absolute bottom-6 left-0 right-0 px-6">
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <User className="h-4 w-4 text-gray-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">Usuário</p>
+              <p className="text-xs text-gray-500 truncate">admin@sollux.com</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  );
-
-  if (isMobile) {
-    return (
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 bg-sollux-dark-gray text-sollux-white rounded-xl">
-            <Menu className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64 bg-sollux-dark-gray border-none rounded-r-3xl shadow-lg"> {/* Largura fixa para mobile */}
-          {sidebarContent}
-        </SheetContent>
-      </Sheet>
-    );
-  }
-
-  return (
-    <aside className={cn(
-      "fixed left-4 top-4 h-[calc(100vh-2rem)] bg-sollux-dark-gray z-40 rounded-3xl shadow-lg transition-all duration-300",
-      sidebarWidthClass // Usar a classe de largura do contexto
-    )}>
-      {sidebarContent}
-    </aside>
   );
 };
 
