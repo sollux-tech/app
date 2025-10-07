@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
+  DialogFooter, // <-- Importado aqui
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -121,7 +121,7 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
                 </FormItem>
               )}
             />
-            <DialogFooter className="flex justify-end gap-2 pt-4">
+            <DialogFooter className="flex justify-end gap-2 pt-4"> {/* <-- O footer está aqui */}
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
                 Cancelar
               </Button>
