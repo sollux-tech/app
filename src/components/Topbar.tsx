@@ -37,14 +37,14 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-20 right-0 h-16 bg-sollux-black text-sollux-white flex items-center justify-between px-4 shadow-md z-30">
+    <header className="fixed top-0 left-20 right-0 h-16 bg-sollux-black text-sollux-white flex items-center justify-between px-6 shadow-md border-b border-gray-800 z-30">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold text-sollux-white">SOLLUX</h1>
+        <h1 className="text-2xl font-extrabold text-sollux-red tracking-wide">SOLLUX</h1>
         {isLoadingCompanies ? (
           <Skeleton className="w-48 h-10 bg-gray-700 rounded-md" />
         ) : (
           <Select onValueChange={handleCompanyChange} value={selectedCompany?.id || ''}>
-            <SelectTrigger className="w-[200px] bg-gray-800 border-gray-700 text-sollux-white">
+            <SelectTrigger className="w-[200px] bg-gray-800 border-gray-700 text-sollux-white hover:border-sollux-orange focus:ring-sollux-orange">
               <SelectValue placeholder="Selecionar Empresa" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 text-sollux-white border-gray-700">

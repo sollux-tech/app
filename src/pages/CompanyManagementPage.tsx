@@ -68,7 +68,7 @@ const CompanyManagementPage: React.FC = () => {
 
   if (isSessionLoading || isCompaniesLoading) {
     return (
-      <div className="p-6 bg-white rounded-2xl shadow-lg flex flex-col items-center justify-center"> {/* Removido min-h-[calc(100vh-64px)] */}
+      <div className="flex flex-col items-center justify-center"> {/* Removido p-6 */}
         <Card className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 text-center">
           <CardHeader>
             <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
@@ -95,13 +95,13 @@ const CompanyManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 bg-white rounded-2xl shadow-lg flex flex-col items-center"> {/* Removido min-h-[calc(100vh-64px)] */}
+    <div className="flex flex-col items-center"> {/* Removido p-6 */}
       <Card className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 text-center">
         <CardHeader className="relative">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-0 top-0 text-sollux-black hover:bg-gray-100"
+            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100" // Ajustado posicionamento
             onClick={() => navigate('/id')}
           >
             <ArrowLeft className="h-6 w-6" />

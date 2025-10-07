@@ -1,7 +1,7 @@
 import React from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import Footer from './Footer'; // Import the new Footer component
+import Footer from './Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutShellProps {
@@ -16,10 +16,10 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
       <Sidebar />
       <div className="flex flex-col flex-1">
         <Topbar />
-        <main className={`flex-1 p-4 transition-all duration-300 mt-16 ${isMobile ? 'ml-0' : 'ml-20'}`}>
+        <main className={`flex-1 px-8 py-6 transition-all duration-300 mt-16 ${isMobile ? 'ml-0' : 'ml-20'}`}>
           {children}
         </main>
-        <Footer /> {/* Add the Footer here */}
+        <Footer />
       </div>
     </div>
   );

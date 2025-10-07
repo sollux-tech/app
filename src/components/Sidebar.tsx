@@ -25,7 +25,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, to, isActive, onCl
         className={cn(
           "flex items-center justify-center h-12 w-12 rounded-lg transition-all duration-300",
           "text-sollux-white opacity-70 hover:opacity-100 hover:bg-sollux-red/10",
-          isActive && "border-l-4 border-sollux-red opacity-100"
+          isActive && "bg-sollux-red/20 opacity-100 border-l-4 border-sollux-red" // Estado ativo mais pronunciado
         )}
       >
         <Icon className="h-6 w-6" />
@@ -71,7 +71,7 @@ const Sidebar: React.FC = () => {
           />
         ))}
       </div>
-      <div className="text-sollux-gray text-xs font-light tracking-widest uppercase">
+      <div className="text-sollux-gray text-xs font-semibold tracking-widest uppercase pb-4"> {/* Estilo ajustado */}
         SOLLUX
       </div>
     </div>
