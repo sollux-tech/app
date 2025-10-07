@@ -1,16 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Index from './pages/Index';
 import Login from './pages/Login';
-import { SessionContextProvider } from './components/SessionContextProvider';
+import { SessionContextProvider, useSession } from './components/SessionContextProvider'; // Importar useSession
 import { Toaster } from 'sonner';
 import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
-import UserManagementPage from './pages/UserManagementPage'; // Importar a nova página
+import UserManagementPage from './pages/UserManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
 import PulsePage from './pages/PulsePage'; 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
-import React from 'react'; // Importar React
+import React from 'react';
 
 const queryClient = new QueryClient(); 
 
@@ -19,7 +19,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { session, isLoading } = useSession();
   const navigate = useNavigate();
 
-  React.useEffect(() => { // Usar React.useEffect
+  React.useEffect(() => {
     if (!isLoading && !session) {
       navigate('/login');
     }
@@ -48,14 +48,14 @@ function App() {
               <Route
                 path="*"
                 element={
-                  <ProtectedRoute> {/* Proteger todas as rotas dentro do Layout */}
+                  <ProtectedRoute>
                     <Layout>
                       <Routes>
                         <Route path="/" element={<Navigate to="/pulse" replace />} /> 
                         <Route path="/pulse" element={<PulsePage />} /> 
                         <Route path="/id" element={<IdPage />} />
                         <Route path="/id/companies" element={<CompanyManagementPage />} />
-                        <Route path="/id/users" element={<UserManagementPage />} /> {/* Nova rota */}
+                        <Route path="/id/users" element={<UserManagementPage />} />
                         <Route path="/ops" element={<Index />} /> 
                         <Route path="/connect" element={<Index />} />
                         <Route path="/core" element={<Index />} />
