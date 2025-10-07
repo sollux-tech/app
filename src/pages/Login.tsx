@@ -82,22 +82,12 @@ const Login = () => {
                 phone_input_placeholder: 'Número de telefone',
                 token_input_placeholder: 'Seu código OTP',
                 button_label: 'Verificar OTP',
-                // link_text: 'Já tem um código OTP? Entrar', // Removido
               },
             },
           }}
           magicLink
-          onAuthStateChange={async (event, session) => {
-            if (event === 'USER_UPDATED' || event === 'SIGNED_IN') {
-              const { error } = await supabase.auth.getSession();
-              if (error) {
-                showError(`Erro ao obter sessão: ${error.message}`);
-              }
-            }
-            if (event === 'SIGNED_OUT') {
-              navigate('/login');
-            }
-          }}
+          // A lógica de onAuthStateChange é tratada globalmente pelo SessionContextProvider e pelo useEffect nesta página.
+          // Removendo a prop onAuthStateChange diretamente do componente Auth.
         />
       </div>
     </div>
