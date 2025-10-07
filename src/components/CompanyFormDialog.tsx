@@ -90,40 +90,7 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
     },
   });
 
-  const deleteCompanyMutation = useMutation({
-    mutationFn: async () => {
-      if (!company?.id) throw new Error("Company ID is missing.");
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', company.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      showSuccess('Empresa excluída com sucesso!');
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      showError(`Erro ao excluir empresa: ${error.message}`);
-    },
-  });
-
-  const onSubmit = (data: CompanyFormData) => {
-    if (company) {
-      updateCompanyMutation.mutate(data);
-    } else {
-      createCompanyMutation.mutate(data);
-    }
-  };
-
-  const handleDelete = () => {
-    if (window.confirm('Tem certeza que deseja excluir esta empresa?')) {
-      deleteCompanyMutation.mutate();
-    }
-  };
-
-  const isLoading = createCompanyMutation.isPending || updateCompanyMutation.isPending || deleteCompanyMutation.isPending;
+  const isLoading = createCompanyMutation.isPending || updateCompanyMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -146,25 +113,13 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
                 </FormItem>
               )}
             />
-            <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2 pt-4">
-              {company && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={isLoading}
-                >
-                  Excluir
-                </Button>
-              )}
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isLoading}>
-                  {company ? 'Salvar Alterações' : 'Criar Empresa'}
-                </Button>
-              </div>
+            <DialogFooter className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {company ? 'Salvar Alterações' : 'Criar Empresa'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
