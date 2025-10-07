@@ -81,7 +81,6 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
               <User className="h-4 w-4 text-gray-600" />
             </div>
             <span className="text-sm font-medium text-sollux-black hidden md:block">Hello, Rodrigo</span>
-            <span className="text-xs text-gray-500 hidden md:block">15 Maio</span>
           </div>
         </div>
       </div>
