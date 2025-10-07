@@ -214,9 +214,9 @@ const CompanyManagementPage: React.FC = () => {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleEditCompany}>Salvar Alterações</Button>
           </DialogFooter>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
