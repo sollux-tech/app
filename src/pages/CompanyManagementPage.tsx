@@ -1,150 +1,221 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useSession } from '@/components/SessionContextProvider';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowLeft, Search } from 'lucide-react';
-import CompanyCard from '@/components/CompanyCard';
-import CompanyFormDialog from '@/components/CompanyFormDialog';
-import { Company } from '@/types/company';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useNavigate } from 'react-router-dom';
-import { showError, showSuccess } from '@/utils/toast';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useCompany } from '@/components/CompanyContext';
+import { toast } from 'react-hot-toast';
+
+interface Company {
+  id: string;
+  name: string;
+  user_id: string;
+}
 
 const CompanyManagementPage: React.FC = () => {
-  const { user, isLoading: isSessionLoading } = useSession();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [isAddCompanyDialogOpen, setIsAddCompanyDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
+  const { setSelectedCompany } = useCompany();
 
-  const { data: companies, isLoading: isCompaniesLoading, error } = useQuery<Company[], Error>({
-    queryKey: ['companies', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  useEffect(() => {
+    fetchCompanies();
+  }, []);
+
+  const fetchCompanies = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
       const { data, error } = await supabase
         .from('companies')
         .select('*')
         .eq('user_id', user.id);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id && !isSessionLoading,
-  });
 
-  const deleteCompanyMutation = useMutation({
-    mutationFn: async (companyId: string) => {
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', companyId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      showSuccess('Empresa excluída com sucesso!');
-    },
-    onError: (error) => {
-      showError(`Erro ao excluir empresa: ${error.message}`);
-    },
-  });
-
-  const handleEditClick = (company: Company) => {
-    setSelectedCompany(company);
-    setIsDialogOpen(true);
-  };
-
-  const handleDeleteClick = (companyId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir esta empresa?')) {
-      deleteCompanyMutation.mutate(companyId);
+      if (error) {
+        toast.error('Erro ao carregar empresas.');
+        console.error('Erro ao carregar empresas:', error);
+      } else {
+        setCompanies(data || []);
+      }
     }
   };
 
-  const handleNewCompanyClick = () => {
-    setSelectedCompany(null);
-    setIsDialogOpen(true);
+  const handleAddCompany = async () => {
+    if (!newCompanyName.trim()) {
+      toast.error('O nome da empresa não pode ser vazio.');
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Usuário não autenticado.');
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('companies')
+      .insert([{ name: newCompanyName, user_id: user.id }])
+      .select();
+
+    if (error) {
+      toast.error('Erro ao adicionar empresa.');
+      console.error('Erro ao adicionar empresa:', error);
+    } else if (data && data.length > 0) {
+      setCompanies([...companies, data[0]]);
+      setNewCompanyName('');
+      setIsAddCompanyDialogOpen(false);
+      toast.success('Empresa adicionada com sucesso!');
+    }
   };
 
-  if (isSessionLoading || isCompaniesLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
-          <CardHeader>
-            <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Minhas Empresas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleEditCompany = async () => {
+    if (!currentCompany || !currentCompany.name.trim()) {
+      toast.error('O nome da empresa não pode ser vazio.');
+      return;
+    }
 
-  if (error) {
-    return (
-      <div className="p-6 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
-        <h2 className="text-2xl font-bold text-red-600">Erro ao carregar empresas</h2>
-        <p className="text-gray-700">{error.message}</p>
-      </div>
-    );
-  }
+    const { error } = await supabase
+      .from('companies')
+      .update({ name: currentCompany.name })
+      .eq('id', currentCompany.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar empresa.');
+      console.error('Erro ao atualizar empresa:', error);
+    } else {
+      setCompanies(companies.map(comp => comp.id === currentCompany.id ? currentCompany : comp));
+      setIsEditDialogOpen(false);
+      setCurrentCompany(null);
+      toast.success('Empresa atualizada com sucesso!');
+    }
+  };
+
+  const handleDeleteCompany = async (companyId: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta empresa?')) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from('companies')
+      .delete()
+      .eq('id', companyId);
+
+    if (error) {
+      toast.error('Erro ao excluir empresa.');
+      console.error('Erro ao excluir empresa:', error);
+    } else {
+      setCompanies(companies.filter(comp => comp.id !== companyId));
+      setSelectedCompany(null); // Limpa a empresa selecionada se ela for excluída
+      toast.success('Empresa excluída com sucesso!');
+    }
+  };
+
+  const openEditDialog = (company: Company) => {
+    setCurrentCompany(company);
+    setIsEditDialogOpen(true);
+  };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-sollux-gray p-4">
       <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
-        <CardHeader className="relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100 rounded-lg"
-            onClick={() => navigate('/id')}
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-          <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Minhas Empresas</CardTitle>
+        <CardHeader>
+          <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Gerenciar Empresas</CardTitle>
+          <p className="text-xl text-gray-600">
+            Crie, edite e exclua as empresas associadas à sua conta.
+          </p>
         </CardHeader>
-        <CardContent>
-          {/* Campos de entrada inspirados na imagem */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <CardContent className="mt-8">
+          <div className="flex justify-end mb-6">
+            <Button onClick={() => setIsAddCompanyDialogOpen(true)} className="bg-sollux-red hover:bg-sollux-red/90 text-white">
+              <Plus className="mr-2 h-4 w-4" /> Adicionar Empresa
+            </Button>
+          </div>
+
+          {/* Campo de busca - REMOVIDO */}
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
               <Search className="h-5 w-5 text-gray-400 mr-3" />
               <Input placeholder="Buscar empresa..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
             </Card>
-            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
-              <Button onClick={handleNewCompanyClick} className="w-full bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
-                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
-              </Button>
-            </Card>
-          </div>
+          </div> */}
 
-          {companies && companies.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
-              {companies.map((company) => (
-                <CompanyCard
-                  key={company.id}
-                  company={company}
-                  onEdit={handleEditClick}
-                  onDelete={handleDeleteClick}
-                />
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-600 mt-4">Nenhuma empresa encontrada. Adicione uma para começar!</p>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {companies.length === 0 ? (
+              <p className="text-gray-500 col-span-full">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
+            ) : (
+              companies.map((company) => (
+                <Card key={company.id} className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex flex-col justify-between">
+                  <CardTitle className="text-xl font-semibold text-sollux-black mb-2">{company.name}</CardTitle>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <Button variant="outline" size="icon" onClick={() => openEditDialog(company)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="destructive" size="icon" onClick={() => handleDeleteCompany(company.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
-      <CompanyFormDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        company={selectedCompany}
-      />
+      {/* Dialog para adicionar empresa */}
+      <Dialog open={isAddCompanyDialogOpen} onOpenChange={setIsAddCompanyDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar Nova Empresa</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="companyName" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="companyName"
+                value={newCompanyName}
+                onChange={(e) => setNewCompanyName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCompanyDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAddCompany}>Adicionar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para editar empresa */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Empresa</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="editCompanyName" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="editCompanyName"
+                value={currentCompany?.name || ''}
+                onChange={(e) => setCurrentCompany(currentCompany ? { ...currentCompany, name: e.target.value } : null)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleEditCompany}>Salvar Alterações</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
