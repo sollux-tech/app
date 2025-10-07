@@ -3,7 +3,7 @@ import Layout from './components/Layout';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import { SessionContextProvider } from './components/SessionContextProvider';
-import { Toaster } from 'sonner'; // Alterado para importar Toaster de 'sonner'
+import { Toaster } from 'sonner'; // Corrigido para importar Toaster de 'sonner'
 import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
