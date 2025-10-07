@@ -12,7 +12,7 @@ interface CompanyCardProps {
 
 const CompanyCard: React.FC<CompanyCardProps> = ({ company, onEdit, onDelete }) => {
   return (
-    <Card className="flex flex-col items-center justify-between p-4 bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"> {/* Usando nova cor de fundo, borda e rounded */}
+    <Card className="flex flex-col items-center justify-between p-4 bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-2 flex flex-col items-center">
         <Building2 className="h-8 w-8 text-sollux-red mb-2" />
         <CardTitle className="text-lg font-semibold text-sollux-black text-center">{company.name}</CardTitle>
@@ -25,7 +25,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, onEdit, onDelete }) 
             e.stopPropagation(); // Prevent card's default click
             onEdit(company);
           }}
-          className="flex items-center gap-1 text-sollux-black border-sollux-gray hover:bg-gray-100 rounded-lg" // Ajustado rounded
+          className="flex items-center gap-1 text-sollux-black border-sollux-gray hover:bg-gray-100 rounded-lg"
         >
           <Edit className="h-4 w-4" /> Editar
         </Button>
@@ -36,7 +36,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, onEdit, onDelete }) 
             e.stopPropagation(); // Prevent card's default click
             onDelete(company.id);
           }}
-          className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white rounded-lg" // Ajustado rounded
+          className="flex items-center gap-1 bg-sollux-red hover:bg-red-700 text-white rounded-lg"
         >
           <Trash2 className="h-4 w-4" /> Excluir
         </Button>

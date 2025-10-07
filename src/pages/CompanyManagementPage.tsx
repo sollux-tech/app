@@ -69,14 +69,14 @@ const CompanyManagementPage: React.FC = () => {
   if (isSessionLoading || isCompaniesLoading) {
     return (
       <div className="flex flex-col items-center justify-center">
-        <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
+        <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
           <CardHeader>
-            <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
+            <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Minhas Empresas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
               {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" /> /* Ajustado rounded e bg */
+                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" />
               ))}
             </div>
           </CardContent>
@@ -96,21 +96,21 @@ const CompanyManagementPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
+      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
         <CardHeader className="relative">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100 rounded-lg" // Ajustado rounded
+            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100 rounded-lg"
             onClick={() => navigate('/id')}
           >
             <ArrowLeft className="h-6 w-6" />
           </Button>
-          <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
+          <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Minhas Empresas</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center mb-6">
-            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg"> {/* Ajustado rounded */}
+            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
               <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
             </Button>
           </div>

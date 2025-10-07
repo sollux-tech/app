@@ -12,14 +12,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-sollux-light-gray flex flex-col">
       {/* Topbar */}
       <Topbar />
       
       <div className="flex flex-1 pt-16"> {/* pt-16 para compensar a topbar fixa */}
         {/* Sidebar - apenas em desktop */}
         {!isMobile && (
-          <aside className="w-64 bg-white border-r border-gray-200 shadow-sm">
+          <aside className="w-64 bg-sollux-dark-gray border-r border-gray-200 shadow-sm">
             <Sidebar />
           </aside>
         )}

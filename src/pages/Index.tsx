@@ -5,53 +5,53 @@ const Index = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-sollux-black">Dashboard</h1>
         <p className="text-gray-600 mt-2">Bem-vindo ao SOLLUX Business Platform</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-white border-gray-200 shadow-sm">
+        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Empresas</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">3</div>
+            <div className="text-2xl font-bold text-sollux-black">3</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-gray-200 shadow-sm">
+        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Usuários</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">12</div>
+            <div className="text-2xl font-bold text-sollux-black">12</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-gray-200 shadow-sm">
+        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Projetos</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">8</div>
+            <div className="text-2xl font-bold text-sollux-black">8</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-white border-gray-200 shadow-sm">
+        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Atividade</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">24</div>
+            <div className="text-2xl font-bold text-sollux-black">24</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <Card className="bg-white border-gray-200 shadow-sm">
+      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Visão Geral</CardTitle>
+          <CardTitle className="text-sollux-black">Visão Geral</CardTitle>
           <CardDescription>
             Resumo das suas operações e métricas importantes
           </CardDescription>

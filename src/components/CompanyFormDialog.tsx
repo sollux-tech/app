@@ -102,9 +102,9 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
+      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
         <DialogHeader>
-          <DialogTitle>{company ? 'Editar Empresa' : 'Criar Nova Empresa'}</DialogTitle>
+          <DialogTitle className="text-sollux-black">{company ? 'Editar Empresa' : 'Criar Nova Empresa'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -113,19 +113,19 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome da Empresa</FormLabel>
+                  <FormLabel className="text-sollux-black">Nome da Empresa</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da empresa" {...field} className="rounded-lg" /> {/* Ajustado rounded */}
+                    <Input placeholder="Nome da empresa" {...field} className="rounded-lg" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="rounded-lg"> {/* Ajustado rounded */}
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="rounded-lg">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading} className="rounded-lg"> {/* Ajustado rounded */}
+              <Button type="submit" disabled={isLoading} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
                 {company ? 'Salvar Alterações' : 'Criar Empresa'}
               </Button>
             </DialogFooter>

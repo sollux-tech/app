@@ -16,7 +16,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Ico
     <Card
       className={cn(
         "cursor-pointer hover:shadow-lg transition-shadow duration-200 flex flex-col items-center justify-center p-6 text-center",
-        "bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-md border border-sollux-card-border", // Usando nova cor de fundo, borda e rounded
+        "bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-md border border-sollux-card-border",
         className
       )}
       onClick={onClick}

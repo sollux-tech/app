@@ -8,9 +8,12 @@ import {
   Settings, 
   Box,
   ChevronRight,
-  User // Adicionando importação do ícone User
+  User,
+  X // Adicionando ícone para fechar a sheet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { SheetClose } from '@/components/ui/sheet';
 
 interface NavItem {
   icon: React.ElementType;
@@ -27,26 +30,38 @@ const navItems: NavItem[] = [
   { icon: Box, label: 'CORE', to: '/core' },
 ];
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  isMobileSheet?: boolean;
+  onLinkClick?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick }) => {
   const location = useLocation();
 
   return (
-    <div className="h-full py-6">
+    <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative">
+      {isMobileSheet && (
+        <SheetClose asChild>
+          <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-gray-300 hover:bg-gray-700 rounded-lg">
+            <X className="h-5 w-5" />
+          </Button>
+        </SheetClose>
+      )}
       {/* Logo */}
       <div className="px-6 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-sollux-red rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">S</span>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">SOLLUX</h1>
-            <p className="text-xs text-gray-500">Business Platform</p>
+            <h1 className="text-lg font-semibold text-white">SOLLUX</h1>
+            <p className="text-xs text-gray-400">Business Platform</p>
           </div>
         </div>
       </div>
 
       {/* Navegação */}
-      <nav className="space-y-1 px-3">
+      <nav className="space-y-1 px-3 flex-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.to;
@@ -55,16 +70,17 @@ const Sidebar: React.FC = () => {
             <Link
               key={item.to}
               to={item.to}
+              onClick={onLinkClick}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200",
-                "text-gray-600 hover:text-gray-900 hover:bg-gray-100",
-                isActive && "bg-blue-50 text-blue-700 border-r-2 border-blue-700"
+                "text-gray-300 hover:text-white hover:bg-gray-700",
+                isActive && "bg-sollux-red text-white font-semibold"
               )}
             >
               <Icon className="h-5 w-5" />
               <span className="text-sm font-medium">{item.label}</span>
               {isActive && (
-                <ChevronRight className="h-4 w-4 ml-auto text-blue-700" />
+                <ChevronRight className="h-4 w-4 ml-auto text-white" />
               )}
             </Link>
           );
@@ -72,15 +88,15 @@ const Sidebar: React.FC = () => {
       </nav>
 
       {/* Seção de usuário */}
-      <div className="absolute bottom-6 left-0 right-0 px-6">
-        <div className="border-t border-gray-200 pt-4">
+      <div className="px-6 mt-auto">
+        <div className="border-t border-gray-700 pt-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-gray-600" />
+            <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+              <User className="h-4 w-4 text-gray-300" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">Usuário</p>
-              <p className="text-xs text-gray-500 truncate">admin@sollux.com</p>
+              <p className="text-sm font-medium text-white truncate">Usuário</p>
+              <p className="text-xs text-gray-400 truncate">admin@sollux.com</p>
             </div>
           </div>
         </div>
