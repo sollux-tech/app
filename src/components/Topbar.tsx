@@ -14,11 +14,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { showError, showSuccess } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSidebar } from './SidebarContext'; // Importar useSidebar
 
 const Topbar: React.FC = () => {
   const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { sidebarOffsetClass } = useSidebar(); // Usar o contexto da sidebar
 
   const handleCompanyChange = (companyId: string) => {
     const company = companies.find((c) => c.id === companyId);
@@ -39,7 +41,10 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className={`fixed top-4 h-16 bg-sollux-card-bg backdrop-blur-md text-sollux-black flex items-center justify-between px-6 shadow-md border border-sollux-card-border z-30 rounded-xl transition-all duration-300 ${isMobile ? 'left-4 right-4' : 'left-28 right-4'}`}> {/* Fundo com transparência e bordas arredondadas */}
+    <header className={cn(
+      `fixed top-4 h-16 bg-sollux-card-bg backdrop-blur-md text-sollux-black flex items-center justify-between px-6 shadow-md border border-sollux-card-border z-30 rounded-xl transition-all duration-300 right-4`,
+      isMobile ? 'left-4' : sidebarOffsetClass // Usar sidebarOffsetClass
+    )}>
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-extrabold text-sollux-red tracking-wide">SOLLUX</h1>
         {isLoadingCompanies ? (

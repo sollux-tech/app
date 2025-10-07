@@ -9,8 +9,9 @@ import Login from "./pages/Login";
 import { SessionContextProvider } from "./components/SessionContextProvider";
 import { CompanyProvider } from "./components/CompanyContext";
 import LayoutShell from "./components/LayoutShell";
-import IdPage from "./pages/IdPage"; // Import the new IdPage
-import CompanyManagementPage from "./pages/CompanyManagementPage"; // Import the renamed CompanyManagementPage
+import IdPage from "./pages/IdPage";
+import CompanyManagementPage from "./pages/CompanyManagementPage";
+import { SidebarProvider } from "./components/SidebarContext"; // Importar SidebarProvider
 
 const queryClient = new QueryClient();
 
@@ -22,18 +23,20 @@ const App = () => (
       <BrowserRouter>
         <SessionContextProvider>
           <CompanyProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<LayoutShell><Index /></LayoutShell>} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="/pulse" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>PULSE App Content</h2><p>This is a placeholder for the PULSE application.</p></div></LayoutShell>} />
-              <Route path="/id" element={<LayoutShell><IdPage /></LayoutShell>} /> {/* New IdPage as dashboard */}
-              <Route path="/id/companies" element={<LayoutShell><CompanyManagementPage /></LayoutShell>} /> {/* Dedicated Company Management page */}
-              <Route path="/connect" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>CONNECT App Content</h2><p>This is a placeholder for the CONNECT application.</p></div></LayoutShell>} />
-              <Route path="/ops" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>OPS App Content</h2><p>This is a placeholder for the OPS application.</p></div></LayoutShell>} />
-              <Route path="/core" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>CORE App Content</h2><p>This is a placeholder for the CORE application.</p></div></LayoutShell>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <SidebarProvider> {/* Envolver LayoutShell com SidebarProvider */}
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<LayoutShell><Index /></LayoutShell>} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="/pulse" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>PULSE App Content</h2><p>This is a placeholder for the PULSE application.</p></div></LayoutShell>} />
+                <Route path="/id" element={<LayoutShell><IdPage /></LayoutShell>} />
+                <Route path="/id/companies" element={<LayoutShell><CompanyManagementPage /></LayoutShell>} />
+                <Route path="/connect" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>CONNECT App Content</h2><p>This is a placeholder for the CONNECT application.</p></div></LayoutShell>} />
+                <Route path="/ops" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>OPS App Content</h2><p>This is a placeholder for the OPS application.</p></div></LayoutShell>} />
+                <Route path="/core" element={<LayoutShell><div className="p-6 bg-white rounded-2xl shadow-lg"><h2>CORE App Content</h2><p>This is a placeholder for the CORE application.</p></div></LayoutShell>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </SidebarProvider>
           </CompanyProvider>
         </SessionContextProvider>
       </BrowserRouter>
