@@ -70,8 +70,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </div>
         </div>
 
-        {/* Seletor de Empresa */}
-        <div className="px-2 mb-4">
+        {/* Navegação */}
+        <nav className="space-y-2 flex-1 px-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
+            
+            return (
+              <Tooltip key={item.to}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={item.to}
+                    onClick={onLinkClick}
+                    className={cn(
+                      "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
+                      "text-gray-300 hover:text-white hover:bg-gray-700",
+                      isActive && "bg-sollux-red text-white font-semibold"
+                    )}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </nav>
+
+        {/* Seletor de Empresa - Movido para a parte inferior */}
+        <div className="px-2 mt-auto pt-4 border-t border-gray-700"> {/* Adicionado mt-auto para empurrar para baixo */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Select
@@ -104,37 +133,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </Tooltip>
         </div>
 
-        {/* Navegação */}
-        <nav className="space-y-2 flex-1 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
-            
-            return (
-              <Tooltip key={item.to}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.to}
-                    onClick={onLinkClick}
-                    className={cn(
-                      "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
-                      "text-gray-300 hover:text-white hover:bg-gray-700",
-                      isActive && "bg-sollux-red text-white font-semibold"
-                    )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </nav>
-
         {/* Seção de informação na parte inferior */}
-        <div className="px-2 mt-auto pt-4 border-t border-gray-700">
+        <div className="px-2 pt-2"> {/* Ajustado o padding superior */}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" className="w-full h-12 text-gray-300 hover:bg-gray-700 rounded-lg">
