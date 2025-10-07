@@ -9,7 +9,7 @@ import {
   Box,
   ChevronRight,
   User,
-  X // Adicionando ícone para fechar a sheet
+  X 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { icon: Home, label: 'Dashboard', to: '/' },
+  // { icon: Home, label: 'Dashboard', to: '/' }, // Removido o link do Dashboard
   { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
   { icon: Fingerprint, label: 'ID', to: '/id' },
   { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
@@ -47,10 +47,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </Button>
         </SheetClose>
       )}
-      {/* O bloco do logo e nome da empresa foi removido daqui */}
 
       {/* Navegação */}
-      <nav className="space-y-1 px-3 flex-1 mt-8"> {/* Adicionado mt-8 para espaçamento superior */}
+      <nav className="space-y-1 px-3 flex-1 mt-8">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.to;
