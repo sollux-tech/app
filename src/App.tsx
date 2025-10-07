@@ -3,11 +3,11 @@ import Layout from './components/Layout';
 import Index from './pages/Index';
 import Login from './pages/Login';
 import { SessionContextProvider } from './components/SessionContextProvider';
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from 'sonner'; // Alterado para importar Toaster de 'sonner'
 import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
-import PulsePage from './pages/PulsePage'; // Importando a nova página PulsePage
+import PulsePage from './pages/PulsePage'; 
 
 function App() {
   return (
@@ -22,12 +22,12 @@ function App() {
               element={
                 <Layout>
                   <Routes>
-                    <Route path="/" element={<Navigate to="/pulse" replace />} /> {/* Redireciona a raiz para /pulse */}
-                    <Route path="/pulse" element={<PulsePage />} /> {/* Nova rota para PulsePage */}
+                    <Route path="/" element={<Navigate to="/pulse" replace />} /> 
+                    <Route path="/pulse" element={<PulsePage />} /> 
                     <Route path="/id" element={<IdPage />} />
                     <Route path="/id/companies" element={<CompanyManagementPage />} />
                     {/* Adicione outras rotas aqui */}
-                    <Route path="/ops" element={<Index />} /> {/* Exemplo: usando Index para OPS temporariamente */}
+                    <Route path="/ops" element={<Index />} /> 
                     <Route path="/connect" element={<Index />} />
                     <Route path="/core" element={<Index />} />
                   </Routes>

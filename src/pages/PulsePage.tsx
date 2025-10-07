@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HeartPulse, TrendingUp, Activity, Bell } from 'lucide-react';
+import { HeartPulse, TrendingUp, Activity, Bell, Settings } from 'lucide-react'; // Adicionado Settings
 import FeatureCard from '@/components/FeatureCard';
 
 const PulsePage: React.FC = () => {
