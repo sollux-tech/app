@@ -82,7 +82,7 @@ const Login = () => {
                 phone_input_placeholder: 'Número de telefone',
                 token_input_placeholder: 'Seu código OTP',
                 button_label: 'Verificar OTP',
-                link_text: 'Já tem um código OTP? Entrar',
+                // link_text: 'Já tem um código OTP? Entrar', // Removido
               },
             },
           }}
