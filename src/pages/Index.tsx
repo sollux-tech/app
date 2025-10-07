@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 const Index = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] p-4">
+    <div className="flex flex-col items-center justify-center p-4"> {/* Removido min-h-[calc(100vh-64px)] */}
       <Card className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 text-center">
         <CardHeader>
           <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Welcome to SOLLUX</CardTitle>
