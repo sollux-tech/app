@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Bell, User, Search, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,8 @@ import Sidebar from './Sidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
-import { useLocation } from 'react-router-dom'; // Importar useLocation
+import { useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client'; // Importar o cliente Supabase
 
 interface TopbarProps {
   className?: string;
@@ -18,7 +19,40 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const { companies, selectedCompany, setSelectedCompany } = useCompany();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null); // Estado para o primeiro nome
   const location = useLocation();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Erro ao buscar perfil do usuário:', error);
+        } else if (data) {
+          setFirstName(data.first_name);
+        }
+      }
+    };
+
+    fetchUserProfile();
+
+    // Opcional: Escutar mudanças de autenticação para atualizar o nome
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUserProfile();
+      } else {
+        setFirstName(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Função para obter o título da página com base na rota
   const getPageTitle = () => {
@@ -41,7 +75,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
   };
 
   return (
-    <header className={cn("fixed top-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50", className)}> {/* Adicionado className aqui */}
+    <header className={cn("fixed top-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50", className)}>
       <div className="h-full px-4 flex items-center justify-between">
         {/* Logo e menu mobile (apenas para mobile) */}
         <div className="flex items-center gap-4">
@@ -80,7 +114,9 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
             <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
               <User className="h-4 w-4 text-gray-600" />
             </div>
-            <span className="text-sm font-medium text-sollux-black hidden md:block">Hello, Rodrigo</span>
+            <span className="text-sm font-medium text-sollux-black hidden md:block">
+              Olá, {firstName || 'Usuário'}
+            </span>
           </div>
         </div>
       </div>
