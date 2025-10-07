@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client'; // Importar o cliente Supabase
+import { useSession } from './SessionContextProvider'; // Importar useSession
 
 interface TopbarProps {
   className?: string;
@@ -18,41 +18,9 @@ interface TopbarProps {
 const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const { companies, selectedCompany, setSelectedCompany } = useCompany();
+  const { profile } = useSession(); // Obter o perfil do contexto
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [firstName, setFirstName] = useState<string | null>(null); // Estado para o primeiro nome
   const location = useLocation();
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('id', user.id)
-          .single();
-
-        if (error) {
-          console.error('Erro ao buscar perfil do usuário:', error);
-        } else if (data) {
-          setFirstName(data.first_name);
-        }
-      }
-    };
-
-    fetchUserProfile();
-
-    // Opcional: Escutar mudanças de autenticação para atualizar o nome
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchUserProfile();
-      } else {
-        setFirstName(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   // Função para obter o título da página com base na rota
   const getPageTitle = () => {
@@ -63,6 +31,8 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'ID';
       case '/id/companies':
         return 'ID | EMPRESAS';
+      case '/id/users': // Adicionar título para a nova página
+        return 'ID | USUÁRIOS';
       case '/connect':
         return 'CONNECT';
       case '/ops':
@@ -115,7 +85,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
               <User className="h-4 w-4 text-gray-600" />
             </div>
             <span className="text-sm font-medium text-sollux-black hidden md:block">
-              Olá, {firstName || 'Usuário'}
+              Olá, {profile?.first_name || 'Usuário'}
             </span>
           </div>
         </div>
