@@ -3,17 +3,19 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ArrowLeft } from 'lucide-react';
 import CompanyCard from '@/components/CompanyCard';
 import CompanyFormDialog from '@/components/CompanyFormDialog';
 import { Company } from '@/types/company';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
-const CompaniesPage: React.FC = () => {
+const CompanyManagementPage: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const navigate = useNavigate();
 
   const { data: companies, isLoading: isCompaniesLoading, error } = useQuery<Company[], Error>({
     queryKey: ['companies', user?.id],
@@ -69,8 +71,16 @@ const CompaniesPage: React.FC = () => {
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-lg min-h-[calc(100vh-64px)] flex flex-col items-center">
-      <Card className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 text-center">
-        <CardHeader>
+      <Card className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 text-center">
+        <CardHeader className="relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute left-0 top-0 text-sollux-black hover:bg-gray-100"
+            onClick={() => navigate('/id')}
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
           <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
         </CardHeader>
         <CardContent>
@@ -99,4 +109,4 @@ const CompaniesPage: React.FC = () => {
   );
 };
 
-export default CompaniesPage;
+export default CompanyManagementPage;
