@@ -34,7 +34,7 @@ const IdPage: React.FC = () => {
               onClick={handleManageCompaniesClick}
             />
             <FeatureCard
-              title="Gerenciar Perfil" {/* Alterado de "Gerenciar Usuários" para "Gerenciar Perfil" */}
+              title="Gerenciar Perfil"
               description="Adicione e gerencie usuários dentro das suas empresas."
               icon={Users}
               onClick={handleManageUsersClick}
