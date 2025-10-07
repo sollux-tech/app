@@ -43,7 +43,7 @@ const Topbar: React.FC = () => {
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-extrabold text-sollux-red tracking-wide">SOLLUX</h1>
         {isLoadingCompanies ? (
-          <Skeleton className="w-48 h-10 bg-gray-200 rounded-md" /> {/* Ajustado cor do skeleton */}
+          <Skeleton className="w-48 h-10 bg-gray-200 rounded-md" /> /* Ajustado cor do skeleton */
         ) : (
           <Select onValueChange={handleCompanyChange} value={selectedCompany?.id || ''}>
             <SelectTrigger className="w-[200px] bg-white/50 border-gray-300 text-sollux-black hover:border-sollux-orange focus:ring-sollux-orange rounded-lg"> {/* Estilo do select */}

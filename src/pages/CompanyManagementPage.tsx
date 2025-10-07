@@ -76,7 +76,7 @@ const CompanyManagementPage: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
               {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" /> {/* Ajustado rounded e bg */}
+                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" /> /* Ajustado rounded e bg */
               ))}
             </div>
           </CardContent>
