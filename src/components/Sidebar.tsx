@@ -7,13 +7,17 @@ import {
   Link as LinkIcon, 
   Settings, 
   Box,
-  Info, // Adicionado para o ícone de informação
-  X 
+  Info, 
+  X,
+  Building2, // Importado para o seletor de empresa
+  ChevronDown // Importado para o seletor de empresa
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'; // Importando Tooltip
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Importado para o seletor de empresa
+import { useCompany } from '@/components/CompanyContext'; // Importado para o seletor de empresa
 
 interface NavItem {
   icon: React.ElementType;
@@ -36,10 +40,21 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick }) => {
   const location = useLocation();
+  const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
+
+  const handleCompanyChange = (companyId: string) => {
+    const company = companies.find(c => c.id === companyId);
+    if (company) {
+      setSelectedCompany(company);
+    }
+    if (onLinkClick) {
+      onLinkClick(); // Fechar o sheet mobile se estiver aberto
+    }
+  };
 
   return (
     <TooltipProvider>
-      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative w-20"> {/* Largura fixa */}
+      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative w-20">
         {isMobileSheet && (
           <SheetClose asChild>
             <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-gray-300 hover:bg-gray-700 rounded-lg">
@@ -55,11 +70,45 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </div>
         </div>
 
+        {/* Seletor de Empresa */}
+        <div className="px-2 mb-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Select
+                value={selectedCompany?.id || ''}
+                onValueChange={handleCompanyChange}
+                disabled={isLoadingCompanies || companies.length === 0}
+              >
+                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
+                  <Building2 className="h-6 w-6" />
+                  <ChevronDown className="h-4 w-4 opacity-50 ml-1" />
+                </SelectTrigger>
+                <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+                  {isLoadingCompanies ? (
+                    <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
+                  ) : companies.length === 0 ? (
+                    <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
+                  ) : (
+                    companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+              {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
         {/* Navegação */}
         <nav className="space-y-2 flex-1 px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname.startsWith(item.to) && item.to !== '/'; // Ajuste para rotas aninhadas
+            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
             
             return (
               <Tooltip key={item.to}>
@@ -73,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                       isActive && "bg-sollux-red text-white font-semibold"
                     )}
                   >
-                    <Icon className="h-6 w-6" /> {/* Ícones maiores */}
+                    <Icon className="h-6 w-6" />
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
