@@ -150,7 +150,7 @@ const CompanyManagementPage: React.FC = () => {
 
       {/* Dialog para adicionar empresa */}
       <Dialog open={isAddCompanyDialogOpen} onOpenChange={setIsAddCompanyDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px]"> {/* Removidas as classes de estilo personalizadas */}
           <DialogHeader>
             <DialogTitle className="text-sollux-black">Adicionar Nova Empresa</DialogTitle>
           </DialogHeader>
@@ -176,7 +176,7 @@ const CompanyManagementPage: React.FC = () => {
 
       {/* Dialog para editar empresa */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px]"> {/* Removidas as classes de estilo personalizadas */}
           <DialogHeader>
             <DialogTitle className="text-sollux-black">Editar Empresa</DialogTitle>
           </DialogHeader>
