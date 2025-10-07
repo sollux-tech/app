@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCompany } from '@/components/CompanyContext';
-import { toast } from 'react-hot-toast';
+import { showSuccess, showError } from '@/utils/toast'; // Importando as funções de toast corretas
 
 interface Company {
   id: string;
@@ -36,7 +36,7 @@ const CompanyManagementPage: React.FC = () => {
         .eq('user_id', user.id);
 
       if (error) {
-        toast.error('Erro ao carregar empresas.');
+        showError('Erro ao carregar empresas.'); // Usando showError
         console.error('Erro ao carregar empresas:', error);
       } else {
         setCompanies(data || []);
@@ -46,13 +46,13 @@ const CompanyManagementPage: React.FC = () => {
 
   const handleAddCompany = async () => {
     if (!newCompanyName.trim()) {
-      toast.error('O nome da empresa não pode ser vazio.');
+      showError('O nome da empresa não pode ser vazio.'); // Usando showError
       return;
     }
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error('Usuário não autenticado.');
+      showError('Usuário não autenticado.'); // Usando showError
       return;
     }
 
@@ -62,19 +62,19 @@ const CompanyManagementPage: React.FC = () => {
       .select();
 
     if (error) {
-      toast.error('Erro ao adicionar empresa.');
+      showError('Erro ao adicionar empresa.'); // Usando showError
       console.error('Erro ao adicionar empresa:', error);
     } else if (data && data.length > 0) {
       setCompanies([...companies, data[0]]);
       setNewCompanyName('');
       setIsAddCompanyDialogOpen(false);
-      toast.success('Empresa adicionada com sucesso!');
+      showSuccess('Empresa adicionada com sucesso!'); // Usando showSuccess
     }
   };
 
   const handleEditCompany = async () => {
     if (!currentCompany || !currentCompany.name.trim()) {
-      toast.error('O nome da empresa não pode ser vazio.');
+      showError('O nome da empresa não pode ser vazio.'); // Usando showError
       return;
     }
 
@@ -84,13 +84,13 @@ const CompanyManagementPage: React.FC = () => {
       .eq('id', currentCompany.id);
 
     if (error) {
-      toast.error('Erro ao atualizar empresa.');
+      showError('Erro ao atualizar empresa.'); // Usando showError
       console.error('Erro ao atualizar empresa:', error);
     } else {
       setCompanies(companies.map(comp => comp.id === currentCompany.id ? currentCompany : comp));
       setIsEditDialogOpen(false);
       setCurrentCompany(null);
-      toast.success('Empresa atualizada com sucesso!');
+      showSuccess('Empresa atualizada com sucesso!'); // Usando showSuccess
     }
   };
 
@@ -105,12 +105,12 @@ const CompanyManagementPage: React.FC = () => {
       .eq('id', companyId);
 
     if (error) {
-      toast.error('Erro ao excluir empresa.');
+      showError('Erro ao excluir empresa.'); // Usando showError
       console.error('Erro ao excluir empresa:', error);
     } else {
       setCompanies(companies.filter(comp => comp.id !== companyId));
       setSelectedCompany(null); // Limpa a empresa selecionada se ela for excluída
-      toast.success('Empresa excluída com sucesso!');
+      showSuccess('Empresa excluída com sucesso!'); // Usando showSuccess
     }
   };
 
@@ -214,9 +214,9 @@ const CompanyManagementPage: React.FC = () => {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleEditCompany}>Salvar Alterações</Button>
           </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
