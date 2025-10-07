@@ -8,14 +8,15 @@ import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
 import PulsePage from './pages/PulsePage'; 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // Importando QueryClient e QueryClientProvider
+import UserManagementPage from './pages/UserManagementPage'; // Importando a nova página
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const queryClient = new QueryClient(); // Criando uma nova instância do QueryClient
+const queryClient = new QueryClient();
 
 function App() {
   return (
     <Router>
-      <QueryClientProvider client={queryClient}> {/* Envolvendo a aplicação com QueryClientProvider */}
+      <QueryClientProvider client={queryClient}>
         <SessionContextProvider>
           <CompanyProvider>
             <Toaster />
@@ -30,6 +31,7 @@ function App() {
                       <Route path="/pulse" element={<PulsePage />} /> 
                       <Route path="/id" element={<IdPage />} />
                       <Route path="/id/companies" element={<CompanyManagementPage />} />
+                      <Route path="/id/users" element={<UserManagementPage />} /> {/* Nova rota */}
                       {/* Adicione outras rotas aqui */}
                       <Route path="/ops" element={<Index />} /> 
                       <Route path="/connect" element={<Index />} />

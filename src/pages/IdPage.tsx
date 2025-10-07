@@ -12,6 +12,10 @@ const IdPage: React.FC = () => {
     navigate('/id/companies');
   };
 
+  const handleManageUsersClick = () => {
+    navigate('/id/users'); // Nova rota para gerenciamento de usuários
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
@@ -22,17 +26,6 @@ const IdPage: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="mt-8">
-          {/* Campos de entrada inspirados na imagem - REMOVIDOS */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
-              <Search className="h-5 w-5 text-gray-400 mr-3" />
-              <Input placeholder="Buscar..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
-            </Card>
-            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
-              <Input placeholder="Outro campo de entrada..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
-            </Card>
-          </div> */}
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               title="Gerenciar Empresas"
@@ -44,7 +37,7 @@ const IdPage: React.FC = () => {
               title="Gerenciar Usuários"
               description="Adicione e gerencie usuários dentro das suas empresas."
               icon={Users}
-              onClick={() => alert('Funcionalidade de Gerenciar Usuários em breve!')}
+              onClick={handleManageUsersClick} {/* Atualizado para a nova rota */}
             />
             <FeatureCard
               title="Configurações de ID"
