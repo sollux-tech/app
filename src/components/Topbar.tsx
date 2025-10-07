@@ -8,16 +8,38 @@ import Sidebar from './Sidebar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom'; // Importar useLocation
 
 const Topbar: React.FC = () => {
   const isMobile = useIsMobile();
   const { companies, selectedCompany, setSelectedCompany } = useCompany();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const location = useLocation();
+
+  // Função para obter o título da página com base na rota
+  const getPageTitle = () => {
+    switch (location.pathname) {
+      case '/pulse':
+        return 'PULSE';
+      case '/id':
+        return 'ID';
+      case '/id/companies':
+        return 'ID | EMPRESAS';
+      case '/connect':
+        return 'CONNECT';
+      case '/ops':
+        return 'OPS';
+      case '/core':
+        return 'CORE';
+      default:
+        return 'DASHBOARD';
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50">
       <div className="h-full px-4 flex items-center justify-between">
-        {/* Logo e menu mobile */}
+        {/* Logo e menu mobile (apenas para mobile) */}
         <div className="flex items-center gap-4">
           {isMobile && (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -31,66 +53,43 @@ const Topbar: React.FC = () => {
               </SheetContent>
             </Sheet>
           )}
+          
+          {/* Título principal */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-sollux-red rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            {!isMobile && (
-              <span className="text-xl font-semibold text-sollux-black">SOLLUX</span>
-            )}
+            <span className="text-xl font-semibold text-sollux-black">SOLLUX FLOW</span>
+            <span className="text-xl font-semibold text-sollux-red">| {getPageTitle()}</span>
           </div>
         </div>
 
-        {/* Seleção de Empresa e Search bar */}
-        <div className={cn("flex-1 flex items-center gap-4", isMobile ? "justify-end" : "max-w-2xl mx-8")}>
-          {!isMobile && (
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <Building2 className="h-5 w-5 text-gray-500" />
-              <Select
-                value={selectedCompany?.id || ''}
-                onValueChange={(companyId) => {
-                  const company = companies.find(c => c.id === companyId);
-                  setSelectedCompany(company || null);
-                }}
-                disabled={companies.length === 0}
-              >
-                <SelectTrigger className="w-full border-gray-200 bg-gray-50 hover:bg-gray-100 focus:ring-sollux-red rounded-lg">
-                  <SelectValue placeholder="Selecionar Empresa" />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg">
-                  {companies.length === 0 ? (
-                    <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
-                  ) : (
-                    companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {!isMobile && (
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar..."
-                className="pl-10 bg-gray-100 border-none focus:bg-white focus:ring-2 focus:ring-sollux-red rounded-lg"
-              />
-            </div>
-          )}
-        </div>
-
+        {/* Seleção de Empresa e Search bar (apenas para desktop, se necessário) */}
+        {/* Removido para um layout mais limpo, como na imagem de inspiração */}
+        
         {/* Ações do usuário */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100 rounded-lg">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100 rounded-lg">
-            <User className="h-5 w-5" />
-          </Button>
+        <div className="flex items-center gap-4">
+          {/* Indicador amarelo */}
+          <div className="relative">
+            <div className="w-3 h-3 bg-yellow-400 rounded-full absolute -top-1 -right-1 border-2 border-white"></div>
+            <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100 rounded-lg">
+              <Search className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Notificações com indicador vermelho */}
+          <div className="relative">
+            <div className="w-3 h-3 bg-sollux-red rounded-full absolute -top-1 -right-1 border-2 border-white"></div>
+            <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100 rounded-lg">
+              <Bell className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Perfil do usuário */}
+          <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-full pr-4">
+            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+              <User className="h-4 w-4 text-gray-600" />
+            </div>
+            <span className="text-sm font-medium text-sollux-black hidden md:block">Hello, Rodrigo</span>
+            <span className="text-xs text-gray-500 hidden md:block">15 Maio</span>
+          </div>
         </div>
       </div>
     </header>

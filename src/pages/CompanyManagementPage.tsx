@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, ArrowLeft } from 'lucide-react';
+import { PlusCircle, ArrowLeft, Search } from 'lucide-react';
 import CompanyCard from '@/components/CompanyCard';
 import CompanyFormDialog from '@/components/CompanyFormDialog';
 import { Company } from '@/types/company';
@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { showError, showSuccess } from '@/utils/toast';
+import { Input } from '@/components/ui/input';
 
 const CompanyManagementPage: React.FC = () => {
   const { user, isLoading: isSessionLoading } = useSession();
@@ -109,10 +110,17 @@ const CompanyManagementPage: React.FC = () => {
           <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">Minhas Empresas</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-center mb-6">
-            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
-              <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
-            </Button>
+          {/* Campos de entrada inspirados na imagem */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
+              <Search className="h-5 w-5 text-gray-400 mr-3" />
+              <Input placeholder="Buscar empresa..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
+            </Card>
+            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
+              <Button onClick={handleNewCompanyClick} className="w-full bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
+                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
+              </Button>
+            </Card>
           </div>
 
           {companies && companies.length > 0 ? (

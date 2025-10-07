@@ -2,7 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Building2, Users, Settings, BarChart2 } from 'lucide-react';
+import { Building2, Users, Settings, BarChart2, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 const IdPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,17 @@ const IdPage: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="mt-8">
+          {/* Campos de entrada inspirados na imagem */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
+              <Search className="h-5 w-5 text-gray-400 mr-3" />
+              <Input placeholder="Buscar..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
+            </Card>
+            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
+              <Input placeholder="Outro campo de entrada..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
+            </Card>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               title="Gerenciar Empresas"

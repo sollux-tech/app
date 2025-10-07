@@ -19,13 +19,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="flex flex-1 pt-16"> {/* pt-16 para compensar a topbar fixa */}
         {/* Sidebar - apenas em desktop */}
         {!isMobile && (
-          <aside className="w-64 bg-sollux-dark-gray border-r border-gray-200 shadow-sm">
+          <aside className="w-20 bg-sollux-dark-gray border-r border-gray-200 shadow-sm fixed left-0 top-0 h-full pt-16 z-40"> {/* Largura fixa e posição */}
             <Sidebar />
           </aside>
         )}
         
         {/* Conteúdo principal */}
-        <main className="flex-1 p-6">
+        <main className={cn("flex-1 p-6", !isMobile && "ml-20")}> {/* ml-20 para compensar a sidebar fixa */}
           <div className="max-w-7xl mx-auto w-full">
             {children}
           </div>
