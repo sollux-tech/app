@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Briefcase, Settings, LogOut, User, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useSession } from './SessionContextProvider';
-import { supabase } from '@/integrations/supabase/client';
+import { useSession } from '@/components/SessionContextProvider'; // Caminho corrigido
+import { supabase } from '@/integrations/supabase/client'; // Caminho corrigido
 import { showError, showSuccess } from '@/utils/toast';
 import {
   Tooltip,
