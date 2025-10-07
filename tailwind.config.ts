@@ -33,8 +33,8 @@ export default {
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "0 84.2% 60.2%",
+          foreground: "210 40% 98%",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -52,21 +52,27 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        // SOLLUX Specific Colors
+        sollux: {
+          red: '#E53935',
+          orange: '#FB8C00',
+          black: '#212121',
+          gray: '#9E9E9E',
+          white: '#FFFFFF',
+          // Novas cores inspiradas na imagem
+          'dark-gray': '#2C2C2C', // Para a sidebar
+          'light-gray': '#F0F2F5', // Para o fundo principal
+          'card-bg': 'rgba(255, 255, 255, 0.8)', // Fundo do card com transparência
+          'card-border': 'rgba(255, 255, 255, 0.2)', // Borda do card
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "1rem", // Ajustado para cards e elementos maiores
+        "2xl": "1.5rem", // Ainda mais arredondado para o shell da sidebar
+        "3xl": "2rem", // Para o container principal da sidebar
       },
       keyframes: {
         "accordion-down": {

@@ -1,111 +1,136 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Briefcase, Settings, LogOut, User, Building2 } from 'lucide-react';
+import { 
+  HeartPulse, 
+  Fingerprint, 
+  Link as LinkIcon, 
+  Settings, 
+  Box,
+  X,
+  Building2,
+  ChevronDown
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useSession } from '@/components/SessionContextProvider'; // Caminho corrigido
-import { supabase } from '@/integrations/supabase/client'; // Caminho corrigido
-import { showError, showSuccess } from '@/utils/toast';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useIsMobile } from '@/hooks/use-mobile';
+import { SheetClose } from '@/components/ui/sheet';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCompany } from '@/components/CompanyContext';
 
 interface NavItem {
-  to: string;
   icon: React.ElementType;
   label: string;
-  requiresAuth?: boolean;
+  to: string;
 }
 
 const navItems: NavItem[] = [
-  { to: '/', icon: Home, label: 'Início' },
-  { to: '/profile', icon: User, label: 'Perfil', requiresAuth: true },
-  { to: '/companies', icon: Building2, label: 'Empresas', requiresAuth: true },
-  { to: '/jobs', icon: Briefcase, label: 'Vagas', requiresAuth: true },
-  { to: '/settings', icon: Settings, label: 'Configurações', requiresAuth: true },
+  { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
+  { icon: Fingerprint, label: 'ID', to: '/id' },
+  { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
+  { icon: Settings, label: 'OPS', to: '/ops' },
+  { icon: Box, label: 'CORE', to: '/core' },
 ];
 
-const Sidebar: React.FC = () => {
-  const location = useLocation();
-  const { session, isLoading: isSessionLoading } = useSession();
-  const isAuthenticated = !!session;
-  const isMobile = useIsMobile();
+interface SidebarProps {
+  isMobileSheet?: boolean;
+  onLinkClick?: () => void;
+}
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      showSuccess('Você foi desconectado com sucesso!');
-    } catch (error: any) {
-      showError(`Erro ao desconectar: ${error.message}`);
+const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick }) => {
+  const location = useLocation();
+  const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
+
+  const handleCompanyChange = (companyId: string) => {
+    const company = companies.find(c => c.id === companyId);
+    if (company) {
+      setSelectedCompany(company);
+    }
+    if (onLinkClick) {
+      onLinkClick(); // Fechar o sheet mobile se estiver aberto
     }
   };
 
-  const filteredNavItems = navItems.filter(item => !item.requiresAuth || isAuthenticated);
-
   return (
-    <aside className="flex flex-col h-full bg-sidebar text-sidebar-foreground border-r border-sidebar-border shadow-md">
-      <div className="p-4 border-b border-sidebar-border">
-        <h1 className="text-2xl font-bold text-sidebar-primary">Sollux</h1>
-      </div>
+    <TooltipProvider>
+      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative w-20">
+        {isMobileSheet && (
+          <SheetClose asChild>
+            <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-gray-300 hover:bg-gray-700 rounded-lg">
+              <X className="h-5 w-5" />
+            </Button>
+          </SheetClose>
+        )}
 
-      {/* Navegação */}
-      <nav className="space-y-2 flex-1 px-2 pt-4">
-        {filteredNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
-          const isHomeActive = location.pathname === '/' && item.to === '/';
-          const activeClass = (isActive && item.to !== '/') || isHomeActive
-            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-            : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground';
+        {/* Logo no topo da sidebar */}
+        <div className="flex items-center justify-center h-6 mb-4"> {/* Alterado h-16 para h-10 e adicionado mb-4 */}
+          <div className="w-10 h-10 bg-sollux-red rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xl">S</span>
+          </div>
+        </div>
 
-          return (
-            <Tooltip key={item.to}>
-              <TooltipTrigger asChild>
-                <Link
-                  to={item.to}
-                  className={cn(
-                    'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-                    activeClass,
-                    isMobile ? 'justify-center' : ''
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  {!isMobile && item.label}
-                </Link>
-              </TooltipTrigger>
-              {isMobile && <TooltipContent side="right">{item.label}</TooltipContent>}
-            </Tooltip>
-          );
-        })}
-      </nav>
+        {/* Navegação */}
+        <nav className="space-y-2 flex-1 px-2">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
+            
+            return (
+              <Tooltip key={item.to}>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={item.to}
+                    onClick={onLinkClick}
+                    className={cn(
+                      "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
+                      "text-gray-300 hover:text-white hover:bg-gray-700",
+                      isActive && "bg-sollux-red text-white font-semibold"
+                    )}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
+        </nav>
 
-      {/* Rodapé da barra lateral (Logout) */}
-      <div className="p-4 border-t border-sidebar-border">
-        {isAuthenticated && (
+        {/* Seletor de Empresa - Movido para a parte inferior */}
+        <div className="px-2 mt-auto pt-4 border-t border-gray-700">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                onClick={handleLogout}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-destructive hover:text-destructive-foreground transition-colors',
-                  isMobile ? 'justify-center' : ''
-                )}
-                disabled={isSessionLoading}
+              <Select
+                value={selectedCompany?.id || ''}
+                onValueChange={handleCompanyChange}
+                disabled={isLoadingCompanies || companies.length === 0}
               >
-                <LogOut className="h-5 w-5" />
-                {!isMobile && 'Sair'}
-              </Button>
+                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
+                  <Building2 className="h-6 w-6" /> {/* Apenas o ícone */}
+                </SelectTrigger>
+                <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+                  {isLoadingCompanies ? (
+                    <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
+                  ) : companies.length === 0 ? (
+                    <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
+                  ) : (
+                    companies.map((company) => (
+                      <SelectItem key={company.id} value={company.id}>
+                        {company.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </TooltipTrigger>
-            {isMobile && <TooltipContent side="right">Sair</TooltipContent>}
+            <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+              {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
+            </TooltipContent>
           </Tooltip>
-        )}
+        </div>
       </div>
-    </aside>
+    </TooltipProvider>
   );
 };
 

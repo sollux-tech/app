@@ -1,63 +1,49 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login"; // Importar a página de Login
-import { SessionContextProvider, useSession } from "./components/SessionContextProvider";
-import { MadeWithDyad } from "./components/made-with-dyad";
-import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout';
+import Index from './pages/Index';
+import Login from './pages/Login';
+import { SessionContextProvider } from './components/SessionContextProvider';
+import { Toaster } from 'sonner';
+import IdPage from './pages/IdPage';
+import CompanyManagementPage from './pages/CompanyManagementPage';
+import { CompanyProvider } from './components/CompanyContext';
+import PulsePage from './pages/PulsePage'; 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // Importando QueryClient e QueryClientProvider
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient(); // Criando uma nova instância do QueryClient
 
-// Componente para proteger rotas
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session, isLoading } = useSession();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !session) {
-      navigate('/login');
-    }
-  }, [session, isLoading, navigate]);
-
-  if (isLoading) {
-    return null; // Ou um spinner de carregamento
-  }
-
-  if (!session) {
-    return null; // Não renderiza nada enquanto redireciona
-  }
-
-  return <>{children}</>;
-};
-
-const AppContent = () => {
+function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+    <Router>
+      <QueryClientProvider client={queryClient}> {/* Envolvendo a aplicação com QueryClientProvider */}
         <SessionContextProvider>
-          <AppContent />
+          <CompanyProvider>
+            <Toaster />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="*"
+                element={
+                  <Layout>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/pulse" replace />} /> 
+                      <Route path="/pulse" element={<PulsePage />} /> 
+                      <Route path="/id" element={<IdPage />} />
+                      <Route path="/id/companies" element={<CompanyManagementPage />} />
+                      {/* Adicione outras rotas aqui */}
+                      <Route path="/ops" element={<Index />} /> 
+                      <Route path="/connect" element={<Index />} />
+                      <Route path="/core" element={<Index />} />
+                    </Routes>
+                  </Layout>
+                }
+              />
+            </Routes>
+          </CompanyProvider>
         </SessionContextProvider>
-      </BrowserRouter>
-      <MadeWithDyad />
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+      </QueryClientProvider>
+    </Router>
+  );
+}
 
 export default App;
