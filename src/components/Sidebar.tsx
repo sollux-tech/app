@@ -7,7 +7,8 @@ import {
   Link as LinkIcon, 
   Settings, 
   Box,
-  ChevronRight
+  ChevronRight,
+  User // Adicionando importação do ícone User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
