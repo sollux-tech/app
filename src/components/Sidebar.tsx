@@ -1,136 +1,109 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  HeartPulse, 
-  Fingerprint, 
-  Link as LinkIcon, 
-  Settings, 
-  Box,
-  X,
-  Building2,
-  ChevronDown
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Home, Briefcase, Settings, LogOut, User, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SheetClose } from '@/components/ui/sheet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCompany } from '@/components/CompanyContext';
+import { useSession } from './SessionContextProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { showSuccess, showError } from '@/utils/toast';
+import { useQuery } from '@tanstack/react-query';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-interface NavItem {
-  icon: React.ElementType;
-  label: string;
-  to: string;
-}
-
-const navItems: NavItem[] = [
-  { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
-  { icon: Fingerprint, label: 'ID', to: '/id' },
-  { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
-  { icon: Settings, label: 'OPS', to: '/ops' },
-  { icon: Box, label: 'CORE', to: '/core' },
-];
-
-interface SidebarProps {
-  isMobileSheet?: boolean;
-  onLinkClick?: () => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick }) => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
-  const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
+  const { user, isLoading: isSessionLoading } = useSession();
 
-  const handleCompanyChange = (companyId: string) => {
-    const company = companies.find(c => c.id === companyId);
-    if (company) {
-      setSelectedCompany(company);
-    }
-    if (onLinkClick) {
-      onLinkClick(); // Fechar o sheet mobile se estiver aberto
+  const { data: userProfile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      showError('Erro ao fazer logout: ' + error.message);
+    } else {
+      showSuccess('Logout realizado com sucesso!');
     }
   };
 
-  return (
-    <TooltipProvider>
-      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative w-20">
-        {isMobileSheet && (
-          <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-gray-300 hover:bg-gray-700 rounded-lg">
-              <X className="h-5 w-5" />
-            </Button>
-          </SheetClose>
-        )}
+  const navItems = [
+    { to: '/', icon: Home, label: 'Início' },
+    { to: '/companies', icon: Building2, label: 'Empresas' },
+    { to: '/settings', icon: Settings, label: 'Configurações' },
+  ];
 
-        {/* Logo no topo da sidebar */}
-        <div className="flex items-center justify-center h-6 mb-4"> {/* Alterado h-16 para h-10 e adicionado mb-4 */}
-          <div className="w-10 h-10 bg-sollux-red rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">S</span>
+  const firstName = userProfile?.first_name;
+  const avatarUrl = userProfile?.avatar_url;
+  const fallbackInitials = (firstName ? firstName[0] : user?.email?.[0] || 'U').toUpperCase();
+
+  return (
+    <div className="w-64 bg-sollux-sidebar-bg text-sollux-black flex flex-col h-full border-r border-sollux-card-border shadow-lg">
+      <div className="p-4 border-b border-sollux-card-border flex items-center justify-center">
+        <img src="/logo.png" alt="Sollux Logo" className="h-10" />
+      </div>
+
+      {/* Informações do Usuário */}
+      {user && (
+        <div className="p-4 flex items-center space-x-3 border-b border-sollux-card-border">
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={avatarUrl || undefined} alt={firstName || "User"} />
+            <AvatarFallback>{fallbackInitials}</AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-sollux-black">
+              Olá, {firstName || 'Usuário'}
+            </span>
+            <span className="text-xs text-sollux-gray-text">
+              {user.email}
+            </span>
           </div>
         </div>
+      )}
 
-        {/* Navegação */}
-        <nav className="space-y-2 flex-1 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
-            
-            return (
-              <Tooltip key={item.to}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.to}
-                    onClick={onLinkClick}
-                    className={cn(
-                      "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
-                      "text-gray-300 hover:text-white hover:bg-gray-700",
-                      isActive && "bg-sollux-red text-white font-semibold"
-                    )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
-        </nav>
+      {/* Navegação */}
+      <nav className="space-y-2 flex-1 px-2 pt-4">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
+          const isHomeActive = location.pathname === '/' && item.to === '/';
 
-        {/* Seletor de Empresa - Movido para a parte inferior */}
-        <div className="px-2 mt-auto pt-4 border-t border-gray-700">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Select
-                value={selectedCompany?.id || ''}
-                onValueChange={handleCompanyChange}
-                disabled={isLoadingCompanies || companies.length === 0}
-              >
-                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
-                  <Building2 className="h-6 w-6" /> {/* Apenas o ícone */}
-                </SelectTrigger>
-                <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
-                  {isLoadingCompanies ? (
-                    <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
-                  ) : companies.length === 0 ? (
-                    <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
-                  ) : (
-                    companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-              {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
-            </TooltipContent>
-          </Tooltip>
-        </div>
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:bg-sollux-hover-bg ${
+                (isActive || isHomeActive) ? 'bg-sollux-red text-white hover:bg-sollux-orange' : 'text-sollux-black'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Botão de Logout */}
+      <div className="p-4 border-t border-sollux-card-border">
+        <Button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sollux-black transition-all hover:bg-sollux-hover-bg"
+          variant="ghost"
+        >
+          <LogOut className="h-5 w-5" />
+          Sair
+        </Button>
       </div>
-    </TooltipProvider>
+    </div>
   );
 };
 
