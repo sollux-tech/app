@@ -6,7 +6,6 @@ import {
   Link as LinkIcon, 
   Settings, 
   Box,
-  Info, 
   X,
   Building2,
   ChevronDown
@@ -131,20 +130,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
             </TooltipTrigger>
             <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
               {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Seção de informação na parte inferior */}
-        <div className="px-2 pt-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-full h-12 text-gray-300 hover:bg-gray-700 rounded-lg">
-                <Info className="h-6 w-6" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-              Informações
             </TooltipContent>
           </Tooltip>
         </div>
