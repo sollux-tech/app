@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from './Sidebar';
+import Topbar from './Topbar'; // Import the new Topbar
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutShellProps {
@@ -12,9 +13,12 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
-      <main className={`flex-1 p-4 transition-all duration-300 ${isMobile ? 'ml-0' : 'ml-20'}`}>
-        {children}
-      </main>
+      <div className="flex flex-col flex-1">
+        <Topbar /> {/* Add the Topbar here */}
+        <main className={`flex-1 p-4 transition-all duration-300 mt-16 ${isMobile ? 'ml-0' : 'ml-20'}`}>
+          {children}
+        </main>
+      </div>
     </div>
   );
 };
