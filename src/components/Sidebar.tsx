@@ -106,12 +106,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                 onValueChange={handleCompanyChange}
                 disabled={isLoadingCompanies || companies.length === 0}
               >
-                <SelectTrigger className="w-full h-12 flex items-center justify-between bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0 px-3">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5" />
-                    <SelectValue placeholder="Empresa" />
-                  </div>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
+                  <Building2 className="h-6 w-6" /> {/* Apenas o ícone */}
                 </SelectTrigger>
                 <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
                   {isLoadingCompanies ? (
