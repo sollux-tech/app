@@ -3,6 +3,7 @@ import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils'; // Importando a função cn
 
 interface LayoutProps {
   children: React.ReactNode;
