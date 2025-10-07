@@ -8,13 +8,8 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCompany } from '@/components/CompanyContext';
 import { showSuccess, showError } from '@/utils/toast';
-import CompanyCard from '@/components/CompanyCard'; // Importando o CompanyCard
-
-interface Company {
-  id: string;
-  name: string;
-  user_id: string;
-}
+import CompanyCard from '@/components/CompanyCard';
+import { Company } from '@/types/company'; // Importando a interface Company do arquivo de tipos
 
 const CompanyManagementPage: React.FC = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -150,7 +145,7 @@ const CompanyManagementPage: React.FC = () => {
 
       {/* Dialog para adicionar empresa */}
       <Dialog open={isAddCompanyDialogOpen} onOpenChange={setIsAddCompanyDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]"> {/* Removidas as classes de estilo personalizadas */}
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-sollux-black">Adicionar Nova Empresa</DialogTitle>
           </DialogHeader>
@@ -176,7 +171,7 @@ const CompanyManagementPage: React.FC = () => {
 
       {/* Dialog para editar empresa */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]"> {/* Removidas as classes de estilo personalizadas */}
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-sollux-black">Editar Empresa</DialogTitle>
           </DialogHeader>
