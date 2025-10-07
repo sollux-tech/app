@@ -84,9 +84,11 @@ const CompanyManagementPage: React.FC = () => {
           <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleNewCompanyClick} className="mb-6 bg-sollux-red hover:bg-sollux-orange text-white">
-            <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
-          </Button>
+          <div className="flex justify-center mb-6"> {/* Centraliza o botão */}
+            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white">
+              <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
+            </Button>
+          </div>
 
           {companies && companies.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
