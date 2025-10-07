@@ -90,6 +90,14 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
     },
   });
 
+  const onSubmit = (data: CompanyFormData) => {
+    if (company) {
+      updateCompanyMutation.mutate(data);
+    } else {
+      createCompanyMutation.mutate(data);
+    }
+  };
+
   const isLoading = createCompanyMutation.isPending || updateCompanyMutation.isPending;
 
   return (
