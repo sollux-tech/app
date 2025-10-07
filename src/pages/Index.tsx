@@ -17,7 +17,7 @@ const Index = () => {
           </p>
         </CardContent>
       </Card>
-      <div className="mt-12"> {/* Aumentado o espaçamento superior */}
+      <div className="mt-12">
         <MadeWithDyad />
       </div>
     </div>
