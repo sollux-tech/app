@@ -111,7 +111,7 @@ const UserProfileFormDialog: React.FC<UserProfileFormDialogProps> = ({ open, onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+      <DialogContent className="bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
         <DialogHeader>
           <DialogTitle className="text-sollux-black">Editar Perfil</DialogTitle>
         </DialogHeader>
