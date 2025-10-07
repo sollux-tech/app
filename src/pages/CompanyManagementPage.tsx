@@ -68,15 +68,15 @@ const CompanyManagementPage: React.FC = () => {
 
   if (isSessionLoading || isCompaniesLoading) {
     return (
-      <div className="flex flex-col items-center justify-center"> {/* Removido p-6 */}
-        <Card className="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 text-center">
+      <div className="flex flex-col items-center justify-center">
+        <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
           <CardHeader>
             <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">Minhas Empresas</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
               {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-32 w-full rounded-lg" />
+                <Skeleton key={i} className="h-32 w-full rounded-xl bg-gray-200" /> {/* Ajustado rounded e bg */}
               ))}
             </div>
           </CardContent>
@@ -87,7 +87,7 @@ const CompanyManagementPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="p-6 bg-white rounded-2xl shadow-lg">
+      <div className="p-6 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
         <h2 className="text-2xl font-bold text-red-600">Erro ao carregar empresas</h2>
         <p className="text-gray-700">{error.message}</p>
       </div>
@@ -95,13 +95,13 @@ const CompanyManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center"> {/* Removido p-6 */}
-      <Card className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 text-center">
+    <div className="flex flex-col items-center">
+      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
         <CardHeader className="relative">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100" // Ajustado posicionamento
+            className="absolute left-6 top-6 text-sollux-black hover:bg-gray-100 rounded-lg" // Ajustado rounded
             onClick={() => navigate('/id')}
           >
             <ArrowLeft className="h-6 w-6" />
@@ -110,7 +110,7 @@ const CompanyManagementPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="flex justify-center mb-6">
-            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white">
+            <Button onClick={handleNewCompanyClick} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg"> {/* Ajustado rounded */}
               <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Nova Empresa
             </Button>
           </div>

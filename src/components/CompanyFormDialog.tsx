@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter, // <-- Importado aqui
+  DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -102,7 +102,7 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
         <DialogHeader>
           <DialogTitle>{company ? 'Editar Empresa' : 'Criar Nova Empresa'}</DialogTitle>
         </DialogHeader>
@@ -115,17 +115,17 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
                 <FormItem>
                   <FormLabel>Nome da Empresa</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nome da empresa" {...field} />
+                    <Input placeholder="Nome da empresa" {...field} className="rounded-lg" /> {/* Ajustado rounded */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <DialogFooter className="flex justify-end gap-2 pt-4"> {/* <-- O footer está aqui */}
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+            <DialogFooter className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="rounded-lg"> {/* Ajustado rounded */}
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="rounded-lg"> {/* Ajustado rounded */}
                 {company ? 'Salvar Alterações' : 'Criar Empresa'}
               </Button>
             </DialogFooter>

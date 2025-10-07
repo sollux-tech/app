@@ -13,10 +13,12 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { showError, showSuccess } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Topbar: React.FC = () => {
   const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleCompanyChange = (companyId: string) => {
     const company = companies.find((c) => c.id === companyId);
@@ -37,17 +39,17 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-20 right-0 h-16 bg-sollux-black text-sollux-white flex items-center justify-between px-6 shadow-md border-b border-gray-800 z-30">
+    <header className={`fixed top-4 h-16 bg-sollux-card-bg backdrop-blur-md text-sollux-black flex items-center justify-between px-6 shadow-md border border-sollux-card-border z-30 rounded-xl transition-all duration-300 ${isMobile ? 'left-4 right-4' : 'left-28 right-4'}`}> {/* Fundo com transparência e bordas arredondadas */}
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-extrabold text-sollux-red tracking-wide">SOLLUX</h1>
         {isLoadingCompanies ? (
-          <Skeleton className="w-48 h-10 bg-gray-700 rounded-md" />
+          <Skeleton className="w-48 h-10 bg-gray-200 rounded-md" /> {/* Ajustado cor do skeleton */}
         ) : (
           <Select onValueChange={handleCompanyChange} value={selectedCompany?.id || ''}>
-            <SelectTrigger className="w-[200px] bg-gray-800 border-gray-700 text-sollux-white hover:border-sollux-orange focus:ring-sollux-orange">
+            <SelectTrigger className="w-[200px] bg-white/50 border-gray-300 text-sollux-black hover:border-sollux-orange focus:ring-sollux-orange rounded-lg"> {/* Estilo do select */}
               <SelectValue placeholder="Selecionar Empresa" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 text-sollux-white border-gray-700">
+            <SelectContent className="bg-white border-gray-200 text-sollux-black rounded-lg shadow-lg"> {/* Estilo do select content */}
               {companies.length === 0 ? (
                 <SelectItem value="no-company" disabled>Nenhuma empresa encontrada</SelectItem>
               ) : (
@@ -62,10 +64,10 @@ const Topbar: React.FC = () => {
         )}
       </div>
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="text-sollux-white hover:bg-sollux-red/20">
+        <Button variant="ghost" size="icon" className="text-sollux-black hover:bg-sollux-red/10 rounded-lg"> {/* Botões mais suaves */}
           <User className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" className="text-sollux-white hover:bg-sollux-red/20" onClick={handleLogout}>
+        <Button variant="ghost" size="icon" className="text-sollux-black hover:bg-sollux-red/10 rounded-lg" onClick={handleLogout}>
           <LogOut className="h-5 w-5" />
         </Button>
       </div>

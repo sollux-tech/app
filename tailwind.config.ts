@@ -59,13 +59,20 @@ export default {
           black: '#212121',
           gray: '#9E9E9E',
           white: '#FFFFFF',
+          // Novas cores inspiradas na imagem
+          'dark-gray': '#2C2C2C', // Para a sidebar
+          'light-gray': '#F0F2F5', // Para o fundo principal
+          'card-bg': 'rgba(255, 255, 255, 0.8)', // Fundo do card com transparência
+          'card-border': 'rgba(255, 255, 255, 0.2)', // Borda do card
         },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        "2xl": "1rem", // Added for cards
+        xl: "1rem", // Ajustado para cards e elementos maiores
+        "2xl": "1.5rem", // Ainda mais arredondado para o shell da sidebar
+        "3xl": "2rem", // Para o container principal da sidebar
       },
       keyframes: {
         "accordion-down": {

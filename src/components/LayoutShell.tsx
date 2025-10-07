@@ -12,7 +12,7 @@ const LayoutShell: React.FC<LayoutShellProps> = ({ children }) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-sollux-light-gray dark:bg-gray-900"> {/* Usando a nova cor de fundo */}
       <Sidebar />
       <div className="flex flex-col flex-1">
         <Topbar />

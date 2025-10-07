@@ -12,8 +12,8 @@ const IdPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center"> {/* Removido p-4 */}
-      <Card className="w-full max-w-4xl bg-white rounded-2xl shadow-lg p-6 text-center">
+    <div className="flex flex-col items-center justify-center">
+      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border"> {/* Usando nova cor de fundo e borda */}
         <CardHeader>
           <CardTitle className="text-4xl font-bold mb-4 text-[#212121]">SOLLUX ID</CardTitle>
           <p className="text-xl text-gray-600">
