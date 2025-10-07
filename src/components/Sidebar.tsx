@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
         )}
 
         {/* Logo no topo da sidebar */}
-        <div className="flex items-center justify-center h-16"> {/* Removido mb-2 */}
+        <div className="flex items-center justify-center h-10 mb-4"> {/* Alterado h-16 para h-10 e adicionado mb-4 */}
           <div className="w-10 h-10 bg-sollux-red rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-xl">S</span>
           </div>
