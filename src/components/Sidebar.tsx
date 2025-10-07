@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HeartPulse, Fingerprint, Link as LinkIcon, Settings, Cube } from 'lucide-react';
+import { HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Menu } from 'lucide-react'; // Changed Cube to Box
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
     { icon: Fingerprint, label: 'ID', to: '/id' },
     { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
     { icon: Settings, label: 'OPS', to: '/ops' },
-    { icon: Cube, label: 'CORE', to: '/core' },
+    { icon: Box, label: 'CORE', to: '/core' }, // Changed Cube to Box
   ];
 
   const handleNavItemClick = (label: string) => {
