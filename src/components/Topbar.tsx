@@ -10,7 +10,11 @@ import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom'; // Importar useLocation
 
-const Topbar: React.FC = () => {
+interface TopbarProps {
+  className?: string;
+}
+
+const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const { companies, selectedCompany, setSelectedCompany } = useCompany();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -37,7 +41,7 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50">
+    <header className={cn("fixed top-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50", className)}> {/* Adicionado className aqui */}
       <div className="h-full px-4 flex items-center justify-between">
         {/* Logo e menu mobile (apenas para mobile) */}
         <div className="flex items-center gap-4">
@@ -61,19 +65,8 @@ const Topbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Seleção de Empresa e Search bar (apenas para desktop, se necessário) */}
-        {/* Removido para um layout mais limpo, como na imagem de inspiração */}
-        
         {/* Ações do usuário */}
         <div className="flex items-center gap-4">
-          {/* Indicador amarelo */}
-          <div className="relative">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full absolute -top-1 -right-1 border-2 border-white"></div>
-            <Button variant="ghost" size="icon" className="text-gray-600 hover:bg-gray-100 rounded-lg">
-              <Search className="h-5 w-5" />
-            </Button>
-          </div>
-
           {/* Notificações com indicador vermelho */}
           <div className="relative">
             <div className="w-3 h-3 bg-sollux-red rounded-full absolute -top-1 -right-1 border-2 border-white"></div>

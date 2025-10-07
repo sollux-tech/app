@@ -3,7 +3,7 @@ import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils'; // Importando a função cn
+import { cn } from '@/lib/utils';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,12 +15,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-sollux-light-gray flex flex-col">
       {/* Topbar */}
-      <Topbar />
+      <Topbar className={cn(!isMobile && "left-20")} /> {/* Ajusta a posição da topbar */}
       
       <div className="flex flex-1 pt-16"> {/* pt-16 para compensar a topbar fixa */}
         {/* Sidebar - apenas em desktop */}
         {!isMobile && (
-          <aside className="w-20 bg-sollux-dark-gray border-r border-gray-200 shadow-sm fixed left-0 top-0 h-full pt-16 z-40"> {/* Largura fixa e posição */}
+          <aside className="w-20 bg-sollux-dark-gray border-r border-gray-200 shadow-sm fixed left-0 top-0 h-full z-60"> {/* z-60 para sobrepor a topbar, removido pt-16 */}
             <Sidebar />
           </aside>
         )}
