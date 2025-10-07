@@ -15,6 +15,7 @@ import { showError, showSuccess } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSidebar } from './SidebarContext'; // Importar useSidebar
+import { cn } from '@/lib/utils'; // Importar cn
 
 const Topbar: React.FC = () => {
   const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
