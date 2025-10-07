@@ -52,6 +52,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // SOLLUX Specific Colors
+        sollux: {
+          red: '#E53935',
+          orange: '#FB8C00',
+          black: '#212121',
+          gray: '#9E9E9E',
+          white: '#FFFFFF',
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -67,6 +75,7 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        "2xl": "1rem", // Added for cards
       },
       keyframes: {
         "accordion-down": {

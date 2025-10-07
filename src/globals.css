@@ -96,6 +96,6 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-sollux-white text-sollux-black; /* Using SOLLUX white and black for body background/text */
   }
 }
