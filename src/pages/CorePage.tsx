@@ -4,19 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
 import { Users, Settings, ShieldCheck, Briefcase, UserCog } from 'lucide-react';
 
-const userTypes = [
-  'Admin Sollux',
-  'Admin',
-  'Consultor',
-  'Colaborador',
-  'Gerente',
-  'Diretor',
-  'CEO',
-  'Conselheiro',
-];
-
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
+
+  const handleManageUserTypesClick = () => {
+    navigate('/core/user-types');
+  };
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -29,22 +22,12 @@ const CorePage: React.FC = () => {
         </CardHeader>
         <CardContent className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-6 flex flex-col items-center text-center">
-              <CardHeader className="pb-4">
-                <UserCog className="h-12 w-12 text-sollux-red mb-2" />
-                <CardTitle className="text-xl font-bold text-sollux-black">Tipos de Usuário</CardTitle>
-              </CardHeader>
-              <CardContent className="w-full">
-                <ul className="space-y-2 text-gray-700 text-left">
-                  {userTypes.map((type, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-sollux-orange" />
-                      {type}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <FeatureCard
+              title="Tipos de Usuário"
+              description="Crie e gerencie os diferentes tipos de usuários da plataforma."
+              icon={UserCog}
+              onClick={handleManageUserTypesClick}
+            />
 
             {/* Outros FeatureCards de exemplo para o CORE */}
             <FeatureCard

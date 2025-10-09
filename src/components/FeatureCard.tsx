@@ -9,9 +9,10 @@ interface FeatureCardProps {
   icon: LucideIcon;
   onClick: () => void;
   className?: string;
+  iconClassName?: string; // Nova prop para estilizar o ícone
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Icon, onClick, className }) => {
+const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Icon, onClick, className, iconClassName }) => {
   return (
     <Card
       className={cn(
@@ -22,7 +23,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Ico
       onClick={onClick}
     >
       <CardHeader className="pb-4">
-        <Icon className="h-12 w-12 text-sollux-red mb-2" />
+        <Icon className={cn("h-12 w-12 text-sollux-red mb-2", iconClassName)} />
         <CardTitle className="text-xl font-bold text-sollux-black">{title}</CardTitle>
       </CardHeader>
       <CardContent>
