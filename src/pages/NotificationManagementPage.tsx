@@ -76,7 +76,7 @@ const NotificationManagementPage: React.FC = () => {
   const { data: users, isLoading: isLoadingUsers } = useQuery<Profile[], Error>({
     queryKey: ['profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('id, first_name, last_name');
+      const { data, error } = await supabase.from('profiles').select('*');
       if (error) throw error;
       return data;
     },
@@ -85,7 +85,7 @@ const NotificationManagementPage: React.FC = () => {
   const { data: companies, isLoading: isLoadingCompanies } = useQuery<Company[], Error>({
     queryKey: ['companies'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('companies').select('id, name');
+      const { data, error } = await supabase.from('companies').select('*');
       if (error) throw error;
       return data;
     },
