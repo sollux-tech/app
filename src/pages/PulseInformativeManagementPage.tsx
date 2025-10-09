@@ -88,7 +88,7 @@ const PulseInformativeManagementPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-sollux-black">Título</TableHead>
-                <TableHead className="text-sollux-black">Conteúdo</TableHead>
+                {/* <TableHead className="text-sollux-black">Conteúdo</TableHead> REMOVIDO */}
                 <TableHead className="text-sollux-black">Publicado em</TableHead>
                 <TableHead className="text-sollux-black">Criado em</TableHead>
                 <TableHead className="text-right text-sollux-black">Ações</TableHead>
@@ -97,7 +97,7 @@ const PulseInformativeManagementPage: React.FC = () => {
             <TableBody>
               {informatives?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500">
+                  <TableCell colSpan={4} className="text-center text-gray-500"> {/* Colspan ajustado */}
                     Nenhum informativo encontrado.
                   </TableCell>
                 </TableRow>
@@ -105,7 +105,7 @@ const PulseInformativeManagementPage: React.FC = () => {
                 informatives?.map((informative) => (
                   <TableRow key={informative.id}>
                     <TableCell className="font-medium text-sollux-black">{informative.title}</TableCell>
-                    <TableCell className="text-gray-700 max-w-xs truncate" dangerouslySetInnerHTML={{ __html: informative.content }} />
+                    {/* <TableCell className="text-gray-700 max-w-xs truncate" dangerouslySetInnerHTML={{ __html: informative.content }} /> REMOVIDO */}
                     <TableCell className="text-gray-700">
                       {informative.publication_date ? format(new Date(informative.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                     </TableCell>
