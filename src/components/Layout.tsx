@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import Breadcrumbs from './Breadcrumbs'; // Importar o novo componente
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* Conteúdo principal */}
         <main className={cn("flex-1 p-6", !isMobile && "ml-20")}> {/* ml-20 para compensar a sidebar fixa */}
           <div className="max-w-7xl mx-auto w-full">
+            <Breadcrumbs /> {/* Adicionar Breadcrumbs aqui */}
             {children}
           </div>
         </main>
