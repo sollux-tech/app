@@ -17,6 +17,7 @@ import PublicInformativePage from './pages/PublicInformativePage';
 import GlobalSettingsPage from './pages/GlobalSettingsPage';
 import SidebarSettingsPage from './pages/SidebarSettingsPage';
 import NotificationManagementPage from './pages/NotificationManagementPage';
+import AllCompaniesManagementPage from './pages/AllCompaniesManagementPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -81,6 +82,7 @@ function App() {
                           <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
+                          <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                         </Routes>
                       </Layout>
                     </ProtectedRoute>

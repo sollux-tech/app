@@ -20,6 +20,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
+  '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático
