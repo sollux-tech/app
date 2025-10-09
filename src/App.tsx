@@ -11,7 +11,8 @@ import { CompanyProvider } from './components/CompanyContext';
 import PulsePage from './pages/PulsePage'; 
 import CorePage from './pages/CorePage'; 
 import UserTypeManagementPage from './pages/UserTypeManagementPage'; 
-import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage'; // Importar a nova página
+import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage'; 
+import PulseInformativeFormPage from './pages/PulseInformativeFormPage'; // Importar a nova página de formulário
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 
@@ -63,7 +64,9 @@ function App() {
                         <Route path="/ops" element={<Index />} /> 
                         <Route path="/core" element={<CorePage />} /> 
                         <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
-                        <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} /> {/* Nova rota */}
+                        <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
+                        <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> {/* Rota para novo */}
+                        <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> {/* Rota para editar */}
                       </Routes>
                     </Layout>
                   </ProtectedRoute>

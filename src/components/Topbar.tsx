@@ -24,6 +24,12 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
 
   // Função para obter o título da página com base na rota
   const getPageTitle = () => {
+    if (location.pathname.startsWith('/core/pulse-informatives/new')) {
+      return 'CORE | NOVO INFORMATIVO';
+    }
+    if (location.pathname.startsWith('/core/pulse-informatives/') && location.pathname !== '/core/pulse-informatives') {
+      return 'CORE | EDITAR INFORMATIVO';
+    }
     switch (location.pathname) {
       case '/pulse':
         return 'PULSE';
@@ -41,7 +47,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'CORE';
       case '/core/user-types':
         return 'CORE | TIPOS DE USUÁRIO';
-      case '/core/pulse-informatives': // Adicionar título para a nova página
+      case '/core/pulse-informatives':
         return 'CORE | INFORMATIVOS PULSE';
       default:
         return 'DASHBOARD';
