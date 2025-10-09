@@ -13,6 +13,7 @@ import { useSession } from './SessionContextProvider';
 import { SidebarConfig } from '@/types/sidebar';
 import { getIcon } from '@/lib/icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getOrCreateSidebarConfig } from '@/data/sidebar';
 
 interface SidebarProps {
   isMobileSheet?: boolean;
@@ -26,15 +27,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
 
   const { data: sidebarConfig, isLoading: isLoadingConfig } = useQuery<SidebarConfig, Error>({
     queryKey: ['sidebarConfig', user?.id],
-    queryFn: async () => {
+    queryFn: () => {
       if (!user?.id) throw new Error('Usuário não autenticado.');
-      const { data, error } = await supabase
-        .from('sidebar_configs')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
+      return getOrCreateSidebarConfig(user.id);
     },
     enabled: !!user?.id,
   });

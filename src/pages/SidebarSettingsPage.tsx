@@ -12,6 +12,7 @@ import { SidebarConfig, SidebarNavItem, SidebarNavItemFormData } from '@/types/s
 import { getIcon } from '@/lib/icons';
 import SidebarItemFormDialog from '@/components/SidebarItemFormDialog';
 import { v4 as uuidv4 } from 'uuid';
+import { getOrCreateSidebarConfig } from '@/data/sidebar';
 
 const SidebarSettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -20,17 +21,11 @@ const SidebarSettingsPage: React.FC = () => {
   const [editingItem, setEditingItem] = useState<SidebarNavItem | null>(null);
   const [logoUrl, setLogoUrl] = useState('');
 
-  const { data: sidebarConfig, isLoading, error } = useQuery({
+  const { data: sidebarConfig, isLoading, error } = useQuery<SidebarConfig, Error>({
     queryKey: ['sidebarConfig', user?.id],
-    queryFn: async (): Promise<SidebarConfig> => {
+    queryFn: () => {
       if (!user?.id) throw new Error('Usuário não autenticado.');
-      const { data, error } = await supabase
-        .from('sidebar_configs')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-      if (error) throw error;
-      return data;
+      return getOrCreateSidebarConfig(user.id);
     },
     enabled: !!user?.id,
   });
