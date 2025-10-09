@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard } from 'lucide-react'; 
+import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Bell } from 'lucide-react'; 
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +21,10 @@ const CorePage: React.FC = () => {
 
   const handleSidebarSettingsClick = () => {
     navigate('/core/sidebar-settings');
+  };
+
+  const handleManageNotificationsClick = () => {
+    navigate('/core/notifications');
   };
 
   return (
@@ -51,6 +55,12 @@ const CorePage: React.FC = () => {
               description="Personalize os ícones, links e a logo da barra de navegação."
               icon={LayoutDashboard}
               onClick={handleSidebarSettingsClick}
+            />
+            <FeatureCard
+              title="Notificações"
+              description="Crie e envie notificações e alertas para os usuários da plataforma."
+              icon={Bell}
+              onClick={handleManageNotificationsClick}
             />
             <FeatureCard
               title="Gerenciar Permissões"

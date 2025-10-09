@@ -19,6 +19,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/pulse-informatives/new': { name: 'Novo Informativo', parent: '/core/pulse-informatives' },
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core' },
+  '/core/notifications': { name: 'Notificações', parent: '/core' },
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático
