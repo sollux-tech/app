@@ -1,20 +1,38 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useCompany } from '@/components/CompanyContext';
+import { useSession } from '@/components/SessionContextProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import CompanyCard from '@/components/CompanyCard';
 import { Company } from '@/types/company';
 import CompanyFormDialog from '@/components/CompanyFormDialog';
+import { useCompany } from '@/components/CompanyContext';
 
 const CompanyManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const { companies, setSelectedCompany, isLoadingCompanies } = useCompany();
+  const { user } = useSession();
+  const { setSelectedCompany } = useCompany(); // Apenas para limpar a seleção ao excluir
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
+
+  // Query dedicada para buscar APENAS as empresas que o usuário criou
+  const { data: ownedCompanies, isLoading: isLoadingCompanies } = useQuery<Company[], Error>({
+    queryKey: ['ownedCompanies', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   const deleteCompanyMutation = useMutation({
     mutationFn: async (companyId: string) => {
@@ -24,9 +42,11 @@ const CompanyManagementPage: React.FC = () => {
         .eq('id', companyId);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
-      setSelectedCompany(null); // Limpa a empresa selecionada se ela for excluída
+    onSuccess: (_, companyId) => {
+      // Invalida ambas as queries para atualizar a lista de gerenciamento e o seletor global
+      queryClient.invalidateQueries({ queryKey: ['ownedCompanies', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['companies', user?.id] });
+      setSelectedCompany(null);
       showSuccess('Empresa excluída com sucesso!');
     },
     onError: (error: Error) => {
@@ -52,7 +72,7 @@ const CompanyManagementPage: React.FC = () => {
   };
 
   if (isLoadingCompanies) {
-    return <div className="text-center text-gray-600">Carregando empresas...</div>;
+    return <div className="text-center text-gray-600">Carregando suas empresas...</div>;
   }
 
   return (
@@ -66,10 +86,10 @@ const CompanyManagementPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {companies.length === 0 ? (
+            {ownedCompanies?.length === 0 ? (
               <p className="text-gray-500 col-span-full text-center">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
             ) : (
-              companies.map((company) => (
+              ownedCompanies?.map((company) => (
                 <CompanyCard
                   key={company.id}
                   company={company}

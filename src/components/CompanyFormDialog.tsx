@@ -47,6 +47,18 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
     }
   }, [company, form, open]);
 
+  const mutationOptions = {
+    onSuccess: () => {
+      // Invalida ambas as queries para atualizar a lista de gerenciamento e o seletor global
+      queryClient.invalidateQueries({ queryKey: ['ownedCompanies', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['companies', user?.id] });
+      onOpenChange(false);
+    },
+    onError: (error: Error) => {
+      showError(`Erro: ${error.message}`);
+    },
+  };
+
   const createCompanyMutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
       if (!user?.id) throw new Error("User not authenticated.");
@@ -58,13 +70,10 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
       if (error) throw error;
       return newCompany;
     },
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      mutationOptions.onSuccess();
       showSuccess('Empresa criada com sucesso!');
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      showError(`Erro ao criar empresa: ${error.message}`);
     },
   });
 
@@ -80,13 +89,10 @@ const CompanyFormDialog: React.FC<CompanyFormDialogProps> = ({ open, onOpenChang
       if (error) throw error;
       return updatedCompany;
     },
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      mutationOptions.onSuccess();
       showSuccess('Empresa atualizada com sucesso!');
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      showError(`Erro ao atualizar empresa: ${error.message}`);
     },
   });
 

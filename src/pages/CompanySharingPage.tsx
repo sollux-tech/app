@@ -8,18 +8,25 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UserPlus } from 'lucide-react';
+import { Trash2, UserPlus, Building } from 'lucide-react';
 import { useCompany } from '@/components/CompanyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { CompanyShareResponse, SharedUser } from '@/types/companyShare';
+import { useSession } from '@/components/SessionContextProvider';
+import { Company } from '@/types/company';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
 });
 
+interface SharedWithMeCompany extends Company {
+  owner_name: string;
+}
+
 const CompanySharingPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
   const { selectedCompany } = useCompany();
 
   const form = useForm<{ email: string }>({
@@ -27,6 +34,7 @@ const CompanySharingPage: React.FC = () => {
     defaultValues: { email: '' },
   });
 
+  // Query para buscar usuários com quem a empresa selecionada está compartilhada
   const { data: sharedUsers, isLoading: isLoadingSharedUsers } = useQuery<SharedUser[], Error>({
     queryKey: ['companyShares', selectedCompany?.id],
     queryFn: async () => {
@@ -39,7 +47,7 @@ const CompanySharingPage: React.FC = () => {
       if (error) throw error;
 
       return (data as CompanyShareResponse[]).map(share => {
-        const profile = share.profiles?.[0]; // Get the first profile from the array
+        const profile = Array.isArray(share.profiles) ? share.profiles[0] : share.profiles;
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
@@ -48,6 +56,21 @@ const CompanySharingPage: React.FC = () => {
       });
     },
     enabled: !!selectedCompany,
+  });
+
+  // Query para buscar empresas que foram compartilhadas COMIGO
+  const { data: sharedWithMe, isLoading: isLoadingSharedWithMe } = useQuery<any[], Error>({
+    queryKey: ['sharedWithMe', user?.id],
+    queryFn: async () => {
+        if (!user) return [];
+        const { data, error } = await supabase
+            .from('company_shares')
+            .select('companies(*, profiles(first_name, last_name))')
+            .eq('shared_with_user_id', user.id);
+        if (error) throw error;
+        return data;
+    },
+    enabled: !!user,
   });
 
   const inviteMutation = useMutation({
@@ -88,82 +111,71 @@ const CompanySharingPage: React.FC = () => {
     inviteMutation.mutate(data.email);
   };
 
-  if (!selectedCompany) {
-    return (
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
-        <CardHeader>
-          <CardTitle>Nenhuma Empresa Selecionada</CardTitle>
-          <CardDescription>Por favor, selecione uma empresa na barra lateral para gerenciar o compartilhamento.</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Compartilhar Empresa: <span className="text-sollux-red">{selectedCompany.name}</span></CardTitle>
-          <CardDescription>Convide usuários para colaborar na sua empresa. Eles terão acesso de visualização.</CardDescription>
+          <CardTitle>Compartilhar Minhas Empresas</CardTitle>
+          <CardDescription>Selecione uma empresa na barra lateral e convide usuários para colaborar.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel className="sr-only">Email do usuário</FormLabel>
-                    <FormControl>
-                      <Input placeholder="email@exemplo.com" {...field} className="rounded-lg" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={inviteMutation.isPending} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                <UserPlus className="mr-2 h-4 w-4" /> Convidar
-              </Button>
-            </form>
-          </Form>
+          {!selectedCompany ? (
+            <p className="text-gray-500 text-center py-4">Selecione uma empresa para gerenciar o compartilhamento.</p>
+          ) : (
+            <>
+              <h3 className="font-semibold mb-4 text-sollux-black">
+                Convidar para: <span className="text-sollux-red">{selectedCompany.name}</span>
+              </h3>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4 mb-6">
+                  <FormField control={form.control} name="email" render={({ field }) => (
+                    <FormItem className="flex-1"><FormLabel className="sr-only">Email</FormLabel><FormControl><Input placeholder="email@exemplo.com" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <Button type="submit" disabled={inviteMutation.isPending} className="rounded-lg bg-sollux-red hover:bg-sollux-orange"><UserPlus className="mr-2 h-4 w-4" /> Convidar</Button>
+                </form>
+              </Form>
+              <h4 className="font-semibold mb-2 text-sollux-black">Usuários com Acesso a "{selectedCompany.name}"</h4>
+              <Table>
+                <TableHeader><TableRow><TableHead className="text-sollux-black">Nome</TableHead><TableHead className="text-right text-sollux-black">Ações</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {isLoadingSharedUsers ? (
+                    <TableRow><TableCell colSpan={2} className="text-center">Carregando...</TableCell></TableRow>
+                  ) : sharedUsers && sharedUsers.length > 0 ? (
+                    sharedUsers.map(u => (
+                      <TableRow key={u.id}><TableCell className="font-medium text-sollux-black">{u.full_name}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => removeMutation.mutate(u.id)} disabled={removeMutation.isPending} className="rounded-lg"><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>
+                    ))
+                  ) : (
+                    <TableRow><TableCell colSpan={2} className="text-center text-gray-500">Ninguém com acesso ainda.</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </>
+          )}
         </CardContent>
       </Card>
 
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Usuários com Acesso</CardTitle>
+          <CardTitle>Empresas Compartilhadas Comigo</CardTitle>
+          <CardDescription>Lista de empresas que outros usuários compartilharam com você.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-sollux-black">Nome do Usuário</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
+            <TableHeader><TableRow><TableHead className="text-sollux-black">Nome da Empresa</TableHead><TableHead className="text-sollux-black">Proprietário</TableHead></TableRow></TableHeader>
             <TableBody>
-              {isLoadingSharedUsers ? (
+              {isLoadingSharedWithMe ? (
                 <TableRow><TableCell colSpan={2} className="text-center">Carregando...</TableCell></TableRow>
-              ) : sharedUsers && sharedUsers.length > 0 ? (
-                sharedUsers.map(user => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium text-sollux-black">{user.full_name}</TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeMutation.mutate(user.id)}
-                        disabled={removeMutation.isPending}
-                        className="rounded-lg"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+              ) : sharedWithMe && sharedWithMe.length > 0 ? (
+                sharedWithMe.map(item => {
+                  const company = item.companies;
+                  const ownerProfile = company.profiles;
+                  const ownerName = `${ownerProfile?.first_name || ''} ${ownerProfile?.last_name || ''}`.trim() || 'Desconhecido';
+                  return (
+                    <TableRow key={company.id}><TableCell className="font-medium text-sollux-black">{company.name}</TableCell><TableCell className="text-gray-700">{ownerName}</TableCell></TableRow>
+                  );
+                })
               ) : (
-                <TableRow><TableCell colSpan={2} className="text-center text-gray-500">Ninguém com acesso ainda.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={2} className="text-center text-gray-500">Nenhuma empresa compartilhada com você.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
