@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Building2, Users, Settings, BarChart2, Search } from 'lucide-react';
+import { Building2, Users, Settings, BarChart2, Share2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 const IdPage: React.FC = () => {
@@ -13,7 +13,11 @@ const IdPage: React.FC = () => {
   };
 
   const handleManageUsersClick = () => {
-    navigate('/id/users'); // Navegar para a nova página de gerenciamento de usuários
+    navigate('/id/users');
+  };
+
+  const handleShareCompanyClick = () => {
+    navigate('/id/sharing');
   };
 
   return (
@@ -38,6 +42,12 @@ const IdPage: React.FC = () => {
               description="Adicione e gerencie usuários dentro das suas empresas."
               icon={Users}
               onClick={handleManageUsersClick}
+            />
+            <FeatureCard
+              title="Compartilhar Empresa"
+              description="Convide outros usuários para acessar e colaborar em suas empresas."
+              icon={Share2}
+              onClick={handleShareCompanyClick}
             />
             <FeatureCard
               title="Configurações de ID"

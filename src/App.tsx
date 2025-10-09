@@ -18,6 +18,7 @@ import GlobalSettingsPage from './pages/GlobalSettingsPage';
 import SidebarSettingsPage from './pages/SidebarSettingsPage';
 import NotificationManagementPage from './pages/NotificationManagementPage';
 import AllCompaniesManagementPage from './pages/AllCompaniesManagementPage';
+import CompanySharingPage from './pages/CompanySharingPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -72,6 +73,7 @@ function App() {
                           <Route path="/id" element={<IdPage />} />
                           <Route path="/id/companies" element={<CompanyManagementPage />} />
                           <Route path="/id/users" element={<UserManagementPage />} />
+                          <Route path="/id/sharing" element={<CompanySharingPage />} />
                           <Route path="/connect" element={<Index />} />
                           <Route path="/ops" element={<Index />} /> 
                           <Route path="/core" element={<CorePage />} /> 

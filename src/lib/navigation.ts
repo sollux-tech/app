@@ -11,6 +11,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/id': { name: 'ID' },
   '/id/companies': { name: 'Gerenciar Empresas', parent: '/id' },
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
+  '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
   '/ops': { name: 'OPS' },
   '/core': { name: 'Core' },
