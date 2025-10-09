@@ -2,13 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 import Layout from './components/Layout';
 import Index from './pages/Index';
 import Login from './pages/Login';
-import { SessionContextProvider, useSession } from './components/SessionContextProvider'; // Importar useSession
+import { SessionContextProvider, useSession } from './components/SessionContextProvider';
 import { Toaster } from 'sonner';
 import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
 import UserManagementPage from './pages/UserManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
 import PulsePage from './pages/PulsePage'; 
+import CorePage from './pages/CorePage'; // Importar CorePage
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 
@@ -56,9 +57,9 @@ function App() {
                         <Route path="/id" element={<IdPage />} />
                         <Route path="/id/companies" element={<CompanyManagementPage />} />
                         <Route path="/id/users" element={<UserManagementPage />} />
-                        <Route path="/ops" element={<Index />} /> 
                         <Route path="/connect" element={<Index />} />
-                        <Route path="/core" element={<Index />} />
+                        <Route path="/ops" element={<Index />} /> 
+                        <Route path="/core" element={<CorePage />} /> {/* Usar CorePage aqui */}
                       </Routes>
                     </Layout>
                   </ProtectedRoute>

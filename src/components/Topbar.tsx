@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
-import { useSession } from './SessionContextProvider'; // Importar useSession
+import { useSession } from './SessionContextProvider';
 
 interface TopbarProps {
   className?: string;
@@ -18,7 +18,7 @@ interface TopbarProps {
 const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const { companies, selectedCompany, setSelectedCompany } = useCompany();
-  const { profile } = useSession(); // Obter o perfil do contexto
+  const { profile } = useSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const location = useLocation();
 
@@ -31,13 +31,13 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'ID';
       case '/id/companies':
         return 'ID | EMPRESAS';
-      case '/id/users': // Adicionar título para a nova página
+      case '/id/users':
         return 'ID | USUÁRIOS';
       case '/connect':
         return 'CONNECT';
       case '/ops':
         return 'OPS';
-      case '/core':
+      case '/core': // Adicionar título para a página CORE
         return 'CORE';
       default:
         return 'DASHBOARD';
