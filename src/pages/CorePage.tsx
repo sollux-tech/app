@@ -43,8 +43,8 @@ const CorePage: React.FC = () => {
         <CardContent className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
-              title="Empresas"
-              description="Diagnostique e visualize todas as empresas na plataforma (visão de admin)."
+              title="Diagnóstico de Empresas"
+              description="Visualize todas as empresas na plataforma para fins de diagnóstico (visão de admin)."
               icon={Building2}
               onClick={handleManageAllCompaniesClick}
             />
