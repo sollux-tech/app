@@ -60,7 +60,7 @@ const CorePage: React.FC = () => {
               title="Configurações Globais"
               description="Ajuste as configurações gerais da plataforma."
               icon={Settings}
-              onClick={handleGlobalSettingsClick} {/* Atualizado para navegar */}
+              onClick={handleGlobalSettingsClick}
             />
           </div>
         </CardContent>
