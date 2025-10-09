@@ -38,11 +38,14 @@ const CompanySharingPage: React.FC = () => {
 
       if (error) throw error;
 
-      return (data as CompanyShareResponse[]).map(share => ({
-        id: share.id,
-        user_id: share.shared_with_user_id,
-        full_name: `${share.profiles?.first_name || ''} ${share.profiles?.last_name || ''}`.trim() || 'Usuário sem nome',
-      }));
+      return (data as CompanyShareResponse[]).map(share => {
+        const profile = share.profiles?.[0]; // Get the first profile from the array
+        return {
+          id: share.id,
+          user_id: share.shared_with_user_id,
+          full_name: `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 'Usuário sem nome',
+        };
+      });
     },
     enabled: !!selectedCompany,
   });

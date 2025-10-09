@@ -10,5 +10,5 @@ export interface CompanyShareResponse {
   profiles: {
     first_name: string | null;
     last_name: string | null;
-  } | null;
+  }[] | null; // Changed to handle an array of profiles
 }
