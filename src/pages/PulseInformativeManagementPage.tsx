@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Share2 } from 'lucide-react'; // Importar Eye e Share2
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { PulseInformative } from '@/types/pulseInformative';
@@ -58,6 +58,39 @@ const PulseInformativeManagementPage: React.FC = () => {
     navigate(`/core/pulse-informatives/${informativeId}`);
   };
 
+  const handleViewClick = (informativeId: string) => {
+    // Navegar para a página pública do informativo
+    window.open(`/informative/${informativeId}`, '_blank');
+  };
+
+  const handleShareClick = async (informativeId: string, title: string) => {
+    const shareUrl = `${window.location.origin}/informative/${informativeId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Informativo PULSE: ${title}`,
+          url: shareUrl,
+        });
+        showSuccess('Informativo compartilhado com sucesso!');
+      } catch (shareError: any) {
+        if (shareError.name !== 'AbortError') {
+          console.error('Erro ao compartilhar:', shareError);
+          showError('Erro ao compartilhar informativo.');
+        }
+      }
+    } else {
+      // Fallback para copiar para a área de transferência
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        showSuccess('Link copiado para a área de transferência!');
+      } catch (copyError) {
+        console.error('Erro ao copiar link:', copyError);
+        showError('Erro ao copiar link. Por favor, copie manualmente: ' + shareUrl);
+      }
+    }
+  };
+
   const handleDeleteClick = (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este informativo?')) {
       deleteInformativeMutation.mutate(id);
@@ -88,7 +121,6 @@ const PulseInformativeManagementPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="text-sollux-black">Título</TableHead>
-                {/* <TableHead className="text-sollux-black">Conteúdo</TableHead> REMOVIDO */}
                 <TableHead className="text-sollux-black">Publicado em</TableHead>
                 <TableHead className="text-sollux-black">Criado em</TableHead>
                 <TableHead className="text-right text-sollux-black">Ações</TableHead>
@@ -97,7 +129,7 @@ const PulseInformativeManagementPage: React.FC = () => {
             <TableBody>
               {informatives?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500"> {/* Colspan ajustado */}
+                  <TableCell colSpan={4} className="text-center text-gray-500">
                     Nenhum informativo encontrado.
                   </TableCell>
                 </TableRow>
@@ -105,19 +137,36 @@ const PulseInformativeManagementPage: React.FC = () => {
                 informatives?.map((informative) => (
                   <TableRow key={informative.id}>
                     <TableCell className="font-medium text-sollux-black">{informative.title}</TableCell>
-                    {/* <TableCell className="text-gray-700 max-w-xs truncate" dangerouslySetInnerHTML={{ __html: informative.content }} /> REMOVIDO */}
                     <TableCell className="text-gray-700">
                       {informative.publication_date ? format(new Date(informative.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {format(new Date(informative.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex justify-end items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewClick(informative.id)}
+                        className="text-blue-600 hover:bg-blue-50 rounded-lg"
+                        disabled={isMutating}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleShareClick(informative.id, informative.title)}
+                        className="text-green-600 hover:bg-green-50 rounded-lg"
+                        disabled={isMutating}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(informative.id)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="text-sollux-black hover:bg-gray-100 rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />

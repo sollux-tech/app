@@ -30,6 +30,9 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
     if (location.pathname.startsWith('/core/pulse-informatives/') && location.pathname !== '/core/pulse-informatives') {
       return 'CORE | EDITAR INFORMATIVO';
     }
+    if (location.pathname.startsWith('/informative/')) {
+      return 'INFORMATIVO PÚBLICO'; // Título para a página pública
+    }
     switch (location.pathname) {
       case '/pulse':
         return 'PULSE';

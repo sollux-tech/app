@@ -12,7 +12,8 @@ import PulsePage from './pages/PulsePage';
 import CorePage from './pages/CorePage'; 
 import UserTypeManagementPage from './pages/UserTypeManagementPage'; 
 import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage'; 
-import PulseInformativeFormPage from './pages/PulseInformativeFormPage'; // Importar a nova página de formulário
+import PulseInformativeFormPage from './pages/PulseInformativeFormPage'; 
+import PublicInformativePage from './pages/PublicInformativePage'; // Importar a nova página pública
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 
@@ -49,6 +50,7 @@ function App() {
             <Toaster />
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/informative/:id" element={<PublicInformativePage />} /> {/* Rota pública */}
               <Route
                 path="*"
                 element={
@@ -65,8 +67,8 @@ function App() {
                         <Route path="/core" element={<CorePage />} /> 
                         <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                         <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
-                        <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> {/* Rota para novo */}
-                        <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> {/* Rota para editar */}
+                        <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
+                        <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
                       </Routes>
                     </Layout>
                   </ProtectedRoute>
