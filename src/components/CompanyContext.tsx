@@ -23,10 +23,10 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     queryKey: ['companies', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
+      // A consulta agora depende apenas do RLS para filtrar as empresas corretas (próprias e compartilhadas)
       const { data, error } = await supabase
         .from('companies')
-        .select('*')
-        .eq('user_id', user.id);
+        .select('*');
       if (error) throw error;
       return data;
     },
