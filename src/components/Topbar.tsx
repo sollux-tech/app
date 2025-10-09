@@ -31,7 +31,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
       return 'CORE | EDITAR INFORMATIVO';
     }
     if (location.pathname.startsWith('/informative/')) {
-      return 'INFORMATIVO PÚBLICO'; // Título para a página pública
+      return 'INFORMATIVO PÚBLICO'; 
     }
     switch (location.pathname) {
       case '/pulse':
@@ -52,6 +52,8 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'CORE | TIPOS DE USUÁRIO';
       case '/core/pulse-informatives':
         return 'CORE | INFORMATIVOS PULSE';
+      case '/core/global-settings': // Adicionado título para a nova página
+        return 'CORE | CONFIGURAÇÕES GLOBAIS';
       default:
         return 'DASHBOARD';
     }

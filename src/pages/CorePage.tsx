@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper } from 'lucide-react'; // Importar Newspaper
+import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper } from 'lucide-react'; 
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,10 @@ const CorePage: React.FC = () => {
 
   const handleManagePulseInformativesClick = () => {
     navigate('/core/pulse-informatives');
+  };
+
+  const handleGlobalSettingsClick = () => {
+    navigate('/core/global-settings'); // Navegar para a nova página de Configurações Globais
   };
 
   return (
@@ -56,7 +60,7 @@ const CorePage: React.FC = () => {
               title="Configurações Globais"
               description="Ajuste as configurações gerais da plataforma."
               icon={Settings}
-              onClick={() => alert('Configurações Globais em breve!')}
+              onClick={handleGlobalSettingsClick} {/* Atualizado para navegar */}
             />
           </div>
         </CardContent>
