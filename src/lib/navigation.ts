@@ -18,7 +18,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
   '/core/pulse-informatives/new': { name: 'Novo Informativo', parent: '/core/pulse-informatives' },
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
-  '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core' },
+  '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
 };
