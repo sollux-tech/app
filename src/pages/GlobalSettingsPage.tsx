@@ -1,9 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
 import { LayoutDashboard, Settings } from 'lucide-react'; // Importar ícones relevantes
 
 const GlobalSettingsPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSidebarSettingsClick = () => {
+    navigate('/core/sidebar-settings');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
@@ -19,7 +26,7 @@ const GlobalSettingsPage: React.FC = () => {
               title="Configurações da Barra Lateral"
               description="Ajuste as opções de exibição e comportamento da barra lateral."
               icon={LayoutDashboard} // Ícone representativo para layout/sidebar
-              onClick={() => alert('Configurações da Barra Lateral em breve!')}
+              onClick={handleSidebarSettingsClick}
             />
             {/* Adicione mais FeatureCards para outras configurações globais aqui */}
             <FeatureCard
