@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,9 +20,9 @@ const SidebarSettingsPage: React.FC = () => {
   const [editingItem, setEditingItem] = useState<SidebarNavItem | null>(null);
   const [logoUrl, setLogoUrl] = useState('');
 
-  const { data: sidebarConfig, isLoading, error } = useQuery<SidebarConfig, Error>({
+  const { data: sidebarConfig, isLoading, error } = useQuery({
     queryKey: ['sidebarConfig', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SidebarConfig> => {
       if (!user?.id) throw new Error('Usuário não autenticado.');
       const { data, error } = await supabase
         .from('sidebar_configs')
@@ -33,10 +33,13 @@ const SidebarSettingsPage: React.FC = () => {
       return data;
     },
     enabled: !!user?.id,
-    onSuccess: (data) => {
-      setLogoUrl(data.logo_url || '');
-    },
   });
+
+  useEffect(() => {
+    if (sidebarConfig) {
+      setLogoUrl(sidebarConfig.logo_url || '');
+    }
+  }, [sidebarConfig]);
 
   const sortedNavItems = useMemo(() => {
     return sidebarConfig?.nav_items.sort((a, b) => a.order - b.order) || [];

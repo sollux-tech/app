@@ -1,4 +1,4 @@
-import { Icon as LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 export interface SidebarNavItem {
   id: string;
@@ -23,5 +23,5 @@ export interface SidebarNavItemFormData {
 }
 
 export interface IconMap {
-  [key: string]: LucideIcon;
+  [key: string]: React.ElementType;
 }
