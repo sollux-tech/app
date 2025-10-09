@@ -1,8 +1,6 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import SolluxLogo from '@/components/SolluxLogo';
 
 // Objeto de localização para traduzir a UI de autenticação para Português (Brasil)
 const ptBR = {
@@ -65,15 +63,27 @@ const ptBR = {
 
 const Login = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-sollux-light-gray p-4 bg-gradient-to-br from-gray-100 to-gray-200">
-      <div className="w-full max-w-md">
-        <SolluxLogo />
-        <Card className="bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-sollux-black">Acesse a Plataforma</CardTitle>
-            <CardDescription>Entre com suas credenciais ou crie uma nova conta.</CardDescription>
-          </CardHeader>
-          <CardContent>
+    <div className="min-h-screen w-full flex items-center justify-center bg-sollux-light-gray p-4">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
+        
+        {/* Painel Esquerdo (Visual) */}
+        <div className="relative hidden md:flex flex-col items-center justify-center p-12 bg-gradient-to-br from-sollux-red via-red-500 to-sollux-orange text-white text-center">
+          <div className="absolute top-8 left-8 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <span className="text-white font-bold text-2xl">S</span>
+          </div>
+          <h1 className="text-5xl font-bold leading-tight">Bem-vindo de volta!</h1>
+          <p className="mt-4 text-lg max-w-xs">
+            Acesse sua conta para gerenciar seus negócios com a SOLLUX.
+          </p>
+        </div>
+
+        {/* Painel Direito (Formulário) */}
+        <div className="p-8 md:p-12 flex flex-col justify-center">
+          <div className="w-full max-w-sm mx-auto">
+            <h2 className="text-3xl font-bold text-sollux-black mb-2">Login</h2>
+            <p className="text-gray-600 mb-8">
+              Entre com suas credenciais ou crie uma nova conta.
+            </p>
             <Auth
               supabaseClient={supabase}
               providers={[]}
@@ -99,8 +109,8 @@ const Login = () => {
               theme="light"
               redirectTo={window.location.origin}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
