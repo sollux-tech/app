@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper } from 'lucide-react'; 
+import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard } from 'lucide-react'; 
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,7 +16,11 @@ const CorePage: React.FC = () => {
   };
 
   const handleGlobalSettingsClick = () => {
-    navigate('/core/global-settings'); // Navegar para a nova página de Configurações Globais
+    navigate('/core/global-settings');
+  };
+
+  const handleSidebarSettingsClick = () => {
+    navigate('/core/sidebar-settings');
   };
 
   return (
@@ -42,8 +46,12 @@ const CorePage: React.FC = () => {
               icon={Newspaper}
               onClick={handleManagePulseInformativesClick}
             />
-
-            {/* Outros FeatureCards de exemplo para o CORE */}
+            <FeatureCard
+              title="Config. da Barra Lateral"
+              description="Personalize os ícones, links e a logo da barra de navegação."
+              icon={LayoutDashboard}
+              onClick={handleSidebarSettingsClick}
+            />
             <FeatureCard
               title="Gerenciar Permissões"
               description="Defina e ajuste as permissões de acesso para cada tipo de usuário."

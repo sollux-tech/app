@@ -1,35 +1,18 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  HeartPulse, 
-  Fingerprint, 
-  Link as LinkIcon, 
-  Settings, 
-  Box,
-  X,
-  Building2,
-  ChevronDown
-} from 'lucide-react';
+import { X, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { useCompany } from '@/components/CompanyContext';
-
-interface NavItem {
-  icon: React.ElementType;
-  label: string;
-  to: string;
-}
-
-const navItems: NavItem[] = [
-  { icon: HeartPulse, label: 'PULSE', to: '/pulse' },
-  { icon: Fingerprint, label: 'ID', to: '/id' },
-  { icon: LinkIcon, label: 'CONNECT', to: '/connect' },
-  { icon: Settings, label: 'OPS', to: '/ops' },
-  { icon: Box, label: 'CORE', to: '/core' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useSession } from './SessionContextProvider';
+import { SidebarConfig } from '@/types/sidebar';
+import { getIcon } from '@/lib/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SidebarProps {
   isMobileSheet?: boolean;
@@ -39,6 +22,26 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick }) => {
   const location = useLocation();
   const { companies, selectedCompany, setSelectedCompany, isLoadingCompanies } = useCompany();
+  const { user } = useSession();
+
+  const { data: sidebarConfig, isLoading: isLoadingConfig } = useQuery<SidebarConfig, Error>({
+    queryKey: ['sidebarConfig', user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error('Usuário não autenticado.');
+      const { data, error } = await supabase
+        .from('sidebar_configs')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const navItems = useMemo(() => {
+    return sidebarConfig?.nav_items.sort((a, b) => a.order - b.order) || [];
+  }, [sidebarConfig]);
 
   const handleCompanyChange = (companyId: string) => {
     const company = companies.find(c => c.id === companyId);
@@ -46,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
       setSelectedCompany(company);
     }
     if (onLinkClick) {
-      onLinkClick(); // Fechar o sheet mobile se estiver aberto
+      onLinkClick();
     }
   };
 
@@ -61,43 +64,50 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           </SheetClose>
         )}
 
-        {/* Logo no topo da sidebar */}
-        <div className="flex items-center justify-center h-6 mb-4"> {/* Alterado h-16 para h-10 e adicionado mb-4 */}
-          <div className="w-10 h-10 bg-sollux-red rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">S</span>
-          </div>
+        <div className="flex items-center justify-center h-6 mb-4">
+          {sidebarConfig?.logo_url ? (
+            <img src={sidebarConfig.logo_url} alt="Logo" className="w-10 h-10 object-contain" />
+          ) : (
+            <div className="w-10 h-10 bg-sollux-red rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-xl">S</span>
+            </div>
+          )}
         </div>
 
-        {/* Navegação */}
         <nav className="space-y-2 flex-1 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
-            
-            return (
-              <Tooltip key={item.to}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.to}
-                    onClick={onLinkClick}
-                    className={cn(
-                      "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
-                      "text-gray-300 hover:text-white hover:bg-gray-700",
-                      isActive && "bg-sollux-red text-white font-semibold"
-                    )}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-                  {item.label}
-                </TooltipContent>
-              </Tooltip>
-            );
-          })}
+          {isLoadingConfig ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="w-full h-12 rounded-lg bg-gray-700" />
+            ))
+          ) : (
+            navItems.map((item) => {
+              const Icon = getIcon(item.icon);
+              const isActive = location.pathname.startsWith(item.to) && item.to !== '/';
+              
+              return (
+                <Tooltip key={item.id}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to={item.to}
+                      onClick={onLinkClick}
+                      className={cn(
+                        "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
+                        "text-gray-300 hover:text-white hover:bg-gray-700",
+                        isActive && "bg-sollux-red text-white font-semibold"
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+                    {item.label}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })
+          )}
         </nav>
 
-        {/* Seletor de Empresa - Movido para a parte inferior */}
         <div className="px-2 mt-auto pt-4 border-t border-gray-700">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -107,7 +117,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                 disabled={isLoadingCompanies || companies.length === 0}
               >
                 <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
-                  <Building2 className="h-6 w-6" /> {/* Apenas o ícone */}
+                  <Building2 className="h-6 w-6" />
                 </SelectTrigger>
                 <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
                   {isLoadingCompanies ? (

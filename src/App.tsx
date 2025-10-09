@@ -14,9 +14,11 @@ import UserTypeManagementPage from './pages/UserTypeManagementPage';
 import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage'; 
 import PulseInformativeFormPage from './pages/PulseInformativeFormPage'; 
 import PublicInformativePage from './pages/PublicInformativePage'; 
-import GlobalSettingsPage from './pages/GlobalSettingsPage'; // Importar a nova página
+import GlobalSettingsPage from './pages/GlobalSettingsPage';
+import SidebarSettingsPage from './pages/SidebarSettingsPage'; // Importar a nova página
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
+import { v4 as uuidv4 } from 'uuid'; // Importar uuid
 
 const queryClient = new QueryClient(); 
 
@@ -70,7 +72,8 @@ function App() {
                         <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
                         <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                         <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
-                        <Route path="/core/global-settings" element={<GlobalSettingsPage />} /> {/* Nova rota */}
+                        <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
+                        <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} /> {/* Nova rota */}
                       </Routes>
                     </Layout>
                   </ProtectedRoute>

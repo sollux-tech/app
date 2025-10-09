@@ -52,8 +52,10 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'CORE | TIPOS DE USUÁRIO';
       case '/core/pulse-informatives':
         return 'CORE | INFORMATIVOS PULSE';
-      case '/core/global-settings': // Adicionado título para a nova página
+      case '/core/global-settings':
         return 'CORE | CONFIGURAÇÕES GLOBAIS';
+      case '/core/sidebar-settings': // Adicionado título para a nova página
+        return 'CORE | CONFIG. BARRA LATERAL';
       default:
         return 'DASHBOARD';
     }
