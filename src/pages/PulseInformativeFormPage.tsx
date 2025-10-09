@@ -35,11 +35,10 @@ const PulseInformativeFormPage: React.FC = () => {
   const [editorLoaded, setEditorLoaded] = useState(false);
 
   useEffect(() => {
-    // ReactQuill é carregado no cliente, então precisamos garantir que o ambiente é de navegador
     setEditorLoaded(true);
   }, []);
 
-  const { data: editingInformative, isLoading: isLoadingInformative } = useQuery<PulseInformative, Error>({
+  const { data: editingInformative, isLoading: isLoadingInformative, error: errorInformative } = useQuery<PulseInformative, Error>({
     queryKey: ['pulseInformative', informativeId],
     queryFn: async () => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
@@ -49,10 +48,18 @@ const PulseInformativeFormPage: React.FC = () => {
         .eq('id', informativeId)
         .eq('user_id', user.id)
         .single();
-      if (error) throw error;
+      
+      if (error) {
+        // Handle case where no rows are found (PGRST116) or other errors
+        if (error.code === 'PGRST116') {
+          throw new Error("Informativo não encontrado ou você não tem permissão para editá-lo.");
+        }
+        throw error;
+      }
       return data;
     },
     enabled: isEditing && !!user?.id,
+    retry: false, // Do not retry on error, especially for 404/permission issues
   });
 
   const form = useForm<PulseInformativeFormData>({
@@ -145,6 +152,24 @@ const PulseInformativeFormPage: React.FC = () => {
 
   if (isEditing && isLoadingInformative) {
     return <div className="text-center text-gray-600">Carregando informativo...</div>;
+  }
+
+  if (isEditing && errorInformative) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
+        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-sollux-red">Erro ao Carregar Informativo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700">{errorInformative.message}</p>
+            <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 rounded-lg bg-sollux-red hover:bg-sollux-orange">
+              Voltar para Informativos
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

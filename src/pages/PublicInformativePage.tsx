@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PulseInformative } from '@/types/pulseInformative';
@@ -11,6 +11,7 @@ import { ptBR } from 'date-fns/locale';
 
 const PublicInformativePage: React.FC = () => {
   const { id: informativeId } = useParams<{ id: string }>();
+  const navigate = useNavigate(); // Inicializar useNavigate
 
   const { data: informative, isLoading, error } = useQuery<PulseInformative, Error>({
     queryKey: ['publicInformative', informativeId],
@@ -21,10 +22,17 @@ const PublicInformativePage: React.FC = () => {
         .select('*')
         .eq('id', informativeId)
         .single();
-      if (error) throw error;
+      if (error) {
+        // Handle case where no rows are found (PGRST116)
+        if (error.code === 'PGRST116') {
+          throw new Error("Informativo não encontrado.");
+        }
+        throw error;
+      }
       return data;
     },
     enabled: !!informativeId,
+    retry: false, // Do not retry on error, especially for 404
   });
 
   if (isLoading) {
@@ -44,9 +52,9 @@ const PublicInformativePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-gray-700">Não foi possível carregar o informativo: {error.message}</p>
-            <Link to="/" className="mt-4 inline-flex items-center text-sollux-red hover:underline">
+            <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
-            </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -54,6 +62,8 @@ const PublicInformativePage: React.FC = () => {
   }
 
   if (!informative) {
+    // This case should ideally be caught by the error handler above if single() fails
+    // but as a fallback, if data is null and no error, show not found.
     return (
       <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
         <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
@@ -62,9 +72,9 @@ const PublicInformativePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-gray-700">O informativo que você está procurando não existe ou foi removido.</p>
-            <Link to="/" className="mt-4 inline-flex items-center text-sollux-red hover:underline">
+            <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
-            </Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -84,9 +94,9 @@ const PublicInformativePage: React.FC = () => {
           <div dangerouslySetInnerHTML={{ __html: informative.content }} />
         </CardContent>
         <div className="mt-8 text-center">
-          <Link to="/core/pulse-informatives" className="inline-flex items-center text-sollux-red hover:underline">
+          <Button onClick={() => navigate('/core/pulse-informatives')} className="inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
             <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
-          </Link>
+          </Button>
         </div>
       </Card>
     </div>

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Eye, Share2 } from 'lucide-react'; // Importar Eye e Share2
+import { Plus, Edit, Trash2, Eye, Share2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { PulseInformative } from '@/types/pulseInformative';
@@ -11,11 +11,15 @@ import { useSession } from '@/components/SessionContextProvider';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
+import ShareInformativeDialog from '@/components/ShareInformativeDialog'; // Importar o novo componente
 
 const PulseInformativeManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const navigate = useNavigate();
+
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [informativeToShare, setInformativeToShare] = useState<{ id: string; title: string } | null>(null);
 
   const { data: informatives, isLoading, error } = useQuery<PulseInformative[], Error>({
     queryKey: ['pulseInformatives', user?.id],
@@ -59,36 +63,12 @@ const PulseInformativeManagementPage: React.FC = () => {
   };
 
   const handleViewClick = (informativeId: string) => {
-    // Navegar para a página pública do informativo
     window.open(`/informative/${informativeId}`, '_blank');
   };
 
-  const handleShareClick = async (informativeId: string, title: string) => {
-    const shareUrl = `${window.location.origin}/informative/${informativeId}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Informativo PULSE: ${title}`,
-          url: shareUrl,
-        });
-        showSuccess('Informativo compartilhado com sucesso!');
-      } catch (shareError: any) {
-        if (shareError.name !== 'AbortError') {
-          console.error('Erro ao compartilhar:', shareError);
-          showError('Erro ao compartilhar informativo.');
-        }
-      }
-    } else {
-      // Fallback para copiar para a área de transferência
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        showSuccess('Link copiado para a área de transferência!');
-      } catch (copyError) {
-        console.error('Erro ao copiar link:', copyError);
-        showError('Erro ao copiar link. Por favor, copie manualmente: ' + shareUrl);
-      }
-    }
+  const handleShareClick = (informative: PulseInformative) => {
+    setInformativeToShare({ id: informative.id, title: informative.title });
+    setIsShareDialogOpen(true);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -156,7 +136,7 @@ const PulseInformativeManagementPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleShareClick(informative.id, informative.title)}
+                        onClick={() => handleShareClick(informative)}
                         className="text-green-600 hover:bg-green-50 rounded-lg"
                         disabled={isMutating}
                       >
@@ -188,6 +168,15 @@ const PulseInformativeManagementPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      {informativeToShare && (
+        <ShareInformativeDialog
+          open={isShareDialogOpen}
+          onOpenChange={setIsShareDialogOpen}
+          informativeId={informativeToShare.id}
+          informativeTitle={informativeToShare.title}
+        />
+      )}
     </div>
   );
 };
