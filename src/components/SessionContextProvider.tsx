@@ -2,14 +2,14 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { Profile } from '@/types/profile'; // Importar o tipo Profile
+import { Profile } from '@/types/profile';
 
 interface SessionContextType {
   session: Session | null;
   user: User | null;
-  profile: Profile | null; // Adicionar profile ao contexto
+  profile: Profile | null;
   isLoading: boolean;
-  refetchProfile: () => Promise<void>; // Adicionar função para recarregar o perfil
+  refetchProfile: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -17,7 +17,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null); // Estado para o perfil
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -28,13 +28,11 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       .eq('id', userId)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+    if (error && error.code !== 'PGRST116') {
       console.error('Erro ao buscar perfil do usuário:', error);
       setProfile(null);
-    } else if (data) {
-      setProfile(data);
     } else {
-      setProfile(null);
+      setProfile(data || null);
     }
   };
 
@@ -45,38 +43,57 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const initializeSession = async () => {
       setIsLoading(true);
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
-        if (currentSession?.user) {
-          await fetchUserProfile(currentSession.user.id);
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        setSession(initialSession);
+        const currentUser = initialSession?.user || null;
+        setUser(currentUser);
+        if (currentUser) {
+          await fetchUserProfile(currentUser.id);
         }
-        if (currentSession && window.location.pathname === '/login') {
+        
+        if (!initialSession && window.location.pathname !== '/login') {
+          navigate('/login');
+        } else if (initialSession && window.location.pathname === '/login') {
           navigate('/');
         }
-      } else if (event === 'SIGNED_OUT') {
+      } catch (error) {
+        console.error("Erro ao inicializar a sessão:", error);
         setSession(null);
         setUser(null);
-        setProfile(null); // Limpar perfil ao deslogar
+        setProfile(null);
         navigate('/login');
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    };
 
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }) => {
+    initializeSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setIsLoading(true);
-      setSession(initialSession);
-      setUser(initialSession?.user || null);
-      if (initialSession?.user) {
-        await fetchUserProfile(initialSession.user.id);
-      }
-      setIsLoading(false);
-      if (!initialSession && window.location.pathname !== '/login') {
-        navigate('/login');
-      } else if (initialSession && window.location.pathname === '/login') {
-        navigate('/');
+      try {
+        setSession(currentSession);
+        const currentUser = currentSession?.user || null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          await fetchUserProfile(currentUser.id);
+        } else {
+          setProfile(null);
+        }
+
+        if (event === 'SIGNED_OUT') {
+          navigate('/login');
+        } else if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error("Erro na mudança de estado de autenticação:", error);
+      } finally {
+        setIsLoading(false);
       }
     });
 
