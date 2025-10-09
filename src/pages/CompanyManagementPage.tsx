@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useMemo } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -14,25 +14,16 @@ import { useCompany } from '@/components/CompanyContext';
 const CompanyManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { setSelectedCompany } = useCompany();
+  const { companies, isLoadingCompanies, setSelectedCompany } = useCompany();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
 
-  // Query to fetch companies owned by the user
-  const { data: ownedCompanies, isLoading: isLoadingCompanies } = useQuery<Company[], Error>({
-    queryKey: ['ownedCompanies', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*')
-        .eq('user_id', user.id);
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
+  // Filtra a lista de empresas do contexto para mostrar apenas as que o usuário é proprietário
+  const ownedCompanies = useMemo(() => {
+    if (!user?.id || !companies) return [];
+    return companies.filter(company => company.user_id === user.id);
+  }, [companies, user?.id]);
 
   const deleteCompanyMutation = useMutation({
     mutationFn: async (companyId: string) => {
@@ -42,8 +33,8 @@ const CompanyManagementPage: React.FC = () => {
         .eq('id', companyId);
       if (error) throw error;
     },
-    onSuccess: (_, companyId) => {
-      queryClient.invalidateQueries({ queryKey: ['ownedCompanies', user?.id] });
+    onSuccess: () => {
+      // Invalida a query principal no contexto para que toda a UI seja atualizada
       queryClient.invalidateQueries({ queryKey: ['companies', user?.id] });
       setSelectedCompany(null);
       showSuccess('Empresa excluída com sucesso!');
@@ -85,10 +76,10 @@ const CompanyManagementPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ownedCompanies?.length === 0 ? (
+            {ownedCompanies.length === 0 ? (
               <p className="text-gray-500 col-span-full text-center">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
             ) : (
-              ownedCompanies?.map((company) => (
+              ownedCompanies.map((company) => (
                 <CompanyCard
                   key={company.id}
                   company={company}
