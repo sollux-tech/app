@@ -19,9 +19,16 @@ import SidebarSettingsPage from './pages/SidebarSettingsPage';
 import NotificationManagementPage from './pages/NotificationManagementPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
-import ErrorBoundary from './components/ErrorBoundary'; // Importar o Error Boundary
+import ErrorBoundary from './components/ErrorBoundary';
 
-const queryClient = new QueryClient(); 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Desativa a busca de dados ao focar na janela para maior estabilidade
+      retry: 1, // Tenta novamente apenas 1 vez em caso de erro
+    },
+  },
+});
 
 // Componente para proteger rotas, agora mais robusto
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
