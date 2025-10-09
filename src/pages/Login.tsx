@@ -90,7 +90,7 @@ const Login = () => {
                       inputText: '#212121', // SOLLUX Black for text
                     },
                     radii: {
-                      borderRadius: '0.75rem', // rounded-lg
+                      inputBorderRadius: '0.75rem', // rounded-lg
                       buttonBorderRadius: '0.75rem',
                     },
                   },
