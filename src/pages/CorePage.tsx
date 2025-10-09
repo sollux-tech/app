@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Bell, Building2 } from 'lucide-react'; 
+import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Bell, Building2, Wrench } from 'lucide-react'; 
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +25,10 @@ const CorePage: React.FC = () => {
 
   const handleManageAllCompaniesClick = () => {
     navigate('/core/all-companies');
+  };
+
+  const handleDataDoctorClick = () => {
+    navigate('/core/data-doctor');
   };
 
   return (
@@ -61,6 +65,12 @@ const CorePage: React.FC = () => {
               description="Crie e envie notificações e alertas para os usuários da plataforma."
               icon={Bell}
               onClick={handleManageNotificationsClick}
+            />
+            <FeatureCard
+              title="Diagnóstico de Dados"
+              description="Verifique e corrija problemas de associação de dados da sua conta."
+              icon={Wrench}
+              onClick={handleDataDoctorClick}
             />
             <FeatureCard
               title="Gerenciar Permissões"

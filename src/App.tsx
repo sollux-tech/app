@@ -22,6 +22,7 @@ import CompanySharingPage from './pages/CompanySharingPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
 import React from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
+import DataDoctorPage from './pages/DataDoctorPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,7 @@ function App() {
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
+                          <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                         </Routes>
                       </Layout>
                     </ProtectedRoute>
