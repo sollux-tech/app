@@ -1,7 +1,7 @@
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Profile } from '@/types/profile';
 
 interface SessionContextType {
@@ -20,8 +20,9 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = useCallback(async (userId: string) => {
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -34,71 +35,61 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     } else {
       setProfile(data || null);
     }
-  };
+  }, []);
 
-  const refetchProfile = async () => {
-    if (user?.id) {
-      await fetchUserProfile(user.id);
+  const refetchProfile = useCallback(async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser?.id) {
+      await fetchUserProfile(currentUser.id);
     }
-  };
+  }, [fetchUserProfile]);
 
   useEffect(() => {
-    const initializeSession = async () => {
-      setIsLoading(true);
-      try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        setSession(initialSession);
-        const currentUser = initialSession?.user || null;
-        setUser(currentUser);
-        if (currentUser) {
-          await fetchUserProfile(currentUser.id);
-        }
-        
-        if (!initialSession && window.location.pathname !== '/login') {
-          navigate('/login');
-        } else if (initialSession && window.location.pathname === '/login') {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error("Erro ao inicializar a sessão:", error);
-        setSession(null);
-        setUser(null);
+    // Set loading to true initially. The listener below will set it to false
+    // once the initial session is fetched.
+    setIsLoading(true);
+
+    // The onAuthStateChange listener is the single source of truth.
+    // It fires immediately with the current session, so we don't need a separate getSession() call.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser) {
+        await fetchUserProfile(currentUser.id);
+      } else {
         setProfile(null);
-        navigate('/login');
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    initializeSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      setIsLoading(true);
-      try {
-        setSession(currentSession);
-        const currentUser = currentSession?.user || null;
-        setUser(currentUser);
-        
-        if (currentUser) {
-          await fetchUserProfile(currentUser.id);
-        } else {
-          setProfile(null);
-        }
-
-        if (event === 'SIGNED_OUT') {
-          navigate('/login');
-        } else if (event === 'SIGNED_IN' && window.location.pathname === '/login') {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error("Erro na mudança de estado de autenticação:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      
+      // This is crucial. The listener runs once on load, and then on subsequent changes.
+      // We set loading to false after the first check is complete.
+      setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [fetchUserProfile]);
+
+  useEffect(() => {
+    // This effect handles navigation based on session state.
+    // It waits until the initial loading is complete.
+    if (isLoading) {
+      return;
+    }
+
+    const isPublicInformativePage = location.pathname.startsWith('/informative/');
+    const isLoginPage = location.pathname === '/login';
+
+    if (!session && !isLoginPage && !isPublicInformativePage) {
+      // If no session, not on login, and not on a public page, redirect to login.
+      navigate('/login', { replace: true });
+    } else if (session && isLoginPage) {
+      // If there is a session and user is on the login page, redirect to home.
+      navigate('/', { replace: true });
+    }
+  }, [session, isLoading, navigate, location.pathname]);
 
   return (
     <SessionContext.Provider value={{ session, user, profile, isLoading, refetchProfile }}>
