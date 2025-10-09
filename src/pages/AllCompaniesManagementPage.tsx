@@ -22,7 +22,7 @@ const AllCompaniesManagementPage: React.FC = () => {
     },
   });
 
-  const { data: profiles, isLoading: isLoadingProfiles, error: errorProfiles } = useQuery<Profile[], Error>({
+  const { data: profiles, isLoading: isLoadingProfiles, error: errorProfiles } = useQuery<Pick<Profile, 'id' | 'first_name' | 'last_name'>[], Error>({
     queryKey: ['allProfiles'],
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles').select('id, first_name, last_name');
