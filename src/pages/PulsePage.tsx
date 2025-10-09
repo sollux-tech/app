@@ -3,16 +3,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { PulseInformative } from '@/types/pulseInformative';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const PulsePage: React.FC = () => {
+  const today = format(new Date(), 'yyyy-MM-dd');
+
+  const { data: informativeToday, isLoading: isLoadingInformative, error: errorInformative } = useQuery<PulseInformative | null, Error>({
+    queryKey: ['pulseInformativeToday', today],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pulse_informatives')
+        .select('*')
+        .eq('publication_date', today)
+        .single(); // Tenta buscar um único informativo para a data de hoje
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found
+        throw error;
+      }
+      return data || null;
+    },
+  });
+
   return (
     <div className="space-y-6">
-      {/* Header - Removido para o título principal ficar na Topbar */}
-      {/* <div>
-        <h1 className="text-3xl font-bold text-sollux-black">SOLLUX PULSE</h1>
-        <p className="text-gray-600 mt-2">Monitore a saúde e o desempenho da sua empresa em tempo real.</p>
-      </div> */}
-
       {/* Campos de entrada inspirados na imagem */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
@@ -23,6 +42,42 @@ const PulsePage: React.FC = () => {
           <Input placeholder="Outro campo de entrada..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
         </Card>
       </div>
+
+      {/* Informativo PULSE do Dia */}
+      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-sollux-black uppercase font-bold">Informativo PULSE do Dia</CardTitle>
+          <Link to="/core/pulse-informatives">
+            <Button variant="outline" size="sm" className="rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100">
+              Ver Todos
+            </Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          {isLoadingInformative ? (
+            <p className="text-gray-600 text-center">Carregando informativo...</p>
+          ) : errorInformative ? (
+            <p className="text-red-600 text-center">Erro ao carregar informativo: {errorInformative.message}</p>
+          ) : informativeToday ? (
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3>
+              <p className="text-sm text-gray-500">
+                Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+              </p>
+              <div className="prose max-w-none text-sollux-black" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
+              <div className="mt-4 text-right">
+                <Link to={`/informative/${informativeToday.id}`}>
+                  <Button variant="link" className="text-sollux-red hover:underline">
+                    Ler na íntegra
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-600 text-center">Nenhum informativo PULSE publicado para hoje.</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Ajustado para 3 colunas */}
