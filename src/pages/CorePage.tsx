@@ -2,13 +2,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog } from 'lucide-react';
+import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper } from 'lucide-react'; // Importar Newspaper
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleManageUserTypesClick = () => {
     navigate('/core/user-types');
+  };
+
+  const handleManagePulseInformativesClick = () => {
+    navigate('/core/pulse-informatives');
   };
 
   return (
@@ -27,6 +31,12 @@ const CorePage: React.FC = () => {
               description="Crie e gerencie os diferentes tipos de usuários da plataforma."
               icon={UserCog}
               onClick={handleManageUserTypesClick}
+            />
+            <FeatureCard
+              title="Informativos PULSE"
+              description="Cadastre e gerencie os informativos para os usuários do PULSE."
+              icon={Newspaper}
+              onClick={handleManagePulseInformativesClick}
             />
 
             {/* Outros FeatureCards de exemplo para o CORE */}

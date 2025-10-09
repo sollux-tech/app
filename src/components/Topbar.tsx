@@ -39,8 +39,10 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         return 'OPS';
       case '/core':
         return 'CORE';
-      case '/core/user-types': // Adicionar título para a nova página
+      case '/core/user-types':
         return 'CORE | TIPOS DE USUÁRIO';
+      case '/core/pulse-informatives': // Adicionar título para a nova página
+        return 'CORE | INFORMATIVOS PULSE';
       default:
         return 'DASHBOARD';
     }
