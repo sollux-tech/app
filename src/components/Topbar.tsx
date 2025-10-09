@@ -19,16 +19,21 @@ interface TopbarProps {
   className?: string;
 }
 
+interface UserNotification extends Notification {
+  is_read: boolean;
+}
+
 const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const isMobile = useIsMobile();
   const { selectedCompany } = useCompany();
   const { user, profile } = useSession();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const location = useLocation();
   const queryClient = useQueryClient();
 
   const { data: notifications } = useQuery<Notification[], Error>({
-    queryKey: ['userNotifications', user?.id],
+    queryKey: ['notifications', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('notifications')
@@ -40,11 +45,24 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
     enabled: !!user?.id,
   });
 
-  // Real-time subscription for new notifications
+  const { data: readNotifications } = useQuery<{ notification_id: string }[], Error>({
+    queryKey: ['notification_reads', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('notification_reads')
+        .select('notification_id')
+        .eq('user_id', user.id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user?.id,
+  });
+
   useEffect(() => {
     const channel = supabase.channel('public:notifications')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, () => {
-        queryClient.invalidateQueries({ queryKey: ['userNotifications', user?.id] });
+        queryClient.invalidateQueries({ queryKey: ['notifications', user?.id] });
       })
       .subscribe();
 
@@ -53,21 +71,49 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
     };
   }, [queryClient, user?.id]);
 
-  const userNotifications = useMemo(() => {
+  const userNotifications = useMemo((): UserNotification[] => {
     if (!notifications || !user) return [];
-    return notifications.filter(notification => {
-      if (notification.target_type === 'all') {
-        return true;
-      }
-      if (notification.target_type === 'users' && notification.target_user_ids?.includes(user.id)) {
-        return true;
-      }
-      if (notification.target_type === 'companies' && selectedCompany && notification.target_company_ids?.includes(selectedCompany.id)) {
-        return true;
-      }
-      return false;
-    });
-  }, [notifications, user, selectedCompany]);
+    const readIds = new Set(readNotifications?.map(r => r.notification_id));
+    
+    return notifications
+      .filter(notification => {
+        if (notification.target_type === 'all') return true;
+        if (notification.target_type === 'users' && notification.target_user_ids?.includes(user.id)) return true;
+        if (notification.target_type === 'companies' && selectedCompany && notification.target_company_ids?.includes(selectedCompany.id)) return true;
+        return false;
+      })
+      .map(notification => ({
+        ...notification,
+        is_read: readIds.has(notification.id),
+      }));
+  }, [notifications, user, selectedCompany, readNotifications]);
+
+  const unreadCount = useMemo(() => {
+    return userNotifications.filter(n => !n.is_read).length;
+  }, [userNotifications]);
+
+  const markNotificationsAsRead = async () => {
+    const unreadIds = userNotifications.filter(n => !n.is_read).map(n => n.id);
+    if (unreadIds.length === 0 || !user) return;
+
+    const recordsToInsert = unreadIds.map(id => ({
+      notification_id: id,
+      user_id: user.id,
+    }));
+
+    const { error } = await supabase.from('notification_reads').insert(recordsToInsert);
+    if (error) {
+      console.error("Erro ao marcar notificações como lidas:", error);
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['notification_reads', user?.id] });
+    }
+  };
+
+  useEffect(() => {
+    if (isPopoverOpen) {
+      markNotificationsAsRead();
+    }
+  }, [isPopoverOpen]);
 
   const getPageTitle = () => {
     if (location.pathname.startsWith('/core/pulse-informatives/new')) return 'CORE | NOVO INFORMATIVO';
@@ -112,10 +158,10 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Popover>
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="relative text-gray-600 hover:bg-gray-100 rounded-lg">
-                {userNotifications.length > 0 && (
+                {unreadCount > 0 && (
                   <div className="w-3 h-3 bg-sollux-red rounded-full absolute -top-1 -right-1 border-2 border-white"></div>
                 )}
                 <Bell className="h-5 w-5" />
@@ -127,7 +173,10 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
                 {userNotifications.length > 0 ? (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {userNotifications.map(notification => (
-                      <div key={notification.id} className="p-3 rounded-lg border border-gray-200 bg-white/50">
+                      <div key={notification.id} className={cn(
+                        "p-3 rounded-lg border border-gray-200 bg-white/50 transition-opacity",
+                        notification.is_read && "opacity-60"
+                      )}>
                         <p className="font-semibold text-sollux-black">{notification.title}</p>
                         <p className="text-sm text-gray-700">{notification.message}</p>
                         <p className="text-xs text-gray-500 mt-1 text-right">
