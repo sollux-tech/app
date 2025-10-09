@@ -19,10 +19,6 @@ const CorePage: React.FC = () => {
     navigate('/core/global-settings');
   };
 
-  const handleSidebarSettingsClick = () => {
-    navigate('/core/sidebar-settings');
-  };
-
   const handleManageNotificationsClick = () => {
     navigate('/core/notifications');
   };
@@ -59,12 +55,6 @@ const CorePage: React.FC = () => {
               description="Cadastre e gerencie os informativos para os usuários do PULSE."
               icon={Newspaper}
               onClick={handleManagePulseInformativesClick}
-            />
-            <FeatureCard
-              title="Config. da Barra Lateral"
-              description="Personalize os ícones, links e a logo da barra de navegação."
-              icon={LayoutDashboard}
-              onClick={handleSidebarSettingsClick}
             />
             <FeatureCard
               title="Notificações"
