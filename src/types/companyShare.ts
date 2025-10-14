@@ -7,8 +7,8 @@ export interface SharedUser {
 export interface CompanyShareResponse {
   id: string;
   shared_with_user_id: string;
-  profiles: {
+  profiles: { // Corrigido para ser um objeto, pois a relação é um-para-um
     first_name: string | null;
     last_name: string | null;
-  }[] | null; // Changed to handle an array of profiles
+  } | null;
 }

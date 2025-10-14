@@ -41,15 +41,16 @@ const CompanySharingPage: React.FC = () => {
     queryKey: ['companyShares', selectedCompany?.id],
     queryFn: async () => {
       if (!selectedCompany) return [];
+      // Consulta ajustada para ser explícita sobre a relação com a tabela de perfis
       const { data, error } = await supabase
         .from('company_shares')
-        .select('id, shared_with_user_id, profiles(first_name, last_name)')
+        .select('id, shared_with_user_id, profiles!shared_with_user_id(first_name, last_name)')
         .eq('company_id', selectedCompany.id);
 
       if (error) throw error;
 
       return (data as CompanyShareResponse[]).map(share => {
-        const profile = Array.isArray(share.profiles) ? share.profiles[0] : share.profiles;
+        const profile = share.profiles;
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
