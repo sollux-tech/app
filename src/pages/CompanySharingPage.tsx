@@ -83,7 +83,7 @@ const CompanySharingPage: React.FC = () => {
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
-          full_name: fullName || `ID: ${share.shared_with_user_id} (Perfil Vazio)`, // Fallback mais descritivo
+          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`, // Fallback mais descritivo
         };
       });
     },
