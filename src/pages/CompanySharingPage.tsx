@@ -246,10 +246,10 @@ const CompanySharingPage: React.FC = () => {
                 <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
-                  const company = item.companies; // Agora 'company' é o objeto CompanyWithProfile ou null
-                  if (!company) { 
+                  const company = item.companies[0]; // Acessar o primeiro item do array
+                  if (!company) { // Adicionar esta verificação
                     console.warn(`DEBUG: Empresa não encontrada para o compartilhamento ID: ${item.id}`);
-                    return null; 
+                    return null; // Pular este item se a empresa não for encontrada
                   }
                   const ownerProfile = company.profiles;
                   const ownerName = `${ownerProfile?.first_name || ''} ${ownerProfile?.last_name || ''}`.trim() || 'Desconhecido';
