@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { LayoutDashboard, Settings } from 'lucide-react'; // Importar ícones relevantes
+import { LayoutDashboard, Settings, Briefcase, FileText, Laptop2 } from 'lucide-react';
 
 const GlobalSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,10 +25,27 @@ const GlobalSettingsPage: React.FC = () => {
             <FeatureCard
               title="Configurações da Barra Lateral"
               description="Ajuste as opções de exibição e comportamento da barra lateral."
-              icon={LayoutDashboard} // Ícone representativo para layout/sidebar
+              icon={LayoutDashboard}
               onClick={handleSidebarSettingsClick}
             />
-            {/* Adicione mais FeatureCards para outras configurações globais aqui */}
+            <FeatureCard
+              title="Jobs - Área/Setor"
+              description="Gerencie as áreas e setores para as vagas de emprego."
+              icon={Briefcase}
+              onClick={() => navigate('/core/global-settings/job-sectors')}
+            />
+            <FeatureCard
+              title="Jobs - Tipo de Contrato"
+              description="Gerencie os tipos de contrato (CLT, PJ, etc.)."
+              icon={FileText}
+              onClick={() => navigate('/core/global-settings/contract-types')}
+            />
+            <FeatureCard
+              title="Jobs - Modelo de Trabalho"
+              description="Gerencie os modelos de trabalho (Remoto, Híbrido, etc.)."
+              icon={Laptop2}
+              onClick={() => navigate('/core/global-settings/work-models')}
+            />
             <FeatureCard
               title="Outras Configurações"
               description="Gerencie outras configurações importantes da plataforma."
