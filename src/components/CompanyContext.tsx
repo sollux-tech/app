@@ -23,8 +23,10 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     queryKey: ['companies', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      // Usar a função RPC para buscar empresas próprias e compartilhadas de forma explícita
-      const { data, error } = await supabase.rpc('get_user_companies');
+      // Alterado de RPC para uma consulta direta. O RLS cuidará de retornar as empresas corretas (próprias e compartilhadas).
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*');
       if (error) throw error;
       return data;
     },
