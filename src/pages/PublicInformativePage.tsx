@@ -87,7 +87,7 @@ const PublicInformativePage: React.FC = () => {
         <CardHeader className="text-center pb-6">
           <CardTitle className="text-4xl font-bold text-sollux-black mb-2">{informative.title}</CardTitle>
           <CardDescription className="text-gray-600">
-            Publicado em: {informative.publication_date ? format(new Date(informative.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+            Publicado em: {informative.publication_date ? format(new Date(informative.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
           </CardDescription>
         </CardHeader>
         <CardContent className="prose prose-lg max-w-none text-sollux-black">

@@ -118,7 +118,7 @@ const PulseInformativeManagementPage: React.FC = () => {
                   <TableRow key={informative.id}>
                     <TableCell className="font-medium text-sollux-black">{informative.title}</TableCell>
                     <TableCell className="text-gray-700">
-                      {informative.publication_date ? format(new Date(informative.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+                      {informative.publication_date ? format(new Date(informative.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {format(new Date(informative.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}

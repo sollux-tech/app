@@ -62,7 +62,7 @@ const PulsePage: React.FC = () => {
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3>
               <p className="text-sm text-gray-500">
-                Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+                Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
               </p>
               <div className="prose max-w-none text-sollux-black" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
               <div className="mt-4 text-right">
