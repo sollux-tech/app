@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProfileFormData } from '@/types/profile';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query'; // Importar useQueryClient
 
 const formSchema = z.object({
   first_name: z.string().min(1, { message: 'O primeiro nome é obrigatório.' }),
@@ -24,6 +25,7 @@ const formSchema = z.object({
 
 const UserManagementPage: React.FC = () => {
   const { user, profile, isLoading, refetchProfile } = useSession();
+  const queryClient = useQueryClient(); // Inicializar queryClient
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(formSchema),
@@ -79,6 +81,7 @@ const UserManagementPage: React.FC = () => {
 
       showSuccess('Perfil atualizado com sucesso!');
       refetchProfile(); // Recarregar o perfil para atualizar o contexto
+      queryClient.invalidateQueries({ queryKey: ['profiles'] }); // Invalida a query de perfis para atualizar em outros componentes
     } catch (error: any) {
       showError(`Erro ao atualizar perfil: ${error.message}`);
       console.error('Erro ao atualizar perfil:', error);
