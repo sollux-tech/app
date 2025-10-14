@@ -15,6 +15,8 @@ interface DatePickerProps {
 }
 
 const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "Selecione uma data", disabled = false }) => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -37,6 +39,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "S
           onSelect={setDate}
           initialFocus
           locale={ptBR} // Definir o locale para português
+          captionLayout="dropdown-buttons"
+          fromYear={currentYear - 100}
+          toYear={currentYear}
         />
       </PopoverContent>
     </Popover>
