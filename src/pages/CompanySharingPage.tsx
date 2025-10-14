@@ -18,7 +18,7 @@ import { Company } from '@/types/company';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label'; // Importar o componente Label
+import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -27,7 +27,7 @@ const formSchema = z.object({
 const CompanySharingPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { companies, isLoadingCompanies } = useCompany(); // Pega todas as empresas (próprias e compartilhadas)
+  const { companies, isLoadingCompanies } = useCompany();
 
   const [companyToManageSharing, setCompanyToManageSharing] = useState<Company | null>(null);
 
@@ -36,13 +36,11 @@ const CompanySharingPage: React.FC = () => {
     defaultValues: { email: '' },
   });
 
-  // Filtra apenas as empresas que o usuário logado é proprietário
   const ownedCompanies = useMemo(() => {
     if (!user?.id || !companies) return [];
     return companies.filter(company => company.user_id === user.id);
   }, [companies, user?.id]);
 
-  // Define a primeira empresa própria como padrão para gerenciamento, se houver
   useEffect(() => {
     if (ownedCompanies.length > 0 && !companyToManageSharing) {
       setCompanyToManageSharing(ownedCompanies[0]);
@@ -55,34 +53,43 @@ const CompanySharingPage: React.FC = () => {
   const { data: sharedUsers, isLoading: isLoadingSharedUsers, error: sharedUsersError } = useQuery<SharedUser[], Error>({
     queryKey: ['companyShares', companyToManageSharing?.id],
     queryFn: async (): Promise<SharedUser[]> => {
-      if (!companyToManageSharing) {
-        console.log('DEBUG: companyToManageSharing é nulo, pulando query de sharedUsers.');
-        return [];
-      }
-      console.log('DEBUG: Executando query para sharedUsers para companyId:', companyToManageSharing.id);
-      const { data, error } = await supabase
+      if (!companyToManageSharing) return [];
+
+      // Buscar os shares da empresa
+      const { data: shares, error: sharesError } = await supabase
         .from('company_shares')
-        .select('id, shared_with_user_id, profiles(first_name, last_name)')
+        .select('id, shared_with_user_id')
         .eq('company_id', companyToManageSharing.id);
 
-      if (error) {
-        console.error('DEBUG: Erro na query de sharedUsers:', error);
-        showError(`Erro ao carregar usuários compartilhados: ${error.message}`);
-        throw error; // Re-throw para que o useQuery marque como erro
+      if (sharesError) {
+        showError(`Erro ao carregar compartilhamentos: ${sharesError.message}`);
+        throw sharesError;
       }
 
-      console.log('DEBUG: Dados brutos de compartilhamento (sharedUsers):', data);
+      if (!shares || shares.length === 0) return [];
 
-      return data.map(share => {
-        const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
-        const firstName = profile?.first_name || '';
-        const lastName = profile?.last_name || '';
-        const fullName = `${firstName} ${lastName}`.trim();
+      // Extrair os IDs dos usuários compartilhados
+      const sharedUserIds = shares.map(share => share.shared_with_user_id);
 
+      // Buscar os perfis desses usuários
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', sharedUserIds);
+
+      if (profilesError) {
+        showError(`Erro ao carregar perfis: ${profilesError.message}`);
+        throw profilesError;
+      }
+
+      // Mapear os shares com os perfis
+      return shares.map(share => {
+        const profile = profiles?.find(p => p.id === share.shared_with_user_id);
+        const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || `ID: ${share.shared_with_user_id}`;
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
-          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`, // Fallback mais descritivo
+          full_name: fullName,
         };
       });
     },
@@ -93,19 +100,36 @@ const CompanySharingPage: React.FC = () => {
   const { data: sharedWithMe, isLoading: isLoadingSharedWithMe, error: sharedWithMeError } = useQuery<CompanyShareWithCompanyAndProfile[], Error>({
     queryKey: ['sharedWithMe', user?.id],
     queryFn: async (): Promise<CompanyShareWithCompanyAndProfile[]> => {
-        if (!user) return [];
-        const { data, error } = await supabase
-            .from('company_shares')
-            .select('id, shared_with_user_id, companies(*, profiles(first_name, last_name))') // Incluindo 'id' e 'shared_with_user_id' para corresponder à interface
-            .eq('shared_with_user_id', user.id);
-        if (error) {
-          console.error('DEBUG: Erro na query de sharedWithMe:', error);
-          showError(`Erro ao carregar empresas compartilhadas com você: ${error.message}`);
-          throw error; // Re-throw para que o useQuery marque como erro
-        }
-        console.log('DEBUG: Dados brutos de compartilhamento (sharedWithMe):', data);
-        // Usar asserção de tipo para garantir que o TypeScript entenda a estrutura
-        return data as CompanyShareWithCompanyAndProfile[];
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('company_shares')
+        .select(`
+          id,
+          shared_with_user_id,
+          companies (
+            id,
+            user_id,
+            name,
+            created_at,
+            profiles (
+              first_name,
+              last_name
+            )
+          )
+        `)
+        .eq('shared_with_user_id', user.id);
+
+      if (error) {
+        showError(`Erro ao carregar empresas compartilhadas: ${error.message}`);
+        throw error;
+      }
+
+      return data.map(item => ({
+        id: item.id,
+        shared_with_user_id: item.shared_with_user_id,
+        companies: item.companies,
+      }));
     },
     enabled: !!user,
   });
@@ -246,10 +270,9 @@ const CompanySharingPage: React.FC = () => {
                 <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
-                  const company = item.companies[0]; // Acessar o primeiro item do array
-                  if (!company) { // Adicionar esta verificação
-                    console.warn(`DEBUG: Empresa não encontrada para o compartilhamento ID: ${item.id}`);
-                    return null; // Pular este item se a empresa não for encontrada
+                  const company = item.companies;
+                  if (!company) { 
+                    return null; 
                   }
                   const ownerProfile = company.profiles;
                   const ownerName = `${ownerProfile?.first_name || ''} ${ownerProfile?.last_name || ''}`.trim() || 'Desconhecido';
