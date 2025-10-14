@@ -23,6 +23,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import DataDoctorPage from './pages/DataDoctorPage';
+import ConnectPage from './pages/ConnectPage';
+import JobsPage from './pages/JobsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,7 +77,8 @@ function App() {
                           <Route path="/id/companies" element={<CompanyManagementPage />} />
                           <Route path="/id/users" element={<UserManagementPage />} />
                           <Route path="/id/sharing" element={<CompanySharingPage />} />
-                          <Route path="/connect" element={<Index />} />
+                          <Route path="/connect" element={<ConnectPage />} />
+                          <Route path="/connect/jobs" element={<JobsPage />} />
                           <Route path="/ops" element={<Index />} /> 
                           <Route path="/core" element={<CorePage />} /> 
                           <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 

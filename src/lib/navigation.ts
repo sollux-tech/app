@@ -13,6 +13,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
+  '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
   '/ops': { name: 'OPS' },
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
