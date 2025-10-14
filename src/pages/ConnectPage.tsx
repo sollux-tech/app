@@ -2,13 +2,18 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, FileText } from 'lucide-react';
 
 const ConnectPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleManageJobsClick = () => {
     navigate('/connect/jobs');
+  };
+
+  const handleFormsClick = () => {
+    // Futuramente será implementada a rota para formulários
+    // navigate('/connect/forms');
   };
 
   return (
@@ -21,15 +26,19 @@ const ConnectPage: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="mt-8">
-          <div className="flex justify-center">
-            <div className="w-full sm:w-1/2 md:w-1/3">
-              <FeatureCard
-                title="Gerenciar Vagas (Jobs)"
-                description="Crie, edite e gerencie as vagas de emprego da sua empresa."
-                icon={Briefcase}
-                onClick={handleManageJobsClick}
-              />
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FeatureCard
+              title="Gerenciar Vagas (Jobs)"
+              description="Crie, edite e gerencie as vagas de emprego da sua empresa."
+              icon={Briefcase}
+              onClick={handleManageJobsClick}
+            />
+            <FeatureCard
+              title="SOLLUX FORM™"
+              description="Crie formulários elegantes e colete respostas com clareza e precisão."
+              icon={FileText}
+              onClick={handleFormsClick}
+            />
           </div>
         </CardContent>
       </Card>
