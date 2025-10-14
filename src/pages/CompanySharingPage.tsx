@@ -122,7 +122,16 @@ const CompanySharingPage: React.FC = () => {
       return data.map(item => ({
         id: item.id,
         shared_with_user_id: item.shared_with_user_id,
-        companies: item.companies,
+        companies: item.companies.map(company => ({
+          id: company.id,
+          user_id: company.user_id,
+          name: company.name,
+          created_at: company.created_at,
+          profiles: company.profiles && company.profiles.length > 0 ? {
+            first_name: company.profiles[0].first_name,
+            last_name: company.profiles[0].last_name
+          } : null
+        }))
       }));
     },
     enabled: !!user,
