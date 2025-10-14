@@ -18,6 +18,7 @@ import { Company } from '@/types/company';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label'; // Importar o componente Label
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -149,7 +150,7 @@ const CompanySharingPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <FormLabel className="text-sollux-black">Minhas Empresas</FormLabel>
+            <Label className="text-sollux-black">Minhas Empresas</Label> {/* Usando Label aqui */}
             <Select
               value={companyToManageSharing?.id || ''}
               onValueChange={(value) => setCompanyToManageSharing(ownedCompanies.find(c => c.id === value) || null)}
