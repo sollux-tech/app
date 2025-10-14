@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Briefcase, Settings } from 'lucide-react';
+import { Briefcase } from 'lucide-react';
 
 const ConnectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,19 +21,15 @@ const ConnectPage: React.FC = () => {
           </p>
         </CardHeader>
         <CardContent className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard
-              title="Gerenciar Vagas (Jobs)"
-              description="Crie, edite e gerencie as vagas de emprego da sua empresa."
-              icon={Briefcase}
-              onClick={handleManageJobsClick}
-            />
-            <FeatureCard
-              title="Configurações do Connect"
-              description="Ajuste as configurações de integração e visibilidade."
-              icon={Settings}
-              onClick={() => alert('Funcionalidade de Configurações do Connect em breve!')}
-            />
+          <div className="flex justify-center">
+            <div className="w-full sm:w-1/2 md:w-1/3">
+              <FeatureCard
+                title="Gerenciar Vagas (Jobs)"
+                description="Crie, edite e gerencie as vagas de emprego da sua empresa."
+                icon={Briefcase}
+                onClick={handleManageJobsClick}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
