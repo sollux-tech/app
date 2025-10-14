@@ -46,12 +46,6 @@ const GlobalSettingsPage: React.FC = () => {
               icon={Laptop2}
               onClick={() => navigate('/core/global-settings/work-models')}
             />
-            <FeatureCard
-              title="Outras Configurações"
-              description="Gerencie outras configurações importantes da plataforma."
-              icon={Settings}
-              onClick={() => alert('Outras Configurações em breve!')}
-            />
           </div>
         </CardContent>
       </Card>
