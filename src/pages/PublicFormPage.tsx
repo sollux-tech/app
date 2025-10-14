@@ -35,31 +35,23 @@ const PublicFormPage: React.FC = () => {
   const { data: formDetail, isLoading, error } = useQuery<FormType, Error>({
     queryKey: ['publicForm', formId],
     queryFn: async () => {
-      console.log('PublicFormPage: queryFn started for formId:', formId);
-      if (!formId) {
-        console.error('PublicFormPage: formId is missing, throwing error.');
-        throw new Error("ID do formulário está faltando.");
-      }
-      try {
-        const { data, error: invokeError } = await supabase.functions.invoke('get-public-form', {
-          body: { form_id: formId },
-        });
-        console.log('PublicFormPage: supabase.functions.invoke result:', { data, invokeError });
-
-        if (invokeError) {
-          console.error('PublicFormPage: Function invocation error:', invokeError);
-          throw new Error(`Function invocation error: ${invokeError.message}`);
-        }
-        if (data.error) {
-          console.error('PublicFormPage: Edge Function returned an error:', data.error);
-          throw new Error(`Edge Function error: ${data.error}`);
-        }
-        console.log('PublicFormPage: Successfully fetched form data.');
-        return data;
-      } catch (e: any) {
-        console.error('PublicFormPage: Error in queryFn:', e);
-        throw e;
-      }
+      console.log('PublicFormPage: queryFn IS RUNNING for formId:', formId); // Log de teste
+      // Retorna um objeto fictício para ver se o componente renderiza
+      return { 
+        id: formId || 'dummy-id', 
+        company_id: 'dummy-company-id',
+        user_id: 'dummy-user-id',
+        title: 'Formulário de Teste (Fictício)', 
+        description: 'Este é um formulário de teste para depuração.', 
+        status: 'published', 
+        questions: [
+          { id: 'q1', type: 'text', title: 'Qual é o seu nome?', required: true },
+          { id: 'q2', type: 'email', title: 'Qual é o seu e-mail?', required: true },
+        ], 
+        response_count: 0, 
+        created_at: new Date().toISOString(), 
+        updated_at: new Date().toISOString() 
+      };
     },
     enabled: !!formId,
     retry: false, // Não tentar novamente em caso de erro, especialmente para 404
