@@ -1,12 +1,13 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar } from 'lucide-react'; 
+import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PulseInformative } from '@/types/pulseInformative';
 import { Job } from '@/types/job';
+import { Form as FormType } from '@/types/form'; // Importar o tipo Form
 import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
@@ -54,7 +55,26 @@ const PulsePage: React.FC = () => {
     enabled: !!selectedCompany,
   });
 
-  // Calcular estatísticas
+  // Query para formulários criados nos últimos 30 dias
+  const { data: recentForms, isLoading: isLoadingForms } = useQuery<FormType[], Error>({
+    queryKey: ['recentForms', selectedCompany?.id, thirtyDaysAgo],
+    queryFn: async () => {
+      if (!selectedCompany) return [];
+
+      const { data, error } = await supabase
+        .from('forms')
+        .select('*')
+        .eq('company_id', selectedCompany.id)
+        .gte('created_at', `${thirtyDaysAgo}T00:00:00.000Z`)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedCompany,
+  });
+
+  // Calcular estatísticas de vagas
   const totalJobs = recentJobs?.length || 0;
   const activeJobs = recentJobs?.filter(job => job.status === 'active').length || 0;
   const inactiveJobs = totalJobs - activeJobs;
@@ -64,6 +84,13 @@ const PulsePage: React.FC = () => {
     }
     return sum;
   }, 0) / totalJobs || 0;
+
+  // Calcular estatísticas de formulários
+  const totalForms = recentForms?.length || 0;
+  const publishedForms = recentForms?.filter(form => form.status === 'published').length || 0;
+  const draftForms = totalForms - publishedForms;
+  const totalFormResponses = recentForms?.reduce((sum, form) => sum + (form.response_count || 0), 0) || 0;
+
 
   return (
     <div className="space-y-6">
@@ -203,6 +230,115 @@ const PulsePage: React.FC = () => {
                       <Link to="/connect/jobs">
                         <Button variant="outline" className="text-sollux-black border-sollux-gray hover:bg-gray-100">
                           Ver todas as vagas
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Novo Dashboard de Formulários */}
+      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-sollux-black uppercase font-bold">Dashboard de Formulários</CardTitle>
+            <CardDescription>
+              {selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
+            </CardDescription>
+          </div>
+          {selectedCompany && (
+            <Link to="/connect/forms">
+              <Button variant="outline" size="sm" className="rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100">
+                Gerenciar Formulários
+              </Button>
+            </Link>
+          )}
+        </CardHeader>
+        <CardContent>
+          {!selectedCompany ? (
+            <p className="text-center text-gray-500 py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de formulários.</p>
+          ) : isLoadingForms ? (
+            <p className="text-center text-gray-600">Carregando estatísticas...</p>
+          ) : (
+            <div className="space-y-6">
+              {/* Estatísticas Principais de Formulários */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-900">Total de Formulários</span>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-900">{totalForms}</div>
+                  <p className="text-xs text-blue-700">Últimos 30 dias</p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-900">Formulários Publicados</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-900">{publishedForms}</div>
+                  <p className="text-xs text-green-700">Disponíveis para respostas</p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-900">Formulários em Rascunho</span>
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{draftForms}</div>
+                  <p className="text-xs text-gray-700">Aguardando edição</p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquareText className="h-5 w-5 text-purple-600" />
+                    <span className="text-sm font-medium text-purple-900">Total de Respostas</span>
+                  </div>
+                  <div className="text-2xl font-bold text-purple-900">{totalFormResponses}</div>
+                  <p className="text-xs text-purple-700">Recebidas nos formulários</p>
+                </div>
+              </div>
+
+              {/* Formulários Recentes */}
+              {recentForms && recentForms.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-sollux-black mb-4">Formulários Recentes</h4>
+                  <div className="space-y-3">
+                    {recentForms.slice(0, 5).map((formItem) => (
+                      <div key={formItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex-1">
+                          <h5 className="font-medium text-sollux-black">{formItem.title}</h5>
+                          <p className="text-sm text-gray-600">
+                            {format(new Date(formItem.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            formItem.status === 'published' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {formItem.status === 'published' ? 'Publicado' : 'Rascunho'}
+                          </span>
+                          <Link to={`/form/${formItem.id}`}>
+                            <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 rounded-lg">
+                              Ver
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {recentForms.length > 5 && (
+                    <div className="text-center mt-4">
+                      <Link to="/connect/forms">
+                        <Button variant="outline" className="text-sollux-black border-sollux-gray hover:bg-gray-100">
+                          Ver todos os formulários
                         </Button>
                       </Link>
                     </div>
