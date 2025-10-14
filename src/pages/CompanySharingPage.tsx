@@ -105,11 +105,7 @@ const CompanySharingPage: React.FC = () => {
             id,
             user_id,
             name,
-            created_at,
-            profiles!companies_user_id_fkey (
-              first_name,
-              last_name
-            )
+            created_at
           )
         `)
         .eq('shared_with_user_id', user.id);
@@ -119,9 +115,8 @@ const CompanySharingPage: React.FC = () => {
         throw error;
       }
 
-      // Corrigindo o mapeamento dos dados
-      return data.map(item => {
-        // Verificando se companies é um array ou um objeto único
+      // Primeiro mapeamos os dados básicos
+      const mappedData = data.map(item => {
         const companiesArray = Array.isArray(item.companies) ? item.companies : [item.companies];
         
         return {
@@ -132,13 +127,43 @@ const CompanySharingPage: React.FC = () => {
             user_id: company.user_id,
             name: company.name,
             created_at: company.created_at,
-            profiles: company.profiles && company.profiles.length > 0 ? {
-              first_name: company.profiles[0].first_name,
-              last_name: company.profiles[0].last_name
-            } : null
+            profiles: null
           }))
         };
       });
+
+      // Agora buscamos os perfis dos proprietários
+      const userIds = mappedData.flatMap(item => 
+        item.companies.map(company => company.user_id)
+      ).filter((id): id is string => id !== null);
+
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .in('id', userIds);
+
+        if (profilesError) {
+          console.error("Erro ao carregar perfis dos proprietários:", profilesError);
+        } else {
+          // Associamos os perfis às empresas
+          mappedData.forEach(item => {
+            item.companies.forEach(company => {
+              if (company.user_id) {
+                const profile = profiles.find(p => p.id === company.user_id);
+                if (profile) {
+                  company.profiles = {
+                    first_name: profile.first_name,
+                    last_name: profile.last_name
+                  };
+                }
+              }
+            });
+          });
+        }
+      }
+
+      return mappedData;
     },
     enabled: !!user,
   });
