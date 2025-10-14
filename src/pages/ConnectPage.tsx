@@ -28,7 +28,7 @@ const ConnectPage: React.FC = () => {
         <CardContent className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FeatureCard
-              title="Gerenciar Vagas (Jobs)"
+              title="SOLLUX JOBS™"
               description="Crie, edite e gerencie as vagas de emprego da sua empresa."
               icon={Briefcase}
               onClick={handleManageJobsClick}
