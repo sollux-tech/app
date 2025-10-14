@@ -110,36 +110,36 @@ const Login = () => {
                       inputBorderRadius: '0.75rem', // rounded-lg
                       buttonBorderRadius: '0.75rem',
                     },
+                    // Adiciona campos de Primeiro Nome e Sobrenome ao formulário de cadastro
+                    fields: {
+                      sign_up: {
+                        email: {
+                          label: ptBR.sign_up.email_label,
+                          placeholder: ptBR.sign_up.email_input_placeholder,
+                        },
+                        password: {
+                          label: ptBR.sign_up.password_label,
+                          placeholder: ptBR.sign_up.password_input_placeholder,
+                        },
+                        first_name: {
+                          label: ptBR.sign_up.first_name_label,
+                          placeholder: ptBR.sign_up.first_name_input_placeholder,
+                          type: 'text',
+                          required: true,
+                        },
+                        last_name: {
+                          label: ptBR.sign_up.last_name_label,
+                          placeholder: ptBR.sign_up.last_name_input_placeholder,
+                          type: 'text',
+                          required: true,
+                        },
+                      },
+                    },
                   },
                 },
               }}
               theme="light"
               redirectTo={window.location.origin}
-              // Adiciona campos de Primeiro Nome e Sobrenome ao formulário de cadastro
-              fields={{
-                sign_up: {
-                  email: {
-                    label: ptBR.sign_up.email_label,
-                    placeholder: ptBR.sign_up.email_input_placeholder,
-                  },
-                  password: {
-                    label: ptBR.sign_up.password_label,
-                    placeholder: ptBR.sign_up.password_input_placeholder,
-                  },
-                  first_name: {
-                    label: ptBR.sign_up.first_name_label,
-                    placeholder: ptBR.sign_up.first_name_input_placeholder,
-                    type: 'text',
-                    required: true,
-                  },
-                  last_name: {
-                    label: ptBR.sign_up.last_name_label,
-                    placeholder: ptBR.sign_up.last_name_input_placeholder,
-                    type: 'text',
-                    required: true,
-                  },
-                },
-              }}
             />
           </div>
         </div>
