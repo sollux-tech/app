@@ -67,15 +67,20 @@ const CompanySharingPage: React.FC = () => {
 
       if (error) throw error;
 
-      console.log("Dados brutos de compartilhamento:", data); // Log para depuração
+      console.log("Dados brutos de compartilhamento (CompanySharingPage):", data); // Log para depuração
 
       return data.map(share => {
         const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
-        const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : `ID: ${share.shared_with_user_id}`;
+        console.log(`Perfil para shared_with_user_id ${share.shared_with_user_id}:`, profile); // Log detalhado do perfil
+
+        const firstName = profile?.first_name || '';
+        const lastName = profile?.last_name || '';
+        const fullName = `${firstName} ${lastName}`.trim();
+
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
-          full_name: fullName,
+          full_name: fullName || `ID: ${share.shared_with_user_id} (Perfil Vazio)`, // Fallback mais descritivo
         };
       });
     },
