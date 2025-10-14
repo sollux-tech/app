@@ -4,11 +4,19 @@ export interface SharedUser {
   full_name: string;
 }
 
-export interface CompanyShareResponse {
+export interface CompanyWithProfile {
   id: string;
-  shared_with_user_id: string;
+  user_id: string | null;
+  name: string;
+  created_at: string;
   profiles: {
     first_name: string | null;
     last_name: string | null;
-  }[] | null; // A inferência de tipo do Supabase pode retornar um array aqui
+  } | null;
+}
+
+export interface CompanyShareWithCompanyAndProfile {
+  id: string; // ID of the company_share record
+  shared_with_user_id: string;
+  companies: CompanyWithProfile;
 }

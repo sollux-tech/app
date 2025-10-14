@@ -12,7 +12,7 @@ import { Trash2, UserPlus, Building, CheckCircle } from 'lucide-react';
 import { useCompany } from '@/components/CompanyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { CompanyShareResponse, SharedUser } from '@/types/companyShare';
+import { CompanyShareWithCompanyAndProfile, SharedUser } from '@/types/companyShare';
 import { useSession } from '@/components/SessionContextProvider';
 import { Company } from '@/types/company';
 import { FunctionsHttpError } from '@supabase/supabase-js';
@@ -23,10 +23,6 @@ import { Label } from '@/components/ui/label'; // Importar o componente Label
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
 });
-
-interface SharedWithMeCompany extends Company {
-  owner_name: string;
-}
 
 const CompanySharingPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -55,15 +51,10 @@ const CompanySharingPage: React.FC = () => {
     }
   }, [ownedCompanies, companyToManageSharing]);
 
-  // --- NOVOS LOGS DE DEPURACAO ---
-  console.log('DEBUG: ownedCompanies', ownedCompanies);
-  console.log('DEBUG: companyToManageSharing', companyToManageSharing);
-  // --- FIM DOS NOVOS LOGS DE DEPURACAO ---
-
   // Query para buscar usuários com quem a empresa selecionada está compartilhada
   const { data: sharedUsers, isLoading: isLoadingSharedUsers, error: sharedUsersError } = useQuery<SharedUser[], Error>({
     queryKey: ['companyShares', companyToManageSharing?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SharedUser[]> => {
       if (!companyToManageSharing) {
         console.log('DEBUG: companyToManageSharing é nulo, pulando query de sharedUsers.');
         return [];
@@ -71,19 +62,19 @@ const CompanySharingPage: React.FC = () => {
       console.log('DEBUG: Executando query para sharedUsers para companyId:', companyToManageSharing.id);
       const { data, error } = await supabase
         .from('company_shares')
-        .select('id, shared_with_user_id, profiles(first_name, last_name)') // Mantendo a busca pelos dados do perfil
+        .select('id, shared_with_user_id, profiles(first_name, last_name)')
         .eq('company_id', companyToManageSharing.id);
 
       if (error) {
         console.error('DEBUG: Erro na query de sharedUsers:', error);
-        throw error;
+        showError(`Erro ao carregar usuários compartilhados: ${error.message}`);
+        throw error; // Re-throw para que o useQuery marque como erro
       }
 
-      // Adicionando log para depuração
       console.log('DEBUG: Dados brutos de compartilhamento (sharedUsers):', data);
 
       return data.map(share => {
-        const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
+        const profile = share.profiles?.[0];
         const firstName = profile?.first_name || '';
         const lastName = profile?.last_name || '';
         const fullName = `${firstName} ${lastName}`.trim();
@@ -91,35 +82,31 @@ const CompanySharingPage: React.FC = () => {
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
-          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`, // Fallback mais descritivo
+          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`,
         };
       });
     },
     enabled: !!companyToManageSharing,
-    onError: (error) => { // Adicionado onError para capturar erros da query
-      console.error('DEBUG: Erro na query de sharedUsers (onError):', error);
-      showError(`Erro ao carregar usuários compartilhados: ${error.message}`);
-    }
   });
 
   // Query para buscar empresas que foram compartilhadas COMIGO
-  const { data: sharedWithMe, isLoading: isLoadingSharedWithMe, error: sharedWithMeError } = useQuery<any[], Error>({
+  const { data: sharedWithMe, isLoading: isLoadingSharedWithMe, error: sharedWithMeError } = useQuery<CompanyShareWithCompanyAndProfile[], Error>({
     queryKey: ['sharedWithMe', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<CompanyShareWithCompanyAndProfile[]> => {
         if (!user) return [];
         const { data, error } = await supabase
             .from('company_shares')
-            .select('companies(*, profiles(first_name, last_name))')
+            .select('id, shared_with_user_id, companies(*, profiles(first_name, last_name))')
             .eq('shared_with_user_id', user.id);
-        if (error) throw error;
+        if (error) {
+          console.error('DEBUG: Erro na query de sharedWithMe:', error);
+          showError(`Erro ao carregar empresas compartilhadas com você: ${error.message}`);
+          throw error; // Re-throw para que o useQuery marque como erro
+        }
         console.log('DEBUG: Dados brutos de compartilhamento (sharedWithMe):', data);
         return data;
     },
     enabled: !!user,
-    onError: (error) => { // Adicionado onError para capturar erros da query
-      console.error('DEBUG: Erro na query de sharedWithMe (onError):', error);
-      showError(`Erro ao carregar empresas compartilhadas com você: ${error.message}`);
-    }
   });
 
   const inviteMutation = useMutation({
@@ -178,7 +165,7 @@ const CompanySharingPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Label className="text-sollux-black">Minhas Empresas</Label> {/* Usando Label aqui */}
+            <Label className="text-sollux-black">Minhas Empresas</Label>
             <Select
               value={companyToManageSharing?.id || ''}
               onValueChange={(value) => setCompanyToManageSharing(ownedCompanies.find(c => c.id === value) || null)}
@@ -227,7 +214,7 @@ const CompanySharingPage: React.FC = () => {
                 <TableBody>
                   {isLoadingSharedUsers ? (
                     <TableRow><TableCell colSpan={2} className="text-center">Carregando...</TableCell></TableRow>
-                  ) : sharedUsersError ? ( // Exibir erro da query
+                  ) : sharedUsersError ? (
                     <TableRow><TableCell colSpan={2} className="text-center text-red-500">Erro ao carregar usuários: {sharedUsersError.message}</TableCell></TableRow>
                   ) : sharedUsers && sharedUsers.length > 0 ? (
                     sharedUsers.map(u => (
@@ -254,7 +241,7 @@ const CompanySharingPage: React.FC = () => {
             <TableBody>
               {isLoadingSharedWithMe ? (
                 <TableRow><TableCell colSpan={3} className="text-center">Carregando...</TableCell></TableRow>
-              ) : sharedWithMeError ? ( // Exibir erro da query
+              ) : sharedWithMeError ? (
                 <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
