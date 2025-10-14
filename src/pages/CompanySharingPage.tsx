@@ -15,6 +15,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { CompanyShareResponse, SharedUser } from '@/types/companyShare';
 import { useSession } from '@/components/SessionContextProvider';
 import { Company } from '@/types/company';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -79,8 +80,17 @@ const CompanySharingPage: React.FC = () => {
       const { data, error } = await supabase.functions.invoke('invite-user', {
         body: { companyId: selectedCompany.id, inviteeEmail: email },
       });
-      if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      
+      if (error) {
+        if (error instanceof FunctionsHttpError) {
+          const errorJson = await error.context.json();
+          if (errorJson.error) {
+            throw new Error(errorJson.error);
+          }
+        }
+        throw error;
+      }
+
       return data;
     },
     onSuccess: () => {
