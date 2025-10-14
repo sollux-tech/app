@@ -37,7 +37,7 @@ interface QuestionBase {
 // Definir QuestionFormDataInferred como QuestionBase para garantir consistência
 type QuestionFormDataInferred = QuestionBase;
 
-const questionSchema: z.ZodType<QuestionFormDataInferred> = z.object({
+const questionSchema = z.object({ // Removida a anotação de tipo explícita aqui
   type: z.enum(['text', 'email', 'number', 'textarea', 'select', 'multiselect', 'radio', 'checkbox', 'date', 'rating']),
   title: z.string().min(1, { message: 'O título da pergunta é obrigatório.' }),
   description: z.string().optional(),
