@@ -50,7 +50,7 @@ const CompanySharingPage: React.FC = () => {
       if (error) throw error;
 
       return (data as CompanyShareResponse[]).map(share => {
-        const profile = share.profiles;
+        const profile = share.profiles?.[0]; // Pega o primeiro perfil do array
         return {
           id: share.id,
           user_id: share.shared_with_user_id,

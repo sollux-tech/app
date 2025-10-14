@@ -7,8 +7,8 @@ export interface SharedUser {
 export interface CompanyShareResponse {
   id: string;
   shared_with_user_id: string;
-  profiles: { // Corrigido para ser um objeto, pois a relação é um-para-um
+  profiles: {
     first_name: string | null;
     last_name: string | null;
-  } | null;
+  }[] | null; // A inferência de tipo do Supabase pode retornar um array aqui
 }
