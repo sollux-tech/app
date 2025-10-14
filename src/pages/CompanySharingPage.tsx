@@ -119,20 +119,26 @@ const CompanySharingPage: React.FC = () => {
         throw error;
       }
 
-      return data.map(item => ({
-        id: item.id,
-        shared_with_user_id: item.shared_with_user_id,
-        companies: item.companies.map(company => ({
-          id: company.id,
-          user_id: company.user_id,
-          name: company.name,
-          created_at: company.created_at,
-          profiles: company.profiles && company.profiles.length > 0 ? {
-            first_name: company.profiles[0].first_name,
-            last_name: company.profiles[0].last_name
-          } : null
-        }))
-      }));
+      // Corrigindo o mapeamento dos dados
+      return data.map(item => {
+        // Verificando se companies é um array ou um objeto único
+        const companiesArray = Array.isArray(item.companies) ? item.companies : [item.companies];
+        
+        return {
+          id: item.id,
+          shared_with_user_id: item.shared_with_user_id,
+          companies: companiesArray.map(company => ({
+            id: company.id,
+            user_id: company.user_id,
+            name: company.name,
+            created_at: company.created_at,
+            profiles: company.profiles && company.profiles.length > 0 ? {
+              first_name: company.profiles[0].first_name,
+              last_name: company.profiles[0].last_name
+            } : null
+          }))
+        };
+      });
     },
     enabled: !!user,
   });
@@ -270,7 +276,7 @@ const CompanySharingPage: React.FC = () => {
               {isLoadingSharedWithMe ? (
                 <TableRow><TableCell colSpan={3} className="text-center">Carregando...</TableCell></TableRow>
               ) : sharedWithMeError ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: ${sharedWithMeError.message}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
                   const company = item.companies[0]; // Acessar o primeiro item do array
