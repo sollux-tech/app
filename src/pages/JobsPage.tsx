@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import ShareJobDialog from '@/components/ShareJobDialog';
+import { Badge } from '@/components/ui/badge';
 
 const JobsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -100,6 +101,7 @@ const JobsPage: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-sollux-black">Título</TableHead>
+                  <TableHead className="text-sollux-black">Status</TableHead>
                   <TableHead className="text-sollux-black">Criado em</TableHead>
                   <TableHead className="text-right text-sollux-black">Ações</TableHead>
                 </TableRow>
@@ -107,7 +109,7 @@ const JobsPage: React.FC = () => {
               <TableBody>
                 {jobs?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-gray-500">
+                    <TableCell colSpan={4} className="text-center text-gray-500">
                       Nenhuma vaga encontrada para esta empresa.
                     </TableCell>
                   </TableRow>
@@ -115,6 +117,14 @@ const JobsPage: React.FC = () => {
                   jobs?.map((job) => (
                     <TableRow key={job.id}>
                       <TableCell className="font-medium text-sollux-black">{job.title}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={job.status === 'active' ? 'default' : 'secondary'}
+                          className={job.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}
+                        >
+                          {job.status === 'active' ? 'Ativa' : 'Inativa'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-gray-700">{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
                       <TableCell className="text-right flex justify-end items-center gap-1">
                         <Button variant="ghost" size="sm" onClick={() => handleShareClick(job)} className="text-blue-600 hover:bg-blue-50 rounded-lg" disabled={isMutating} title="Compartilhar Vaga">
