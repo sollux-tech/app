@@ -59,16 +59,17 @@ serve(async (req) => {
       })
     }
 
-    // 2. Look up the invitee's user ID by email
-    const { data: inviteeData, error: inviteeError } = await adminSupabaseClient.auth.admin.getUserByEmail(inviteeEmail)
-    
-    if (inviteeError || !inviteeData.user) {
-        return new Response(JSON.stringify({ error: 'Usuário com este e-mail não existe.' }), {
-            status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+    // 2. Look up the invitee's user ID by email via RPC
+    const { data: inviteeId, error: rpcError } = await adminSupabaseClient.rpc('get_user_id_by_email', {
+      user_email: inviteeEmail
+    })
+
+    if (rpcError || !inviteeId) {
+      return new Response(JSON.stringify({ error: 'Usuário com este e-mail não existe.' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
-    const inviteeId = inviteeData.user.id
 
     if (inviteeId === user.id) {
         return new Response(JSON.stringify({ error: 'Você não pode compartilhar uma empresa com você mesmo.' }), {
@@ -77,7 +78,7 @@ serve(async (req) => {
         })
     }
 
-    // 3. NEW: Check if the invitee has a profile, create one if not.
+    // 3. Check if the invitee has a profile, create one if not.
     const { data: profile } = await adminSupabaseClient
       .from('profiles')
       .select('id')
