@@ -136,7 +136,7 @@ const FormEditPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['form', formId] });
       queryClient.invalidateQueries({ queryKey: ['forms', selectedCompany?.id] });
       showSuccess('Formulário publicado com sucesso!');
-      navigate('/forms');
+      navigate('/connect/forms'); // Redirecionamento corrigido
     },
     onError: (error) => {
       showError(`Erro ao publicar formulário: ${error.message}`);
@@ -274,7 +274,7 @@ const FormEditPage: React.FC = () => {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigate('/forms')}
+                onClick={() => navigate('/connect/forms')}
                 className="rounded-lg"
               >
                 Cancelar
