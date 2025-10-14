@@ -12,6 +12,10 @@ serve(async (req) => {
   }
 
   try {
+    // Log environment variables for debugging
+    console.log('get-all-companies-admin: SUPABASE_URL:', Deno.env.get('SUPABASE_URL'));
+    console.log('get-all-companies-admin: SUPABASE_SERVICE_ROLE_KEY (first 5 chars):', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.substring(0, 5));
+
     // Admin client to bypass RLS
     const adminSupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -23,6 +27,7 @@ serve(async (req) => {
       .select('id, name, user_id, created_at')
 
     if (error) {
+      console.error('get-all-companies-admin: Error fetching all companies:', error);
       throw error
     }
 
@@ -30,6 +35,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
+    console.error('get-all-companies-admin: Unhandled error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
