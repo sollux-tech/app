@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título do formulário é obrigatório.' }),
@@ -28,7 +29,7 @@ const FormsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const navigate = useNavigate(); // Inicializar useNavigate
   const [isQRDialogOpen, setIsQRDialogOpen] = useState(false);
   const [currentForm, setCurrentForm] = useState<Form | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -54,34 +55,6 @@ const FormsPage: React.FC = () => {
       return data;
     },
     enabled: !!selectedCompany,
-  });
-
-  const createFormMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string }) => {
-      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário ou empresa não selecionada.");
-      const { data: newForm, error } = await supabase
-        .from('forms')
-        .insert({
-          ...data,
-          company_id: selectedCompany.id,
-          user_id: user.id,
-          status: 'draft',
-          questions: [],
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return newForm;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forms', selectedCompany?.id] });
-      setIsCreateDialogOpen(false);
-      form.reset();
-      showSuccess('Formulário criado com sucesso!');
-    },
-    onError: (error) => {
-      showError(`Erro ao criar formulário: ${error.message}`);
-    },
   });
 
   const deleteFormMutation = useMutation({
@@ -114,10 +87,6 @@ const FormsPage: React.FC = () => {
       showError(`Erro ao publicar formulário: ${error.message}`);
     },
   });
-
-  const handleCreateForm = (data: { title: string; description: string }) => {
-    createFormMutation.mutate(data);
-  };
 
   const handleDeleteForm = (id: string) => {
     if (window.confirm('Tem certeza que deseja excluir este formulário?')) {
@@ -195,10 +164,6 @@ const FormsPage: React.FC = () => {
     }
   };
 
-  const onSubmit = (data: { title: string; description: string }) => {
-    handleCreateForm(data);
-  };
-
   if (isLoading) {
     return <div className="text-center text-gray-600">Carregando formulários...</div>;
   }
@@ -211,7 +176,7 @@ const FormsPage: React.FC = () => {
             <CardTitle className="text-sollux-black uppercase font-bold">SOLLUX FORM™</CardTitle>
             <p className="text-gray-600">Crie formulários elegantes e colete respostas com clareza e precisão.</p>
           </div>
-          <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+          <Button onClick={() => navigate('/connect/forms/new')} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Novo Formulário
           </Button>
         </CardHeader>
@@ -225,7 +190,7 @@ const FormsPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-semibold text-sollux-black mb-2">Nenhum formulário criado</h3>
               <p className="text-gray-600 mb-6">Crie seu primeiro formulário para começar a coletar respostas.</p>
-              <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+              <Button onClick={() => navigate('/connect/forms/new')} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
                 <Plus className="mr-2 h-4 w-4" /> Criar Formulário
               </Button>
             </div>
@@ -316,7 +281,7 @@ const FormsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => window.open(`/forms/${form.id}/edit`, '_blank')}
+                          onClick={() => window.open(`/connect/forms/${form.id}/edit`, '_blank')}
                           className="text-sollux-black hover:bg-gray-100 rounded-lg"
                           title="Editar"
                         >
@@ -340,54 +305,6 @@ const FormsPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
-
-      {/* Dialog de Criação de Formulário */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
-          <DialogHeader>
-            <DialogTitle className="text-sollux-black">Criar Novo Formulário</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="text-sm font-medium text-sollux-black">Título do Formulário</label>
-              <Input
-                {...form.register('title')}
-                placeholder="Ex: Pesquisa de Clima Organizacional"
-                className="mt-1 rounded-lg"
-              />
-              {form.formState.errors.title && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.title.message}</p>
-              )}
-            </div>
-            <div>
-              <label className="text-sm font-medium text-sollux-black">Descrição (Opcional)</label>
-              <Textarea
-                {...form.register('description')}
-                placeholder="Breve descrição sobre o objetivo do formulário"
-                className="mt-1 rounded-lg"
-                rows={3}
-              />
-            </div>
-            <DialogFooter className="flex justify-end gap-2 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-                className="rounded-lg"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={createFormMutation.isPending}
-                className="rounded-lg bg-sollux-red hover:bg-sollux-orange"
-              >
-                {createFormMutation.isPending ? 'Criando...' : 'Criar Formulário'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Dialog de QR Code */}
       <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>

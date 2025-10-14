@@ -35,6 +35,7 @@ import FormsPage from './pages/FormsPage';
 import FormEditPage from './pages/FormEditPage';
 import PublicFormPage from './pages/PublicFormPage';
 import FormResponsesPage from './pages/FormResponsesPage';
+import FormCreatePage from './pages/FormCreatePage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,6 +111,7 @@ function App() {
                           
                           {/* Rotas SOLLUX FORM™ */}
                           <Route path="/connect/forms" element={<FormsPage />} />
+                          <Route path="/connect/forms/new" element={<FormCreatePage />} /> {/* Nova rota */}
                           <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
                           <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
                         </Routes>
