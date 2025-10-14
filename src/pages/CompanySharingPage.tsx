@@ -106,7 +106,7 @@ const CompanySharingPage: React.FC = () => {
             user_id,
             name,
             created_at,
-            profiles (
+            profiles!companies_user_id_fkey (
               first_name,
               last_name
             )
@@ -284,7 +284,9 @@ const CompanySharingPage: React.FC = () => {
                     return null; 
                   }
                   const ownerProfile = company.profiles;
-                  const ownerName = `${ownerProfile?.first_name || ''} ${ownerProfile?.last_name || ''}`.trim() || 'Desconhecido';
+                  const ownerName = ownerProfile 
+                    ? `${ownerProfile.first_name || ''} ${ownerProfile.last_name || ''}`.trim() || 'Desconhecido'
+                    : 'Desconhecido';
                   return (
                     <TableRow key={company.id}>
                       <TableCell className="font-medium text-sollux-black">{company.name}</TableCell>
