@@ -2,8 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Building2, Users, Settings, BarChart2, Share2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Building2, Users, Share2 } from 'lucide-react';
 
 const IdPage: React.FC = () => {
   const navigate = useNavigate();
@@ -48,18 +47,6 @@ const IdPage: React.FC = () => {
               description="Convide outros usuários para acessar e colaborar em suas empresas."
               icon={Share2}
               onClick={handleShareCompanyClick}
-            />
-            <FeatureCard
-              title="Configurações de ID"
-              description="Ajuste as configurações de segurança e privacidade da sua identidade."
-              icon={Settings}
-              onClick={() => alert('Funcionalidade de Configurações de ID em breve!')}
-            />
-            <FeatureCard
-              title="Relatórios de Acesso"
-              description="Visualize logs e relatórios de acesso às suas empresas."
-              icon={BarChart2}
-              onClick={() => alert('Funcionalidade de Relatórios de Acesso em breve!')}
             />
           </div>
         </CardContent>
