@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Form as FormType, Question, QuestionFormData } from '@/types/form';
+import { Form as FormType, Question } from '@/types/form'; // Removido QuestionFormData
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -32,6 +32,9 @@ const questionSchema = z.object({
     pattern: z.string().optional(),
   }).optional(),
 });
+
+// Definir QuestionFormData diretamente do schema para garantir consistência
+type QuestionFormDataInferred = z.infer<typeof questionSchema>;
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título do formulário é obrigatório.' }),
@@ -150,7 +153,7 @@ const FormEditPage: React.FC = () => {
     setQuestions(newQuestions);
   };
 
-  const handleSaveQuestion = (questionData: QuestionFormData) => {
+  const handleSaveQuestion = (questionData: QuestionFormDataInferred) => {
     if (editingQuestion) {
       // Editar pergunta existente
       const newQuestions = questions.map((q) =>
@@ -410,7 +413,7 @@ const FormEditPage: React.FC = () => {
 const QuestionDialog: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: QuestionFormData) => void;
+  onSave: (data: QuestionFormDataInferred) => void; // Usar o tipo inferido aqui
   question?: Question | null;
 }> = ({ open, onOpenChange, onSave, question }) => {
   const form = useForm<z.infer<typeof questionSchema>>({
@@ -459,7 +462,7 @@ const QuestionDialog: React.FC<{
     }
   }, [question, form, open]); // Adicionar 'open' como dependência para resetar ao abrir
 
-  const onSubmit = (data: z.infer<typeof questionSchema>) => {
+  const onSubmit = (data: QuestionFormDataInferred) => { // Usar o tipo inferido aqui
     onSave(data);
     form.reset();
   };
