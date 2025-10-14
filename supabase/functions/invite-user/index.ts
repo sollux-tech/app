@@ -133,6 +133,7 @@ serve(async (req) => {
       throw insertError
     }
 
+    console.log(`invite-user: Successfully shared company ${companyId} with user ${inviteeId} (${inviteeEmail}).`); // Novo log de sucesso
     return new Response(JSON.stringify({ success: true, message: 'Empresa compartilhada com sucesso.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
