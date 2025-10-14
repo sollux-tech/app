@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -35,13 +35,31 @@ const PublicFormPage: React.FC = () => {
   const { data: formDetail, isLoading, error } = useQuery<FormType, Error>({
     queryKey: ['publicForm', formId],
     queryFn: async () => {
-      if (!formId) throw new Error("ID do formulário está faltando.");
-      const { data, error } = await supabase.functions.invoke('get-public-form', {
-        body: { form_id: formId },
-      });
-      if (error) throw new Error(`Function error: ${error.message}`);
-      if (data.error) throw new Error(`Function returned an error: ${data.error}`);
-      return data;
+      console.log('PublicFormPage: queryFn started for formId:', formId);
+      if (!formId) {
+        console.error('PublicFormPage: formId is missing, throwing error.');
+        throw new Error("ID do formulário está faltando.");
+      }
+      try {
+        const { data, error: invokeError } = await supabase.functions.invoke('get-public-form', {
+          body: { form_id: formId },
+        });
+        console.log('PublicFormPage: supabase.functions.invoke result:', { data, invokeError });
+
+        if (invokeError) {
+          console.error('PublicFormPage: Function invocation error:', invokeError);
+          throw new Error(`Function invocation error: ${invokeError.message}`);
+        }
+        if (data.error) {
+          console.error('PublicFormPage: Edge Function returned an error:', data.error);
+          throw new Error(`Edge Function error: ${data.error}`);
+        }
+        console.log('PublicFormPage: Successfully fetched form data.');
+        return data;
+      } catch (e: any) {
+        console.error('PublicFormPage: Error in queryFn:', e);
+        throw e;
+      }
     },
     enabled: !!formId,
     retry: false, // Não tentar novamente em caso de erro, especialmente para 404
@@ -50,6 +68,18 @@ const PublicFormPage: React.FC = () => {
   // O useEffect para fetchForm foi removido, pois useQuery já faz isso.
   // O estado `formDetail` e `questions` agora são derivados de `formDetail` do useQuery.
   const questions = formDetail?.questions || [];
+
+  // Add logging for component state
+  useEffect(() => {
+    console.log('PublicFormPage State Update:');
+    console.log('  formId:', formId);
+    console.log('  isLoading:', isLoading);
+    console.log('  error:', error);
+    console.log('  formDetail:', formDetail);
+    console.log('  isSubmitting:', isSubmitting);
+    console.log('  isSubmitted:', isSubmitted);
+  }, [formId, isLoading, error, formDetail, isSubmitting, isSubmitted]);
+
 
   const onSubmit = async (data: Record<string, any>) => {
     if (!formDetail) return;
