@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Users, Settings, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Bell, Building2, Wrench } from 'lucide-react'; 
+import { Settings, UserCog, Newspaper, Bell, Building2, Wrench } from 'lucide-react'; 
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -71,18 +71,6 @@ const CorePage: React.FC = () => {
               description="Verifique e corrija problemas de associação de dados da sua conta."
               icon={Wrench}
               onClick={handleDataDoctorClick}
-            />
-            <FeatureCard
-              title="Gerenciar Permissões"
-              description="Defina e ajuste as permissões de acesso para cada tipo de usuário."
-              icon={ShieldCheck}
-              onClick={() => alert('Gerenciar Permissões em breve!')}
-            />
-            <FeatureCard
-              title="Estrutura Organizacional"
-              description="Mapeie a hierarquia e os departamentos da sua empresa."
-              icon={Briefcase}
-              onClick={() => alert('Estrutura Organizacional em breve!')}
             />
             <FeatureCard
               title="Configurações Globais"
