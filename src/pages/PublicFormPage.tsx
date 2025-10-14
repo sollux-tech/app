@@ -21,6 +21,7 @@ import { useQuery } from '@tanstack/react-query'; // Importar useQuery
 const formResponseSchema = z.record(z.string(), z.any());
 
 const PublicFormPage: React.FC = () => {
+  console.log('PublicFormPage: Componente renderizado.'); // Log no início do componente
   const { id: formId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +31,8 @@ const PublicFormPage: React.FC = () => {
     resolver: zodResolver(formResponseSchema),
     defaultValues: {} as Record<string, any>,
   });
+
+  console.log('PublicFormPage: Antes de useQuery. formId:', formId); // Log antes de useQuery
 
   // Usar useQuery para buscar os detalhes do formulário através da Edge Function
   const { data: formDetail, isLoading, error } = useQuery<FormType, Error>({
