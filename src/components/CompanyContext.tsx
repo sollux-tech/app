@@ -23,9 +23,9 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     queryKey: ['companies', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      // Alterado de RPC para uma consulta direta. O RLS cuidará de retornar as empresas corretas (próprias e compartilhadas).
+      // Usando a nova VIEW segura que combina empresas próprias e compartilhadas.
       const { data, error } = await supabase
-        .from('companies')
+        .from('user_accessible_companies')
         .select('*');
       if (error) throw error;
       return data;
