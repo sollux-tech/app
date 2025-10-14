@@ -49,13 +49,11 @@ const CompanySharingPage: React.FC = () => {
     }
   }, [ownedCompanies, companyToManageSharing]);
 
-  // Query para buscar usuários com quem a empresa selecionada está compartilhada
   const { data: sharedUsers, isLoading: isLoadingSharedUsers, error: sharedUsersError } = useQuery<SharedUser[], Error>({
     queryKey: ['companyShares', companyToManageSharing?.id],
     queryFn: async (): Promise<SharedUser[]> => {
       if (!companyToManageSharing) return [];
 
-      // Buscar os shares da empresa
       const { data: shares, error: sharesError } = await supabase
         .from('company_shares')
         .select('id, shared_with_user_id')
@@ -68,10 +66,8 @@ const CompanySharingPage: React.FC = () => {
 
       if (!shares || shares.length === 0) return [];
 
-      // Extrair os IDs dos usuários compartilhados
       const sharedUserIds = shares.map(share => share.shared_with_user_id);
 
-      // Buscar os perfis desses usuários
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name')
@@ -82,7 +78,6 @@ const CompanySharingPage: React.FC = () => {
         throw profilesError;
       }
 
-      // Mapear os shares com os perfis
       return shares.map(share => {
         const profile = profiles?.find(p => p.id === share.shared_with_user_id);
         const fullName = `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || `ID: ${share.shared_with_user_id}`;
@@ -96,7 +91,6 @@ const CompanySharingPage: React.FC = () => {
     enabled: !!companyToManageSharing,
   });
 
-  // Query para buscar empresas que foram compartilhadas COMIGO
   const { data: sharedWithMe, isLoading: isLoadingSharedWithMe, error: sharedWithMeError } = useQuery<CompanyShareWithCompanyAndProfile[], Error>({
     queryKey: ['sharedWithMe', user?.id],
     queryFn: async (): Promise<CompanyShareWithCompanyAndProfile[]> => {

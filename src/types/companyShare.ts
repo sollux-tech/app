@@ -1,5 +1,5 @@
 export interface SharedUser {
-  id: string; // This is the ID of the share record itself
+  id: string;
   user_id: string;
   full_name: string;
 }
@@ -16,7 +16,7 @@ export interface CompanyWithProfile {
 }
 
 export interface CompanyShareWithCompanyAndProfile {
-  id: string; // ID of the company_share record
+  id: string;
   shared_with_user_id: string;
-  companies: CompanyWithProfile[]; // Alterado para ser um array
+  companies: CompanyWithProfile | null;
 }
