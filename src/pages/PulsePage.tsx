@@ -32,17 +32,6 @@ const PulsePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Campos de entrada inspirados na imagem */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center">
-          <Search className="h-5 w-5 text-gray-400 mr-3" />
-          <Input placeholder="Buscar..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
-        </Card>
-        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl p-4 flex items-center col-span-2">
-          <Input placeholder="Outro campo de entrada..." className="flex-1 border-none bg-transparent focus-visible:ring-0 text-sollux-black" />
-        </Card>
-      </div>
-
       {/* Informativo PULSE do Dia */}
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
