@@ -83,7 +83,7 @@ const FormEditPage: React.FC = () => {
   }, [formDetail, form]);
 
   const updateFormMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; questions: Question[] }) => {
+    mutationFn: async (data: { title: string; description?: string; questions: Question[] }) => {
       if (!formId) throw new Error("ID do formulário está faltando.");
       const { error } = await supabase
         .from('forms')
@@ -128,7 +128,8 @@ const FormEditPage: React.FC = () => {
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     updateFormMutation.mutate({
-      ...data,
+      title: data.title, // Garantir que title é sempre string
+      description: data.description, // Pode ser undefined
       questions,
     });
   };
