@@ -109,9 +109,9 @@ function App() {
                           <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                           
                           {/* Rotas SOLLUX FORM™ */}
-                          <Route path="/forms" element={<FormsPage />} />
-                          <Route path="/forms/:id/edit" element={<FormEditPage />} />
-                          <Route path="/forms/:id/responses" element={<FormResponsesPage />} />
+                          <Route path="/connect/forms" element={<FormsPage />} />
+                          <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
+                          <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
                         </Routes>
                       </Layout>
                     </ProtectedRoute>

@@ -15,6 +15,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/connect': { name: 'Connect' },
   '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
   '/connect/jobs/new': { name: 'Nova Vaga', parent: '/connect/jobs' },
+  '/connect/forms': { name: 'Formulários', parent: '/connect' }, // Nova rota para Forms
   '/ops': { name: 'OPS' },
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
@@ -40,6 +41,17 @@ export const getDynamicRouteInfo = (path: string): RouteInfo | null => {
   const jobEditMatch = path.match(/^\/connect\/jobs\/([^/]+)$/);
   if (jobEditMatch && jobEditMatch[1] !== 'new') {
     return { name: 'Editar Vaga', parent: '/connect/jobs' };
+  }
+
+  // Rotas dinâmicas para formulários
+  const formEditMatch = path.match(/^\/connect\/forms\/([^/]+)\/edit$/);
+  if (formEditMatch) {
+    return { name: 'Editar Formulário', parent: '/connect/forms' };
+  }
+
+  const formResponsesMatch = path.match(/^\/connect\/forms\/([^/]+)\/responses$/);
+  if (formResponsesMatch) {
+    return { name: 'Respostas', parent: '/connect/forms' };
   }
 
   return null;

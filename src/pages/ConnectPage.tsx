@@ -12,7 +12,7 @@ const ConnectPage: React.FC = () => {
   };
 
   const handleFormsClick = () => {
-    navigate('/forms');
+    navigate('/connect/forms'); // Rota atualizada
   };
 
   return (
