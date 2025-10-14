@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Trash2, UserPlus, Building } from 'lucide-react';
+import { Trash2, UserPlus, Building, CheckCircle } from 'lucide-react';
 import { useCompany } from '@/components/CompanyContext';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
@@ -16,6 +16,7 @@ import { CompanyShareResponse, SharedUser } from '@/types/companyShare';
 import { useSession } from '@/components/SessionContextProvider';
 import { Company } from '@/types/company';
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -171,21 +172,30 @@ const CompanySharingPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead className="text-sollux-black">Nome da Empresa</TableHead><TableHead className="text-sollux-black">Proprietário</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="text-sollux-black">Nome da Empresa</TableHead><TableHead className="text-sollux-black">Proprietário</TableHead><TableHead className="text-sollux-black">Status</TableHead></TableRow></TableHeader>
             <TableBody>
               {isLoadingSharedWithMe ? (
-                <TableRow><TableCell colSpan={2} className="text-center">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center">Carregando...</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
                   const company = item.companies;
                   const ownerProfile = company.profiles;
                   const ownerName = `${ownerProfile?.first_name || ''} ${ownerProfile?.last_name || ''}`.trim() || 'Desconhecido';
                   return (
-                    <TableRow key={company.id}><TableCell className="font-medium text-sollux-black">{company.name}</TableCell><TableCell className="text-gray-700">{ownerName}</TableCell></TableRow>
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium text-sollux-black">{company.name}</TableCell>
+                      <TableCell className="text-gray-700">{ownerName}</TableCell>
+                      <TableCell>
+                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Acesso Concedido
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               ) : (
-                <TableRow><TableCell colSpan={2} className="text-center text-gray-500">Nenhuma empresa compartilhada com você.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-gray-500">Nenhuma empresa compartilhada com você.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
