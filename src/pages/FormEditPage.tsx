@@ -14,11 +14,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Form as FormType, Question } from '@/types/form'; // Removido QuestionFormData
+import { Form as FormType, Question } from '@/types/form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
+
+// Define um tipo base para a pergunta, omitindo o 'id' que é gerado no momento da adição
+type QuestionBase = Omit<Question, 'id'>;
 
 const questionSchema = z.object({
   type: z.enum(['text', 'email', 'number', 'textarea', 'select', 'multiselect', 'radio', 'checkbox', 'date', 'rating']),
@@ -31,9 +34,9 @@ const questionSchema = z.object({
     max: z.coerce.number().optional(), // Usar coerce para garantir que seja número
     pattern: z.string().optional(),
   }).optional(),
-});
+}) satisfies z.ZodType<QuestionBase>; // Garante que o schema Zod é compatível com QuestionBase
 
-// Definir QuestionFormData diretamente do schema para garantir consistência
+// Definir QuestionFormDataInferred diretamente do schema para garantir consistência
 type QuestionFormDataInferred = z.infer<typeof questionSchema>;
 
 const formSchema = z.object({
@@ -163,8 +166,8 @@ const FormEditPage: React.FC = () => {
     } else {
       // Adicionar nova pergunta
       const newQuestion: Question = {
-        ...questionData,
         id: `question_${Date.now()}`,
+        ...questionData,
       };
       setQuestions([...questions, newQuestion]);
     }
