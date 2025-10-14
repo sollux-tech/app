@@ -30,6 +30,7 @@ import JobSectorsPage from './pages/JobSectorsPage';
 import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
 import PublicJobPage from './pages/PublicJobPage';
+import OpsPage from './pages/OpsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -87,7 +88,7 @@ function App() {
                           <Route path="/connect/jobs" element={<JobsPage />} />
                           <Route path="/connect/jobs/new" element={<JobFormPage />} />
                           <Route path="/connect/jobs/:id" element={<JobFormPage />} />
-                          <Route path="/ops" element={<Index />} /> 
+                          <Route path="/ops" element={<OpsPage />} />
                           <Route path="/core" element={<CorePage />} /> 
                           <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                           <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
