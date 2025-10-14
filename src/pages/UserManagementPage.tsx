@@ -82,6 +82,8 @@ const UserManagementPage: React.FC = () => {
       showSuccess('Perfil atualizado com sucesso!');
       refetchProfile(); // Recarregar o perfil para atualizar o contexto
       queryClient.invalidateQueries({ queryKey: ['profiles'] }); // Invalida a query de perfis para atualizar em outros componentes
+      queryClient.invalidateQueries({ queryKey: ['companyShares'] }); // Invalida queries de compartilhamento de empresas
+      queryClient.invalidateQueries({ queryKey: ['sharedWithMe'] }); // Invalida queries de empresas compartilhadas comigo
     } catch (error: any) {
       showError(`Erro ao atualizar perfil: ${error.message}`);
       console.error('Erro ao atualizar perfil:', error);
