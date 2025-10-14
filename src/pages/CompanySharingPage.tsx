@@ -62,10 +62,12 @@ const CompanySharingPage: React.FC = () => {
       if (!companyToManageSharing) return [];
       const { data, error } = await supabase
         .from('company_shares')
-        .select('id, shared_with_user_id, profiles(first_name, last_name)') // Agora buscando os dados do perfil
+        .select('id, shared_with_user_id, profiles(first_name, last_name)') // Mantendo a busca pelos dados do perfil
         .eq('company_id', companyToManageSharing.id);
 
       if (error) throw error;
+
+      console.log("Dados brutos de compartilhamento:", data); // Log para depuração
 
       return data.map(share => {
         const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
