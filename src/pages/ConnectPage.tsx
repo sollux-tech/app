@@ -12,8 +12,7 @@ const ConnectPage: React.FC = () => {
   };
 
   const handleFormsClick = () => {
-    // Futuramente será implementada a rota para formulários
-    // navigate('/connect/forms');
+    navigate('/forms');
   };
 
   return (

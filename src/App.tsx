@@ -31,6 +31,10 @@ import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
 import PublicJobPage from './pages/PublicJobPage';
 import OpsPage from './pages/OpsPage';
+import FormsPage from './pages/FormsPage';
+import FormEditPage from './pages/FormEditPage';
+import PublicFormPage from './pages/PublicFormPage';
+import FormResponsesPage from './pages/FormResponsesPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +76,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/informative/:id" element={<PublicInformativePage />} /> 
                 <Route path="/jobs/:id" element={<PublicJobPage />} />
+                <Route path="/form/:id" element={<PublicFormPage />} />
                 <Route
                   path="*"
                   element={
@@ -102,6 +107,11 @@ function App() {
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                           <Route path="/core/data-doctor" element={<DataDoctorPage />} />
+                          
+                          {/* Rotas SOLLUX FORM™ */}
+                          <Route path="/forms" element={<FormsPage />} />
+                          <Route path="/forms/:id/edit" element={<FormEditPage />} />
+                          <Route path="/forms/:id/responses" element={<FormResponsesPage />} />
                         </Routes>
                       </Layout>
                     </ProtectedRoute>
