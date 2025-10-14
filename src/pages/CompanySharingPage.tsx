@@ -62,17 +62,20 @@ const CompanySharingPage: React.FC = () => {
       if (!companyToManageSharing) return [];
       const { data, error } = await supabase
         .from('company_shares')
-        .select('id, shared_with_user_id') // Simplificado para buscar apenas o ID do usuário
+        .select('id, shared_with_user_id, profiles(first_name, last_name)') // Agora buscando os dados do perfil
         .eq('company_id', companyToManageSharing.id);
 
       if (error) throw error;
 
-      // Mapeia os dados para o formato SharedUser, usando o ID como nome temporário
-      return data.map(share => ({
-        id: share.id,
-        user_id: share.shared_with_user_id,
-        full_name: `ID: ${share.shared_with_user_id}`, // Exibe o ID do usuário para depuração
-      }));
+      return data.map(share => {
+        const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
+        const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : `ID: ${share.shared_with_user_id}`;
+        return {
+          id: share.id,
+          user_id: share.shared_with_user_id,
+          full_name: fullName,
+        };
+      });
     },
     enabled: !!companyToManageSharing,
   });
