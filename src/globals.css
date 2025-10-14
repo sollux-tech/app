@@ -83,3 +83,8 @@
   border: 1px solid rgba(255, 255, 255, 0.18); /* Borda sutil */
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); /* Sombra suave */
 }
+
+/* Aumenta a altura do editor de texto ReactQuill */
+.ql-editor {
+  min-height: 250px;
+}

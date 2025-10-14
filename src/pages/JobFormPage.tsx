@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { Job, JobFormData } from '@/types/job';
+import { Job } from '@/types/job';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -22,6 +22,11 @@ import { JobSector } from '@/types/jobSector';
 import { ContractType } from '@/types/contractType';
 import { WorkModel } from '@/types/workModel';
 
+const emptyStringToUndefined = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.any()
+);
+
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título da vaga é obrigatório.' }),
   job_sector_id: z.string().min(1, { message: 'A área/setor é obrigatória.' }),
@@ -29,15 +34,15 @@ const formSchema = z.object({
   work_model_id: z.string().min(1, { message: 'O modelo de trabalho é obrigatório.' }),
   city: z.string().optional(),
   state: z.string().optional(),
-  publication_deadline_days: z.coerce.number().int().positive().optional(),
+  publication_deadline_days: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional()),
   status: z.boolean().default(true),
   short_summary: z.string().optional(),
   detailed_description: z.string().min(1, { message: 'A descrição detalhada é obrigatória.' }),
   mandatory_requirements: z.string().optional(),
   differential_requirements: z.string().optional(),
   benefits: z.string().optional(),
-  salary_min: z.coerce.number().positive().optional(),
-  salary_max: z.coerce.number().positive().optional(),
+  salary_min: emptyStringToUndefined.pipe(z.coerce.number().positive().optional()),
+  salary_max: emptyStringToUndefined.pipe(z.coerce.number().positive().optional()),
   hashtags: z.string().optional(),
 }).refine(data => {
   if (data.salary_min !== undefined && data.salary_max !== undefined) {
@@ -73,20 +78,44 @@ const JobFormPage: React.FC = () => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { status: true },
+    defaultValues: {
+      status: true,
+      title: '',
+      job_sector_id: '',
+      contract_type_id: '',
+      work_model_id: '',
+      city: '',
+      state: '',
+      publication_deadline_days: undefined,
+      short_summary: '',
+      detailed_description: '',
+      mandatory_requirements: '',
+      differential_requirements: '',
+      benefits: '',
+      salary_min: undefined,
+      salary_max: undefined,
+      hashtags: '',
+    },
   });
 
   useEffect(() => {
     if (isEditing && editingJob) {
       form.reset({
-        ...editingJob,
-        status: editingJob.status === 'active',
+        title: editingJob.title,
+        job_sector_id: editingJob.job_sector_id || '',
+        contract_type_id: editingJob.contract_type_id || '',
+        work_model_id: editingJob.work_model_id || '',
+        city: editingJob.city || '',
+        state: editingJob.state || '',
         publication_deadline_days: editingJob.publication_deadline_days || undefined,
-        salary_min: editingJob.salary_min || undefined,
-        salary_max: editingJob.salary_max || undefined,
+        status: editingJob.status === 'active',
+        short_summary: editingJob.short_summary || '',
+        detailed_description: editingJob.detailed_description || '',
         mandatory_requirements: editingJob.mandatory_requirements?.join('\n') || '',
         differential_requirements: editingJob.differential_requirements?.join('\n') || '',
         benefits: editingJob.benefits?.join('\n') || '',
+        salary_min: editingJob.salary_min || undefined,
+        salary_max: editingJob.salary_max || undefined,
         hashtags: editingJob.hashtags?.join(', ') || '',
       });
     }
@@ -136,9 +165,9 @@ const JobFormPage: React.FC = () => {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="title" render={({ field }) => <FormItem><FormLabel>Título da vaga</FormLabel><FormControl><Input placeholder="Ex: Engenheiro de Software" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="job_sector_id" render={({ field }) => <FormItem><FormLabel>Área / Setor</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{jobSectors?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="contract_type_id" render={({ field }) => <FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{contractTypes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="work_model_id" render={({ field }) => <FormItem><FormLabel>Modelo de Trabalho</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{workModels?.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="job_sector_id" render={({ field }) => <FormItem><FormLabel>Área / Setor</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{jobSectors?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="contract_type_id" render={({ field }) => <FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{contractTypes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="work_model_id" render={({ field }) => <FormItem><FormLabel>Modelo de Trabalho</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{workModels?.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
               <FormField control={form.control} name="city" render={({ field }) => <FormItem><FormLabel>Localidade (Cidade)</FormLabel><FormControl><Input placeholder="Ex: São Paulo" {...field} /></FormControl><FormMessage /></FormItem>} />
               <FormField control={form.control} name="state" render={({ field }) => <FormItem><FormLabel>Estado</FormLabel><FormControl><Input placeholder="Ex: SP" {...field} /></FormControl><FormMessage /></FormItem>} />
               <FormField control={form.control} name="publication_deadline_days" render={({ field }) => <FormItem><FormLabel>Prazo de publicação (dias)</FormLabel><FormControl><Input type="number" placeholder="Ex: 30" {...field} /></FormControl><FormMessage /></FormItem>} />
