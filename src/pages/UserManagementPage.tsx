@@ -41,10 +41,15 @@ const UserManagementPage: React.FC = () => {
 
   useEffect(() => {
     if (profile) {
+      // Corrige o problema de fuso horário ao carregar a data do banco de dados.
+      // A string 'YYYY-MM-DD' é convertida para uma data no fuso horário local.
+      const birthdateString = profile.birthdate;
+      const localBirthdate = birthdateString ? new Date(birthdateString + 'T00:00:00') : undefined;
+
       form.reset({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        birthdate: profile.birthdate ? new Date(profile.birthdate) : undefined,
+        birthdate: localBirthdate,
         city: profile.city || '',
         state: profile.state || '',
         avatar_url: profile.avatar_url || '',

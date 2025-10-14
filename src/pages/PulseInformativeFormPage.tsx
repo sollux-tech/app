@@ -73,10 +73,14 @@ const PulseInformativeFormPage: React.FC = () => {
 
   useEffect(() => {
     if (isEditing && editingInformative) {
+      // Corrige o problema de fuso horário ao carregar a data do banco de dados.
+      const publicationDateString = editingInformative.publication_date;
+      const localPublicationDate = publicationDateString ? new Date(publicationDateString + 'T00:00:00') : undefined;
+
       form.reset({
         title: editingInformative.title,
         content: editingInformative.content,
-        publication_date: editingInformative.publication_date ? new Date(editingInformative.publication_date) : undefined,
+        publication_date: localPublicationDate,
       });
     } else if (!isEditing) {
       form.reset({
