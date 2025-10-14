@@ -71,6 +71,9 @@ const CompanySharingPage: React.FC = () => {
         throw error;
       }
 
+      // Adicionando log para depuração
+      console.log('Dados brutos de compartilhamento:', data);
+
       return data.map(share => {
         const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
         const firstName = profile?.first_name || '';
