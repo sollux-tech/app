@@ -21,7 +21,18 @@ import { useCompany } from '@/components/CompanyContext';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 
 // Define um tipo base para a pergunta, omitindo o 'id' que é gerado no momento da adição
-type QuestionBase = Omit<Question, 'id'>;
+interface QuestionBase {
+  type: 'text' | 'email' | 'number' | 'textarea' | 'select' | 'multiselect' | 'radio' | 'checkbox' | 'date' | 'rating';
+  title: string;
+  description?: string;
+  required: boolean;
+  options?: string[]; // Para select, multiselect, radio, checkbox
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+}
 
 const questionSchema = z.object({
   type: z.enum(['text', 'email', 'number', 'textarea', 'select', 'multiselect', 'radio', 'checkbox', 'date', 'rating']),
@@ -34,7 +45,7 @@ const questionSchema = z.object({
     max: z.coerce.number().optional(), // Usar coerce para garantir que seja número
     pattern: z.string().optional(),
   }).optional(),
-}) satisfies z.ZodType<QuestionBase>; // Garante que o schema Zod é compatível com QuestionBase
+}); // Removido 'satisfies z.ZodType<QuestionBase>'
 
 // Definir QuestionFormDataInferred diretamente do schema para garantir consistência
 type QuestionFormDataInferred = z.infer<typeof questionSchema>;
@@ -416,7 +427,7 @@ const FormEditPage: React.FC = () => {
 const QuestionDialog: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: QuestionFormDataInferred) => void; // Usar o tipo inferido aqui
+  onSave: (data: QuestionFormDataInferred) => void;
   question?: Question | null;
 }> = ({ open, onOpenChange, onSave, question }) => {
   const form = useForm<z.infer<typeof questionSchema>>({
@@ -463,9 +474,9 @@ const QuestionDialog: React.FC<{
         },
       });
     }
-  }, [question, form, open]); // Adicionar 'open' como dependência para resetar ao abrir
+  }, [question, form, open]);
 
-  const onSubmit = (data: QuestionFormDataInferred) => { // Usar o tipo inferido aqui
+  const onSubmit = (data: QuestionFormDataInferred) => {
     onSave(data);
     form.reset();
   };
