@@ -29,6 +29,7 @@ import JobFormPage from './pages/JobFormPage';
 import JobSectorsPage from './pages/JobSectorsPage';
 import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
+import PublicJobPage from './pages/PublicJobPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,6 +70,7 @@ function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/informative/:id" element={<PublicInformativePage />} /> 
+                <Route path="/jobs/:id" element={<PublicJobPage />} />
                 <Route
                   path="*"
                   element={
