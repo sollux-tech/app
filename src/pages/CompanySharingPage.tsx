@@ -59,9 +59,7 @@ const CompanySharingPage: React.FC = () => {
   const { data: sharedUsers, isLoading: isLoadingSharedUsers } = useQuery<SharedUser[], Error>({
     queryKey: ['companyShares', companyToManageSharing?.id],
     queryFn: async () => {
-      console.log('CompanySharingPage: Executando query sharedUsers para companyId:', companyToManageSharing?.id); // Novo log
       if (!companyToManageSharing) {
-        console.log('CompanySharingPage: companyToManageSharing é nulo, retornando array vazio.'); // Novo log
         return [];
       }
       const { data, error } = await supabase
@@ -70,16 +68,11 @@ const CompanySharingPage: React.FC = () => {
         .eq('company_id', companyToManageSharing.id);
 
       if (error) {
-        console.error('CompanySharingPage: Erro ao buscar compartilhamentos:', error); // Novo log de erro
         throw error;
       }
 
-      console.log("CompanySharingPage: Dados brutos de compartilhamento:", data); // Log para depuração
-
       return data.map(share => {
         const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
-        console.log(`CompanySharingPage: Perfil para shared_with_user_id ${share.shared_with_user_id}:`, profile); // Log detalhado do perfil
-
         const firstName = profile?.first_name || '';
         const lastName = profile?.last_name || '';
         const fullName = `${firstName} ${lastName}`.trim();

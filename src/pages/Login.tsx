@@ -14,6 +14,11 @@ const ptBR = {
     social_provider_text: 'Entrar com {{provider}}',
     link_text: 'Não tem uma conta? Cadastre-se',
     confirmation_text: 'Verifique seu e-mail para o link de confirmação',
+    // Novos campos para localização
+    first_name_label: 'Primeiro Nome',
+    first_name_input_placeholder: 'Seu primeiro nome',
+    last_name_label: 'Sobrenome',
+    last_name_input_placeholder: 'Seu sobrenome',
   },
   sign_in: {
     email_label: 'Endereço de e-mail',
@@ -28,10 +33,12 @@ const ptBR = {
   magic_link: {
     email_input_label: 'Endereço de e-mail',
     email_input_placeholder: 'Seu endereço de e-mail',
-    button_label: 'Enviar link mágico',
-    loading_button_label: 'Enviando link mágico...',
-    link_text: 'Enviar um link mágico por e-mail',
-    confirmation_text: 'Verifique seu e-mail para o link mágico',
+    phone_input_label: 'Número de telefone',
+    phone_input_placeholder: 'Seu número de telefone',
+    token_input_label: 'Token',
+    token_input_placeholder: 'Seu token OTP',
+    button_label: 'Verificar token',
+    loading_button_label: 'Verificando...',
   },
   forgotten_password: {
     email_label: 'Endereço de e-mail',
@@ -108,6 +115,31 @@ const Login = () => {
               }}
               theme="light"
               redirectTo={window.location.origin}
+              // Adiciona campos de Primeiro Nome e Sobrenome ao formulário de cadastro
+              fields={{
+                sign_up: {
+                  email: {
+                    label: ptBR.sign_up.email_label,
+                    placeholder: ptBR.sign_up.email_input_placeholder,
+                  },
+                  password: {
+                    label: ptBR.sign_up.password_label,
+                    placeholder: ptBR.sign_up.password_input_placeholder,
+                  },
+                  first_name: {
+                    label: ptBR.sign_up.first_name_label,
+                    placeholder: ptBR.sign_up.first_name_input_placeholder,
+                    type: 'text',
+                    required: true,
+                  },
+                  last_name: {
+                    label: ptBR.sign_up.last_name_label,
+                    placeholder: ptBR.sign_up.last_name_input_placeholder,
+                    type: 'text',
+                    required: true,
+                  },
+                },
+              }}
             />
           </div>
         </div>

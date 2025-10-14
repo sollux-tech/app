@@ -12,11 +12,6 @@ serve(async (req) => {
   }
 
   try {
-    // Log environment variables for debugging
-    console.log('invite-user: SUPABASE_URL:', Deno.env.get('SUPABASE_URL'));
-    console.log('invite-user: SUPABASE_ANON_KEY (first 5 chars):', Deno.env.get('SUPABASE_ANON_KEY')?.substring(0, 5));
-    console.log('invite-user: SUPABASE_SERVICE_ROLE_KEY (first 5 chars):', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')?.substring(0, 5));
-
     // Create a Supabase client with the user's auth token
     const userSupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,7 +22,6 @@ serve(async (req) => {
     // Get the currently authenticated user
     const { data: { user }, error: userError } = await userSupabaseClient.auth.getUser()
     if (userError) {
-      console.error('invite-user: Error getting user:', userError);
       return new Response(JSON.stringify({ error: `Authentication error: ${userError.message}` }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -64,7 +58,6 @@ serve(async (req) => {
       .single()
 
     if (companyError || !company) {
-      console.error('invite-user: Company ownership verification failed:', companyError);
       return new Response(JSON.stringify({ error: 'Você não possui esta empresa ou ela não existe.' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -77,7 +70,6 @@ serve(async (req) => {
     })
 
     if (rpcError || !inviteeId) {
-      console.error('invite-user: RPC get_user_id_by_email failed:', rpcError);
       return new Response(JSON.stringify({ error: 'Usuário com este e-mail não existe.' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -99,17 +91,14 @@ serve(async (req) => {
       .single()
 
     if (fetchProfileError && fetchProfileError.code !== 'PGRST116') { // PGRST116 means no rows found
-      console.error('invite-user: Error fetching profile:', fetchProfileError);
       throw new Error(`Error fetching profile for user ${inviteeId}: ${fetchProfileError.message}`);
     }
 
     if (!profile) {
-      console.log(`invite-user: Profile not found for user ${inviteeId}, creating one.`);
       const { error: createProfileError } = await adminSupabaseClient
         .from('profiles')
         .insert({ id: inviteeId })
       if (createProfileError) {
-        console.error(`invite-user: Could not create missing profile for user ${inviteeId}:`, createProfileError);
         throw new Error(`Could not create missing profile for user ${inviteeId}: ${createProfileError.message}`)
       }
     }
@@ -129,16 +118,13 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
-      console.error('invite-user: Error inserting company share:', insertError);
       throw insertError
     }
 
-    console.log(`invite-user: Successfully shared company ${companyId} with user ${inviteeId} (${inviteeEmail}).`); // Novo log de sucesso
     return new Response(JSON.stringify({ success: true, message: 'Empresa compartilhada com sucesso.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
-    console.error('invite-user: Unhandled error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
