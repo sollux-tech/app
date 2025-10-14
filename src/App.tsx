@@ -25,6 +25,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import DataDoctorPage from './pages/DataDoctorPage';
 import ConnectPage from './pages/ConnectPage';
 import JobsPage from './pages/JobsPage';
+import JobFormPage from './pages/JobFormPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,6 +80,8 @@ function App() {
                           <Route path="/id/sharing" element={<CompanySharingPage />} />
                           <Route path="/connect" element={<ConnectPage />} />
                           <Route path="/connect/jobs" element={<JobsPage />} />
+                          <Route path="/connect/jobs/new" element={<JobFormPage />} />
+                          <Route path="/connect/jobs/:id" element={<JobFormPage />} />
                           <Route path="/ops" element={<Index />} /> 
                           <Route path="/core" element={<CorePage />} /> 
                           <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 

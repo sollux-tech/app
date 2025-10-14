@@ -14,6 +14,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
   '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
+  '/connect/jobs/new': { name: 'Nova Vaga', parent: '/connect/jobs' },
   '/ops': { name: 'OPS' },
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
@@ -32,5 +33,11 @@ export const getDynamicRouteInfo = (path: string): RouteInfo | null => {
   if (informativeEditMatch && informativeEditMatch[1] !== 'new') {
     return { name: 'Editar Informativo', parent: '/core/pulse-informatives' };
   }
+
+  const jobEditMatch = path.match(/^\/connect\/jobs\/([^/]+)$/);
+  if (jobEditMatch && jobEditMatch[1] !== 'new') {
+    return { name: 'Editar Vaga', parent: '/connect/jobs' };
+  }
+
   return null;
 };
