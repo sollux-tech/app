@@ -34,7 +34,10 @@ interface QuestionBase {
   };
 }
 
-const questionSchema = z.object({
+// Definir QuestionFormDataInferred como QuestionBase para garantir consistência
+type QuestionFormDataInferred = QuestionBase;
+
+const questionSchema: z.ZodType<QuestionFormDataInferred> = z.object({
   type: z.enum(['text', 'email', 'number', 'textarea', 'select', 'multiselect', 'radio', 'checkbox', 'date', 'rating']),
   title: z.string().min(1, { message: 'O título da pergunta é obrigatório.' }),
   description: z.string().optional(),
@@ -45,10 +48,7 @@ const questionSchema = z.object({
     max: z.coerce.number().optional(), // Usar coerce para garantir que seja número
     pattern: z.string().optional(),
   }).optional(),
-}); // Removido 'satisfies z.ZodType<QuestionBase>'
-
-// Definir QuestionFormDataInferred diretamente do schema para garantir consistência
-type QuestionFormDataInferred = z.infer<typeof questionSchema>;
+});
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título do formulário é obrigatório.' }),
