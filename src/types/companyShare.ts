@@ -18,5 +18,5 @@ export interface CompanyWithProfile {
 export interface CompanyShareWithCompanyAndProfile {
   id: string;
   shared_with_user_id: string;
-  companies: CompanyWithProfile | null;
+  companies: CompanyWithProfile[];
 }

@@ -261,10 +261,10 @@ const CompanySharingPage: React.FC = () => {
               {isLoadingSharedWithMe ? (
                 <TableRow><TableCell colSpan={3} className="text-center">Carregando...</TableCell></TableRow>
               ) : sharedWithMeError ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: ${sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
-                  const company = item.companies;
+                  const company = item.companies[0]; // Acessar o primeiro item do array
                   if (!company) { 
                     return null; 
                   }
