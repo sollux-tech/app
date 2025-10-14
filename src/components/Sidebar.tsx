@@ -104,35 +104,35 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
         </nav>
 
         <div className="px-2 mt-auto pt-4 border-t border-gray-700">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Select
-                value={selectedCompany?.id || ''}
-                onValueChange={handleCompanyChange}
-                disabled={isLoadingCompanies || companies.length === 0}
-              >
+          <Select
+            value={selectedCompany?.id || ''}
+            onValueChange={handleCompanyChange}
+            disabled={isLoadingCompanies || companies.length === 0}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
                   <Building2 className="h-6 w-6" />
                 </SelectTrigger>
-                <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
-                  {isLoadingCompanies ? (
-                    <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
-                  ) : companies.length === 0 ? (
-                    <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
-                  ) : (
-                    companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
-              {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
-            </TooltipContent>
-          </Tooltip>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+                {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
+              </TooltipContent>
+            </Tooltip>
+            <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+              {isLoadingCompanies ? (
+                <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
+              ) : companies.length === 0 ? (
+                <SelectItem value="no-companies" disabled>Nenhuma empresa</SelectItem>
+              ) : (
+                companies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.name}
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </TooltipProvider>
