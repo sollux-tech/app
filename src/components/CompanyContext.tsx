@@ -23,10 +23,8 @@ export const CompanyProvider: React.FC<{ children: ReactNode }> = ({ children })
     queryKey: ['companies', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      // Usando a nova VIEW segura que combina empresas próprias e compartilhadas.
-      const { data, error } = await supabase
-        .from('user_accessible_companies')
-        .select('*');
+      // Restaurado para usar a função RPC original, que funciona corretamente com as permissões.
+      const { data, error } = await supabase.rpc('get_user_companies');
       if (error) throw error;
       return data;
     },
