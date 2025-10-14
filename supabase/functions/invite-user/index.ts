@@ -77,7 +77,23 @@ serve(async (req) => {
         })
     }
 
-    // 3. Insert the share record
+    // 3. NEW: Check if the invitee has a profile, create one if not.
+    const { data: profile } = await adminSupabaseClient
+      .from('profiles')
+      .select('id')
+      .eq('id', inviteeId)
+      .single()
+
+    if (!profile) {
+      const { error: createProfileError } = await adminSupabaseClient
+        .from('profiles')
+        .insert({ id: inviteeId })
+      if (createProfileError) {
+        throw new Error(`Could not create missing profile for user ${inviteeId}: ${createProfileError.message}`)
+      }
+    }
+
+    // 4. Insert the share record
     const { error: insertError } = await adminSupabaseClient
       .from('company_shares')
       .insert({
