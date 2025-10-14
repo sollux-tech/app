@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -17,6 +17,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Company } from '@/types/company';
 import { FunctionsHttpError } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -29,28 +30,44 @@ interface SharedWithMeCompany extends Company {
 const CompanySharingPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { selectedCompany } = useCompany();
+  const { companies, isLoadingCompanies } = useCompany(); // Pega todas as empresas (próprias e compartilhadas)
+
+  const [companyToManageSharing, setCompanyToManageSharing] = useState<Company | null>(null);
 
   const form = useForm<{ email: string }>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: '' },
   });
 
+  // Filtra apenas as empresas que o usuário logado é proprietário
+  const ownedCompanies = useMemo(() => {
+    if (!user?.id || !companies) return [];
+    return companies.filter(company => company.user_id === user.id);
+  }, [companies, user?.id]);
+
+  // Define a primeira empresa própria como padrão para gerenciamento, se houver
+  useEffect(() => {
+    if (ownedCompanies.length > 0 && !companyToManageSharing) {
+      setCompanyToManageSharing(ownedCompanies[0]);
+    } else if (ownedCompanies.length === 0 && companyToManageSharing) {
+      setCompanyToManageSharing(null);
+    }
+  }, [ownedCompanies, companyToManageSharing]);
+
   // Query para buscar usuários com quem a empresa selecionada está compartilhada
   const { data: sharedUsers, isLoading: isLoadingSharedUsers } = useQuery<SharedUser[], Error>({
-    queryKey: ['companyShares', selectedCompany?.id],
+    queryKey: ['companyShares', companyToManageSharing?.id],
     queryFn: async () => {
-      if (!selectedCompany) return [];
-      // Consulta ajustada para ser explícita sobre a relação com a tabela de perfis
+      if (!companyToManageSharing) return [];
       const { data, error } = await supabase
         .from('company_shares')
         .select('id, shared_with_user_id, profiles!shared_with_user_id(first_name, last_name)')
-        .eq('company_id', selectedCompany.id);
+        .eq('company_id', companyToManageSharing.id);
 
       if (error) throw error;
 
       return (data as CompanyShareResponse[]).map(share => {
-        const profile = share.profiles?.[0]; // Pega o primeiro perfil do array
+        const profile = share.profiles?.[0];
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
@@ -58,7 +75,7 @@ const CompanySharingPage: React.FC = () => {
         };
       });
     },
-    enabled: !!selectedCompany,
+    enabled: !!companyToManageSharing,
   });
 
   // Query para buscar empresas que foram compartilhadas COMIGO
@@ -78,9 +95,9 @@ const CompanySharingPage: React.FC = () => {
 
   const inviteMutation = useMutation({
     mutationFn: async (email: string) => {
-      if (!selectedCompany) throw new Error('Nenhuma empresa selecionada.');
+      if (!companyToManageSharing) throw new Error('Nenhuma empresa selecionada para compartilhar.');
       const { data, error } = await supabase.functions.invoke('invite-user', {
-        body: { companyId: selectedCompany.id, inviteeEmail: email },
+        body: { companyId: companyToManageSharing.id, inviteeEmail: email },
       });
       
       if (error) {
@@ -97,7 +114,7 @@ const CompanySharingPage: React.FC = () => {
     },
     onSuccess: () => {
       showSuccess('Convite enviado com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['companyShares', selectedCompany?.id] });
+      queryClient.invalidateQueries({ queryKey: ['companyShares', companyToManageSharing?.id] });
       form.reset();
     },
     onError: (error: Error) => {
@@ -112,7 +129,7 @@ const CompanySharingPage: React.FC = () => {
     },
     onSuccess: () => {
       showSuccess('Acesso removido com sucesso!');
-      queryClient.invalidateQueries({ queryKey: ['companyShares', selectedCompany?.id] });
+      queryClient.invalidateQueries({ queryKey: ['companyShares', companyToManageSharing?.id] });
     },
     onError: (error: Error) => {
       showError(`Erro ao remover acesso: ${error.message}`);
@@ -128,15 +145,44 @@ const CompanySharingPage: React.FC = () => {
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle>Compartilhar Minhas Empresas</CardTitle>
-          <CardDescription>Selecione uma empresa na barra lateral e convide usuários para colaborar.</CardDescription>
+          <CardDescription>Selecione uma das suas empresas para gerenciar o compartilhamento com outros usuários.</CardDescription>
         </CardHeader>
         <CardContent>
-          {!selectedCompany ? (
-            <p className="text-gray-500 text-center py-4">Selecione uma empresa para gerenciar o compartilhamento.</p>
+          <div className="mb-6">
+            <FormLabel className="text-sollux-black">Minhas Empresas</FormLabel>
+            <Select
+              value={companyToManageSharing?.id || ''}
+              onValueChange={(value) => setCompanyToManageSharing(ownedCompanies.find(c => c.id === value) || null)}
+              disabled={isLoadingCompanies || ownedCompanies.length === 0}
+            >
+              <SelectTrigger className="w-full rounded-lg">
+                <SelectValue placeholder="Selecione uma empresa para compartilhar..." />
+              </SelectTrigger>
+              <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+                {isLoadingCompanies ? (
+                  <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
+                ) : ownedCompanies.length === 0 ? (
+                  <SelectItem value="no-companies" disabled>Nenhuma empresa própria encontrada.</SelectItem>
+                ) : (
+                  ownedCompanies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {ownedCompanies.length === 0 && (
+              <p className="text-sm text-red-500 mt-2">Você precisa criar uma empresa em "ID | Gerenciar Empresas" antes de poder compartilhar.</p>
+            )}
+          </div>
+
+          {!companyToManageSharing ? (
+            <p className="text-gray-500 text-center py-4">Selecione uma empresa acima para gerenciar o compartilhamento.</p>
           ) : (
             <>
               <h3 className="font-semibold mb-4 text-sollux-black">
-                Convidar para: <span className="text-sollux-red">{selectedCompany.name}</span>
+                Convidar para: <span className="text-sollux-red">{companyToManageSharing.name}</span>
               </h3>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="flex items-start gap-4 mb-6">
@@ -146,7 +192,7 @@ const CompanySharingPage: React.FC = () => {
                   <Button type="submit" disabled={inviteMutation.isPending} className="rounded-lg bg-sollux-red hover:bg-sollux-orange"><UserPlus className="mr-2 h-4 w-4" /> Convidar</Button>
                 </form>
               </Form>
-              <h4 className="font-semibold mb-2 text-sollux-black">Usuários com Acesso a "{selectedCompany.name}"</h4>
+              <h4 className="font-semibold mb-2 text-sollux-black">Usuários com Acesso a "{companyToManageSharing.name}"</h4>
               <Table>
                 <TableHeader><TableRow><TableHead className="text-sollux-black">Nome</TableHead><TableHead className="text-right text-sollux-black">Ações</TableHead></TableRow></TableHeader>
                 <TableBody>
