@@ -20,13 +20,16 @@ const formSchema = z.object({
   description: z.string().optional(),
 });
 
+// Define o tipo inferido do schema para uso consistente
+type FormInput = z.infer<typeof formSchema>;
+
 const FormCreatePage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormInput>({ // Usar o tipo FormInput aqui
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
@@ -35,7 +38,7 @@ const FormCreatePage: React.FC = () => {
   });
 
   const createFormMutation = useMutation({
-    mutationFn: async (data: { title: string; description?: string }) => {
+    mutationFn: async (data: FormInput) => { // Usar o tipo FormInput aqui
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       const { data: newForm, error } = await supabase
         .from('forms')
@@ -63,7 +66,7 @@ const FormCreatePage: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = (data: FormInput) => { // Usar o tipo FormInput aqui
     createFormMutation.mutate(data);
   };
 
