@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Download, Search, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 
 const FormResponsesPage: React.FC = () => {
   const { id: formId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [responses, setResponses] = useState<FormResponse[]>([]);
-  const [formDetail, setFormDetail] = useState<any>(null);
+  const [formDetail, setFormDetail] = useState<any>(null); // Usar 'any' temporariamente para o formDetail
   const [questions, setQuestions] = useState<Question[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(null);
@@ -46,66 +45,13 @@ const FormResponsesPage: React.FC = () => {
 
       if (responsesError) throw responsesError;
       setResponses(responsesData || []);
-    } catch (error) {
-      showError('Erro ao carregar
-Vamos continuar a página de visualização de respostas:
-
-<dyad-write path="src/pages/FormResponsesPage.tsx" description="Página de visualização de respostas do formulário SOLLUX FORM™ (continuação).">
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { showSuccess, showError } from '@/utils/toast';
-import { FormResponse, Question } from '@/types/form';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Download, Search, Eye } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-
-const FormResponsesPage: React.FC = () => {
-  const { id: formId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const [responses, setResponses] = useState<FormResponse[]>([]);
-  const [formDetail, setFormDetail] = useState<any>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedResponse, setSelectedResponse] = useState<FormResponse | null>(null);
-  const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
-
-  const fetchFormAndResponses = async () => {
-    try {
-      // Buscar detalhes do formulário
-      const { data: formData, error: formError } = await supabase
-        .from('forms')
-        .select('*')
-        .eq('id', formId)
-        .single();
-
-      if (formError) throw formError;
-      setFormDetail(formData);
-      setQuestions(formData.questions || []);
-
-      // Buscar respostas
-      const { data: responsesData, error: responsesError } = await supabase
-        .from('form_responses')
-        .select('*')
-        .eq('form_id', formId)
-        .order('created_at', { ascending: false });
-
-      if (responsesError) throw responsesError;
-      setResponses(responsesData || []);
-    } catch (error) {
-      showError('Erro ao carregar dados do formulário.');
+    } catch (error: any) {
+      showError(`Erro ao carregar dados do formulário: ${error.message}`);
       navigate('/forms');
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (formId) {
       fetchFormAndResponses();
     }
@@ -133,7 +79,12 @@ const FormResponsesPage: React.FC = () => {
               return value.join('; ');
             }
             
-            return String(value);
+            // Escapar aspas duplas e envolver em aspas se contiver vírgula ou aspas
+            let stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"')) {
+              stringValue = `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
           })
         ].join(','))
       ].join('\n');
@@ -150,8 +101,8 @@ const FormResponsesPage: React.FC = () => {
         document.body.removeChild(link);
       }
       showSuccess('CSV exportado com sucesso!');
-    } catch (error) {
-      showError('Erro ao exportar CSV.');
+    } catch (error: any) {
+      showError(`Erro ao exportar CSV: ${error.message}`);
     }
   };
 
@@ -171,6 +122,8 @@ const FormResponsesPage: React.FC = () => {
     const question = questions.find(q => q.id === questionId);
     if (!question) return String(value);
 
+    if (value === undefined || value === null) return 'N/A';
+
     if (Array.isArray(value)) {
       return value.join(', ');
     }
@@ -182,6 +135,11 @@ const FormResponsesPage: React.FC = () => {
         return value ? format(new Date(value), 'dd/MM/yyyy', { locale: ptBR }) : '';
       case 'checkbox':
       case 'multiselect':
+        // Para checkboxes e multiselects, se o valor for um array de objetos { checked: boolean, value: string }
+        // ou apenas um array de strings, formatar adequadamente.
+        if (Array.isArray(value) && value.every(item => typeof item === 'object' && 'value' in item)) {
+          return value.filter(item => item.checked).map(item => item.value).join(', ');
+        }
         return Array.isArray(value) ? value.join(', ') : String(value);
       default:
         return String(value);

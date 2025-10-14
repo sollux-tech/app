@@ -18,7 +18,7 @@ import { Form as FormType, Question, QuestionFormData } from '@/types/form';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
 
 const questionSchema = z.object({
   type: z.enum(['text', 'email', 'number', 'textarea', 'select', 'multiselect', 'radio', 'checkbox', 'date', 'rating']),
@@ -27,8 +27,8 @@ const questionSchema = z.object({
   required: z.boolean(),
   options: z.array(z.string()).optional(),
   validation: z.object({
-    min: z.number().optional(),
-    max: z.number().optional(),
+    min: z.coerce.number().optional(), // Usar coerce para garantir que seja número
+    max: z.coerce.number().optional(), // Usar coerce para garantir que seja número
     pattern: z.string().optional(),
   }).optional(),
 });
@@ -49,7 +49,7 @@ const FormEditPage: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
@@ -126,7 +126,7 @@ const FormEditPage: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: { title: string; description: string }) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     updateFormMutation.mutate({
       ...data,
       questions,
@@ -152,7 +152,7 @@ const FormEditPage: React.FC = () => {
   const handleSaveQuestion = (questionData: QuestionFormData) => {
     if (editingQuestion) {
       // Editar pergunta existente
-      const newQuestions = questions.map((q, index) =>
+      const newQuestions = questions.map((q) =>
         q.id === editingQuestion.id ? { ...q, ...questionData } : q
       );
       setQuestions(newQuestions);
@@ -174,15 +174,14 @@ const FormEditPage: React.FC = () => {
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    if (draggedIndex === null) return;
+    if (draggedIndex === null || draggedIndex === index) return;
     
     const newQuestions = [...questions];
-    const draggedQuestion = newQuestions[draggedIndex];
-    newQuestions.splice(draggedIndex, 1);
-    newQuestions.splice(index, 0, draggedQuestion);
+    const [reorderedItem] = newQuestions.splice(draggedIndex, 1);
+    newQuestions.splice(index, 0, reorderedItem);
     
     setQuestions(newQuestions);
-    setDraggedIndex(index);
+    setDraggedIndex(index); // Atualiza o índice do item arrastado para a nova posição
   };
 
   const handleDragEnd = () => {
@@ -413,7 +412,7 @@ const QuestionDialog: React.FC<{
   onSave: (data: QuestionFormData) => void;
   question?: Question | null;
 }> = ({ open, onOpenChange, onSave, question }) => {
-  const form = useForm({
+  const form = useForm<z.infer<typeof questionSchema>>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
       type: 'text',
@@ -421,7 +420,11 @@ const QuestionDialog: React.FC<{
       description: '',
       required: false,
       options: [],
-      validation: {},
+      validation: { // Inicializar validation para evitar erros de tipagem
+        min: undefined,
+        max: undefined,
+        pattern: undefined,
+      },
     },
   });
 
@@ -433,7 +436,11 @@ const QuestionDialog: React.FC<{
         description: question.description || '',
         required: question.required,
         options: question.options || [],
-        validation: question.validation || {},
+        validation: {
+          min: question.validation?.min,
+          max: question.validation?.max,
+          pattern: question.validation?.pattern,
+        },
       });
     } else {
       form.reset({
@@ -442,12 +449,16 @@ const QuestionDialog: React.FC<{
         description: '',
         required: false,
         options: [],
-        validation: {},
+        validation: {
+          min: undefined,
+          max: undefined,
+          pattern: undefined,
+        },
       });
     }
-  }, [question, form]);
+  }, [question, form, open]); // Adicionar 'open' como dependência para resetar ao abrir
 
-  const onSubmit = (data: QuestionFormData) => {
+  const onSubmit = (data: z.infer<typeof questionSchema>) => {
     onSave(data);
     form.reset();
   };
