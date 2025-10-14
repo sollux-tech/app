@@ -74,7 +74,7 @@ const CompanySharingPage: React.FC = () => {
       console.log('DEBUG: Dados brutos de compartilhamento (sharedUsers):', data);
 
       return data.map(share => {
-        const profile = share.profiles?.[0];
+        const profile = share.profiles?.[0]; // Supabase pode retornar um array, pegamos o primeiro
         const firstName = profile?.first_name || '';
         const lastName = profile?.last_name || '';
         const fullName = `${firstName} ${lastName}`.trim();
@@ -82,7 +82,7 @@ const CompanySharingPage: React.FC = () => {
         return {
           id: share.id,
           user_id: share.shared_with_user_id,
-          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`,
+          full_name: fullName || `ID: ${share.shared_with_user_id} (Usuário precisa preencher o perfil)`, // Fallback mais descritivo
         };
       });
     },
@@ -96,7 +96,7 @@ const CompanySharingPage: React.FC = () => {
         if (!user) return [];
         const { data, error } = await supabase
             .from('company_shares')
-            .select('id, shared_with_user_id, companies(*, profiles(first_name, last_name))')
+            .select('id, shared_with_user_id, companies(*, profiles(first_name, last_name))') // Incluindo 'id' e 'shared_with_user_id' para corresponder à interface
             .eq('shared_with_user_id', user.id);
         if (error) {
           console.error('DEBUG: Erro na query de sharedWithMe:', error);
@@ -104,7 +104,8 @@ const CompanySharingPage: React.FC = () => {
           throw error; // Re-throw para que o useQuery marque como erro
         }
         console.log('DEBUG: Dados brutos de compartilhamento (sharedWithMe):', data);
-        return data;
+        // Usar asserção de tipo para garantir que o TypeScript entenda a estrutura
+        return data as CompanyShareWithCompanyAndProfile[];
     },
     enabled: !!user,
   });
