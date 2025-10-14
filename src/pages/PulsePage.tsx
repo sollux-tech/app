@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText } from 'lucide-react'; 
+import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText, CheckCircle } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
