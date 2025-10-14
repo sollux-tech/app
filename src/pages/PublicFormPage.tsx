@@ -16,6 +16,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query'; // Importar useQuery
 
 const formResponseSchema = z.record(z.string(), z.any());
 
@@ -24,45 +25,31 @@ const PublicFormPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formDetail, setFormDetail] = useState<FormType | null>(null);
 
   const form = useForm({
     resolver: zodResolver(formResponseSchema),
     defaultValues: {} as Record<string, any>,
   });
 
-  const { fields: checkboxFields, append: appendCheckbox } = useFieldArray({
-    control: form.control,
-    name: 'checkboxes',
+  // Usar useQuery para buscar os detalhes do formulário através da Edge Function
+  const { data: formDetail, isLoading, error } = useQuery<FormType, Error>({
+    queryKey: ['publicForm', formId],
+    queryFn: async () => {
+      if (!formId) throw new Error("ID do formulário está faltando.");
+      const { data, error } = await supabase.functions.invoke('get-public-form', {
+        body: { form_id: formId },
+      });
+      if (error) throw new Error(`Function error: ${error.message}`);
+      if (data.error) throw new Error(`Function returned an error: ${data.error}`);
+      return data;
+    },
+    enabled: !!formId,
+    retry: false, // Não tentar novamente em caso de erro, especialmente para 404
   });
 
-  const { fields: radioFields, append: appendRadio } = useFieldArray({
-    control: form.control,
-    name: 'radios',
-  });
-
-  const fetchForm = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('forms')
-        .select('*')
-        .eq('id', formId)
-        .eq('status', 'published')
-        .single();
-
-      if (error) throw error;
-      setFormDetail(data);
-    } catch (error) {
-      showError('Formulário não encontrado ou não está publicado.');
-      navigate('/');
-    }
-  };
-
-  React.useEffect(() => {
-    if (formId) {
-      fetchForm();
-    }
-  }, [formId]);
+  // O useEffect para fetchForm foi removido, pois useQuery já faz isso.
+  // O estado `formDetail` e `questions` agora são derivados de `formDetail` do useQuery.
+  const questions = formDetail?.questions || [];
 
   const onSubmit = async (data: Record<string, any>) => {
     if (!formDetail) return;
@@ -314,15 +301,48 @@ const PublicFormPage: React.FC = () => {
     );
   }
 
-  if (!formDetail) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
         <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
           <Loader2 className="h-16 w-16 text-sollux-red mx-auto mb-4 animate-spin" />
           <h2 className="text-2xl font-bold text-sollux-black mb-2">Carregando...</h2>
           <p className="text-gray-600">
-            Por favor, aguar enquanto carregamos o formulário.
+            Por favor, aguarde enquanto carregamos o formulário.
           </p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
+        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
+          <h2 className="text-2xl font-bold text-sollux-black mb-2">Erro ao carregar formulário</h2>
+          <p className="text-gray-600 mb-6">
+            {error.message}
+          </p>
+          <Button onClick={() => navigate('/')} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
+            Voltar para o Início
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!formDetail) {
+    // This case should ideally be caught by the error handler above if the function returns null/empty data
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
+        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
+          <h2 className="text-2xl font-bold text-sollux-black mb-2">Formulário não encontrado</h2>
+          <p className="text-gray-600 mb-6">
+            O formulário que você está procurando não existe ou não está publicado.
+          </p>
+          <Button onClick={() => navigate('/')} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
+            Voltar para o Início
+          </Button>
         </Card>
       </div>
     );
@@ -343,7 +363,7 @@ const PublicFormPage: React.FC = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {formDetail.questions?.map((question) => (
+                {questions?.map((question) => (
                   <div key={question.id} className="space-y-2">
                     <div className="flex items-center gap-2">
                       <label className="text-sm font-medium text-sollux-black">
