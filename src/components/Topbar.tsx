@@ -1,14 +1,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Menu, Bell, User } from 'lucide-react';
+import { Menu, Bell, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Sidebar from './Sidebar';
 import { useCompany } from './CompanyContext';
 import { cn } from '@/lib/utils';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from './SessionContextProvider';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/notification';
@@ -30,6 +38,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data: notifications } = useQuery<Notification[], Error>({
@@ -115,6 +124,11 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
     }
   }, [isPopoverOpen]);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // O SessionContextProvider irá redirecionar para /login automaticamente
+  };
+
   const getPageTitle = () => {
     if (location.pathname.startsWith('/core/pulse-informatives/new')) return 'CORE | NOVO INFORMATIVO';
     if (location.pathname.startsWith('/core/pulse-informatives/') && location.pathname !== '/core/pulse-informatives') return 'CORE | EDITAR INFORMATIVO';
@@ -191,14 +205,32 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
               </div>
             </PopoverContent>
           </Popover>
-          <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-full pr-4">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-gray-600" />
-            </div>
-            <span className="text-sm font-medium text-sollux-black hidden md:block">
-              Olá, {profile?.first_name || 'Usuário'}
-            </span>
-          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-full pr-4 cursor-pointer hover:bg-gray-200 transition-colors">
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-gray-600" />
+                </div>
+                <span className="text-sm font-medium text-sollux-black hidden md:block">
+                  Olá, {profile?.first_name || 'Usuário'}
+                </span>
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 mt-2 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+              <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/id/users')} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Perfil</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-sollux-red focus:text-sollux-red focus:bg-red-50">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sair</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
