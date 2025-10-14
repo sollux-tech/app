@@ -18,5 +18,5 @@ export interface CompanyWithProfile {
 export interface CompanyShareWithCompanyAndProfile {
   id: string; // ID of the company_share record
   shared_with_user_id: string;
-  companies: CompanyWithProfile;
+  companies: CompanyWithProfile[]; // Alterado para ser um array
 }
