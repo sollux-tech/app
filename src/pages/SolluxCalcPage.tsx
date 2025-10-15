@@ -31,7 +31,8 @@ const formSchema = z.object({
   const totalPercentage = (data.fixed_expenses_percentage || 0) + (data.taxes_percentage || 0) + (data.commission_percentage || 0) + (data.desired_margin_percentage || 0);
   return totalPercentage < 100;
 }, {
-  message: "A soma das despesas, impostos, comissão e margem não pode ser 100% ou mais do preço de venda.",
+  message: "A soma das despesas, impostos, comissão e margem é muito alta. Ajuste os valores."
+  ,
   path: ["desired_margin_percentage"], // Pode ser qualquer campo que contribua para a soma
 });
 
@@ -227,7 +228,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
+      commission_percentage: calc.commission_percentage || undefined,
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     const result = calculatePricing({
@@ -235,13 +236,11 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
+      commission_percentage: calc.commission_percentage || undefined,
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     setCalculationResult(result);
     setIsResultPanelVisible(true);
-    // For simplicity, we're not directly updating the DB on form submit here,
-    // but a dedicated "Update" button could be added to the form.
     showSuccess("Dados carregados no formulário para edição.");
   };
 
@@ -251,7 +250,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
+      commission_percentage: calc.commission_percentage || undefined,
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     const result = calculatePricing({
@@ -259,7 +258,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
+      commission_percentage: calc.commission_percentage || undefined,
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     setCalculationResult(result);
@@ -291,7 +290,7 @@ const SolluxCalcPage: React.FC = () => {
     }
   };
 
-  const handleAddScenario = () => {
+  const handleAddCurrentFormAsScenario = () => {
     const currentFormData = form.getValues();
     const result = calculatePricing(currentFormData);
     if (result.error) {
@@ -300,6 +299,44 @@ const SolluxCalcPage: React.FC = () => {
     }
     setScenarios(prev => [...prev, { ...currentFormData, id: `scenario_${prev.length + 1}`, result }]);
     setIsScenarioDialogOpen(true);
+  };
+
+  const handleSimulateFromSavedCalculation = (calc: Calculation) => {
+    // 1. Carregar os dados do cálculo salvo no formulário principal
+    form.reset({
+      product_name: calc.product_name,
+      unit_cost: calc.unit_cost,
+      fixed_expenses_percentage: calc.fixed_expenses_percentage,
+      taxes_percentage: calc.taxes_percentage,
+      commission_percentage: calc.commission_percentage || undefined,
+      desired_margin_percentage: calc.desired_margin_percentage,
+    });
+
+    // 2. Calcular o resultado para este cálculo salvo
+    const result = calculatePricing({
+      product_name: calc.product_name,
+      unit_cost: calc.unit_cost,
+      fixed_expenses_percentage: calc.fixed_expenses_percentage,
+      taxes_percentage: calc.taxes_percentage,
+      commission_percentage: calc.commission_percentage || undefined,
+      desired_margin_percentage: calc.desired_margin_percentage,
+    });
+
+    if (result.error) {
+      showError(result.error);
+      return;
+    }
+
+    // 3. Adicionar este cálculo como o primeiro cenário (limpando os anteriores)
+    setScenarios([{ ...form.getValues(), id: `scenario_saved_${calc.id}`, result }]);
+    
+    // 4. Exibir o resultado no painel principal
+    setCalculationResult(result);
+    setIsResultPanelVisible(true);
+
+    // 5. Abrir o diálogo de simulação de cenários
+    setIsScenarioDialogOpen(true);
+    showSuccess(`Cálculo "${calc.product_name}" carregado para simulação de cenários.`);
   };
 
   const handleRemoveScenario = (id: string) => {
@@ -413,8 +450,8 @@ const SolluxCalcPage: React.FC = () => {
                 <Button type="button" variant="outline" onClick={handleSaveCalculation} disabled={!calculationResult || !!calculationResult.error || isSaving} className="rounded-lg">
                   {isSaving ? 'Salvando...' : 'Salvar Cálculo'}
                 </Button>
-                <Button type="button" variant="outline" onClick={handleAddScenario} disabled={!calculationResult || !!calculationResult.error} className="rounded-lg">
-                  <BarChart2 className="mr-2 h-4 w-4" /> Simular Cenário
+                <Button type="button" variant="outline" onClick={handleAddCurrentFormAsScenario} disabled={!calculationResult || !!calculationResult.error} className="rounded-lg">
+                  <BarChart2 className="mr-2 h-4 w-4" /> Adicionar Cenário Atual
                 </Button>
               </div>
             </form>
@@ -524,6 +561,9 @@ const SolluxCalcPage: React.FC = () => {
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleDuplicateCalculation(calc)} disabled={isDeleting} title="Duplicar">
                         <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleSimulateFromSavedCalculation(calc)} disabled={isDeleting} title="Simular Cenário">
+                        <BarChart2 className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="sm" onClick={() => handleShareCalculation(calc)} disabled={isDeleting} title="Compartilhar">
                         <Share2 className="h-4 w-4" />
@@ -638,7 +678,7 @@ const SolluxCalcPage: React.FC = () => {
           </DialogHeader>
           <div className="space-y-6 py-4">
             {scenarios.length === 0 ? (
-              <p className="text-center text-gray-500">Adicione um cenário clicando em "Simular Cenário" no formulário principal.</p>
+              <p className="text-center text-gray-500">Adicione um cenário clicando em "Adicionar Cenário Atual" no formulário principal ou "Simular Cenário" em um cálculo salvo.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {scenarios.map((scenario, index) => (
