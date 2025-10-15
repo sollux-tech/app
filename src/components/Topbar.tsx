@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/notification';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { routeMap, getDynamicRouteInfo } from '@/lib/navigation'; // Importar routeMap e getDynamicRouteInfo
 
 interface TopbarProps {
   className?: string;
@@ -130,47 +131,31 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
   };
 
   const getPageTitle = () => {
-    if (location.pathname.startsWith('/core/pulse-informatives/new')) return 'CORE | NOVO INFORMATIVO';
-    if (location.pathname.startsWith('/core/pulse-informatives/') && location.pathname !== '/core/pulse-informatives') return 'CORE | EDITAR INFORMATIVO';
-    if (location.pathname.startsWith('/informative/')) return 'INFORMATIVO PÚBLICO';
-    if (location.pathname.startsWith('/jobs/')) return 'VAGA PÚBLICA';
-    if (location.pathname.startsWith('/form/')) return 'FORMULÁRIO PÚBLICO';
-    if (location.pathname.startsWith('/id/companies/new')) return 'ID | NOVA EMPRESA';
-    if (location.pathname.startsWith('/id/companies/') && location.pathname !== '/id/companies') return 'ID | EDITAR EMPRESA';
-    
-    switch (location.pathname) {
-      case '/pulse': return 'PULSE';
-      case '/id': return 'ID';
-      case '/id/companies': return 'ID | EMPRESAS';
-      case '/id/users': return 'ID | USUÁRIOS';
-      case '/connect': return 'CONNECT';
-      case '/connect/jobs': return 'CONNECT | VAGAS';
-      case '/connect/jobs/new': return 'CONNECT | NOVA VAGA';
-      case '/connect/calc': return 'CONNECT | SOLLUX CALC™';
-      case '/connect/forms': return 'CONNECT | FORMULÁRIOS';
-      case '/connect/forms/new': return 'CONNECT | NOVO FORMULÁRIO';
-      case '/ops': return 'OPS';
-      case '/core': return 'CORE';
-      case '/core/user-types': return 'CORE | TIPOS DE USUÁRIO';
-      case '/core/pulse-informatives': return 'CORE | INFORMATIVOS PULSE';
-      case '/core/global-settings': return 'CORE | CONFIGURAÇÕES GLOBAIS';
-      case '/core/global-settings/jobs': return 'CORE | CONFIG. VAGAS';
-      case '/core/global-settings/job-sectors': return 'CORE | JOBS - ÁREAS/SETORES';
-      case '/core/global-settings/contract-types': return 'CORE | JOBS - TIPOS DE CONTRATO';
-      case '/core/global-settings/work-models': return 'CORE | JOBS - MODELOS DE TRABALHO';
-      case '/core/global-settings/ops': return 'CORE | CONFIG. OPS';
-      case '/core/global-settings/ops/pillar-types': return 'CORE | OPS - TIPOS DE PILARES';
-      case '/core/global-settings/ops/pillars': return 'CORE | OPS - PILARES';
-      case '/core/global-settings/ops/pillar-blocks': return 'CORE | OPS - BLOCOS DOS PILARES';
-      case '/core/global-settings/ops/scoring-scale': return 'CORE | OPS - RÉGUA DE PONTUAÇÃO';
-      case '/core/global-settings/ops/kpis': return 'CORE | OPS - KPIS DE DIAGNÓSTICO';
-      case '/core/sidebar-settings': return 'CORE | CONFIG. BARRA LATERAL';
-      case '/core/notifications': return 'CORE | NOTIFICAÇÕES';
-      case '/core/all-companies': return 'CORE | TODAS AS EMPRESAS';
-      case '/core/data-doctor': return 'CORE | DIAGNÓSTICO DE DADOS';
-      case '/core/markets': return 'CORE | GERENCIAR MERCADOS';
-      default: return 'DASHBOARD';
+    const currentPath = location.pathname;
+
+    // Tenta encontrar uma rota exata no routeMap
+    if (routeMap[currentPath]) {
+      const parentPath = routeMap[currentPath].parent;
+      const parentName = parentPath ? routeMap[parentPath]?.name + ' | ' : '';
+      return `${parentName}${routeMap[currentPath].name}`.toUpperCase();
     }
+
+    // Tenta encontrar uma rota dinâmica
+    const dynamicRoute = getDynamicRouteInfo(currentPath);
+    if (dynamicRoute) {
+      const parentPath = dynamicRoute.parent;
+      const parentName = parentPath ? routeMap[parentPath]?.name + ' | ' : '';
+      return `${parentName}${dynamicRoute.name}`.toUpperCase();
+    }
+
+    // Casos especiais que não se encaixam no routeMap ou dynamicRoute
+    if (currentPath.startsWith('/informative/')) return 'INFORMATIVO PÚBLICO';
+    if (currentPath.startsWith('/jobs/')) return 'VAGA PÚBLICA';
+    if (currentPath.startsWith('/form/')) return 'FORMULÁRIO PÚBLICO';
+    if (currentPath.startsWith('/login')) return 'LOGIN';
+
+
+    return 'DASHBOARD'; // Título padrão se nada for encontrado
   };
 
   return (
