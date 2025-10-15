@@ -44,7 +44,8 @@ import PillarManagementPage from './pages/PillarManagementPage';
 import PillarBlockManagementPage from './pages/PillarBlockManagementPage';
 import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage';
 import KpiManagementPage from './pages/KpiManagementPage';
-import CompanyFormPage from './pages/CompanyFormPage'; // Importar a nova página
+import CompanyFormPage from './pages/CompanyFormPage';
+import MarketManagementPage from './pages/MarketManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -97,8 +98,8 @@ function App() {
                           <Route path="/pulse" element={<PulsePage />} /> 
                           <Route path="/id" element={<IdPage />} />
                           <Route path="/id/companies" element={<CompanyManagementPage />} />
-                          <Route path="/id/companies/new" element={<CompanyFormPage />} /> {/* Nova rota para criar */}
-                          <Route path="/id/companies/:id" element={<CompanyFormPage />} /> {/* Nova rota para editar */}
+                          <Route path="/id/companies/new" element={<CompanyFormPage />} />
+                          <Route path="/id/companies/:id" element={<CompanyFormPage />} />
                           <Route path="/id/users" element={<UserManagementPage />} />
                           <Route path="/id/sharing" element={<CompanySharingPage />} />
                           <Route path="/connect" element={<ConnectPage />} />
@@ -127,6 +128,7 @@ function App() {
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                           <Route path="/core/data-doctor" element={<DataDoctorPage />} />
+                          <Route path="/core/markets" element={<MarketManagementPage />} /> {/* Nova rota para mercados */}
                           
                           {/* Rotas SOLLUX FORM™ */}
                           <Route path="/connect/forms" element={<FormsPage />} />

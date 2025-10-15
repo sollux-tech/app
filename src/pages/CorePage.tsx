@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Settings, UserCog, Newspaper, Bell, Building2, Wrench } from 'lucide-react'; 
+import { Settings, UserCog, Newspaper, Bell, Building2, Wrench, Store } from 'lucide-react'; // Importar Store para Mercados
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +29,10 @@ const CorePage: React.FC = () => {
 
   const handleDataDoctorClick = () => {
     navigate('/core/data-doctor');
+  };
+
+  const handleMarketManagementClick = () => {
+    navigate('/core/markets'); // Nova rota para gerenciamento de mercados
   };
 
   return (
@@ -77,6 +81,12 @@ const CorePage: React.FC = () => {
               description="Ajuste as configurações gerais da plataforma."
               icon={Settings}
               onClick={handleGlobalSettingsClick}
+            />
+            <FeatureCard
+              title="Gerenciar Mercados"
+              description="Cadastre e gerencie os mercados de atuação das empresas."
+              icon={Store}
+              onClick={handleMarketManagementClick}
             />
           </div>
         </CardContent>

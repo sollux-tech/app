@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target } from 'lucide-react'; // Importar Target
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store } from 'lucide-react'; // Importar Target e Store
 
 interface RouteInfo {
   name: string;
@@ -10,7 +10,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/pulse': { name: 'Pulse', icon: Home },
   '/id': { name: 'ID' },
   '/id/companies': { name: 'Gerenciar Empresas', parent: '/id' },
-  '/id/companies/new': { name: 'Nova Empresa', parent: '/id/companies' }, // Nova rota
+  '/id/companies/new': { name: 'Nova Empresa', parent: '/id/companies' },
+  '/id/companies/:id': { name: 'Editar Empresa', parent: '/id/companies' }, // Adicionado para edição
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
@@ -40,6 +41,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
   '/core/data-doctor': { name: 'Diagnóstico de Dados', parent: '/core' },
+  '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store }, // Nova rota para mercados
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático
