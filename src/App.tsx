@@ -43,7 +43,8 @@ import PillarTypeManagementPage from './pages/PillarTypeManagementPage';
 import PillarManagementPage from './pages/PillarManagementPage';
 import PillarBlockManagementPage from './pages/PillarBlockManagementPage';
 import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage';
-import KpiManagementPage from './pages/KpiManagementPage'; // Importar a nova página
+import KpiManagementPage from './pages/KpiManagementPage';
+import CompanyFormPage from './pages/CompanyFormPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +97,8 @@ function App() {
                           <Route path="/pulse" element={<PulsePage />} /> 
                           <Route path="/id" element={<IdPage />} />
                           <Route path="/id/companies" element={<CompanyManagementPage />} />
+                          <Route path="/id/companies/new" element={<CompanyFormPage />} /> {/* Nova rota para criar */}
+                          <Route path="/id/companies/:id" element={<CompanyFormPage />} /> {/* Nova rota para editar */}
                           <Route path="/id/users" element={<UserManagementPage />} />
                           <Route path="/id/sharing" element={<CompanySharingPage />} />
                           <Route path="/connect" element={<ConnectPage />} />
@@ -119,7 +122,7 @@ function App() {
                           <Route path="/core/global-settings/ops/pillars" element={<PillarManagementPage />} />
                           <Route path="/core/global-settings/ops/pillar-blocks" element={<PillarBlockManagementPage />} />
                           <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
-                          <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} /> {/* Nova rota */}
+                          <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,29 +8,22 @@ import { useSession } from '@/components/SessionContextProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import CompanyCard from '@/components/CompanyCard';
 import { Company } from '@/types/company';
-import CompanyFormDialog from '@/components/CompanyFormDialog';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { useCompany } from '@/components/CompanyContext';
 
 const CompanyManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { companies, isLoadingCompanies, setSelectedCompany } = useCompany();
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentCompany, setCurrentCompany] = useState<Company | null>(null);
-
-  // Filtra a lista de empresas do contexto para mostrar apenas as que o usuário é proprietário
-  const ownedCompanies = useMemo(() => {
-    if (!user?.id || !companies) return [];
-    return companies.filter(company => company.user_id === user.id);
-  }, [companies, user?.id]);
+  const navigate = useNavigate(); // Inicializar useNavigate
 
   const deleteCompanyMutation = useMutation({
     mutationFn: async (companyId: string) => {
       const { error } = await supabase
         .from('companies')
         .delete()
-        .eq('id', companyId);
+        .eq('id', companyId)
+        .eq('user_id', user?.id); // Garante que o usuário só delete suas próprias empresas
       if (error) throw error;
     },
     onSuccess: () => {
@@ -51,26 +44,27 @@ const CompanyManagementPage: React.FC = () => {
     deleteCompanyMutation.mutate(companyId);
   };
 
-  const openAddDialog = () => {
-    setCurrentCompany(null);
-    setIsFormOpen(true);
+  const handleAddClick = () => {
+    navigate('/id/companies/new'); // Navega para a página de criação
   };
 
-  const openEditDialog = (company: Company) => {
-    setCurrentCompany(company);
-    setIsFormOpen(true);
+  const handleEditClick = (company: Company) => {
+    navigate(`/id/companies/${company.id}`); // Navega para a página de edição
   };
 
   if (isLoadingCompanies) {
     return <div className="text-center text-gray-600">Carregando suas empresas...</div>;
   }
 
+  // Filtra a lista de empresas do contexto para mostrar apenas as que o usuário é proprietário
+  const ownedCompanies = companies.filter(company => company.user_id === user?.id);
+
   return (
     <div className="space-y-6">
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-sollux-black uppercase font-bold">Minhas Empresas</CardTitle>
-          <Button onClick={openAddDialog} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+          <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Empresa
           </Button>
         </CardHeader>
@@ -83,7 +77,7 @@ const CompanyManagementPage: React.FC = () => {
                 <CompanyCard
                   key={company.id}
                   company={company}
-                  onEdit={openEditDialog}
+                  onEdit={handleEditClick}
                   onDelete={handleDeleteCompany}
                 />
               ))
@@ -91,12 +85,6 @@ const CompanyManagementPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      <CompanyFormDialog
-        open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        company={currentCompany}
-      />
     </div>
   );
 };

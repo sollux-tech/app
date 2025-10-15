@@ -10,6 +10,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/pulse': { name: 'Pulse', icon: Home },
   '/id': { name: 'ID' },
   '/id/companies': { name: 'Gerenciar Empresas', parent: '/id' },
+  '/id/companies/new': { name: 'Nova Empresa', parent: '/id/companies' }, // Nova rota
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
@@ -34,7 +35,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/pillars': { name: 'OPS - Pilares', parent: '/core/global-settings/ops', icon: ListTodo },
   '/core/global-settings/ops/pillar-blocks': { name: 'OPS - Blocos dos Pilares', parent: '/core/global-settings/ops', icon: Blocks },
   '/core/global-settings/ops/scoring-scale': { name: 'OPS - Régua de Pontuação', parent: '/core/global-settings/ops', icon: Scale },
-  '/core/global-settings/ops/kpis': { name: 'OPS - KPIs de Diagnóstico', parent: '/core/global-settings/ops', icon: Target }, // Nova rota
+  '/core/global-settings/ops/kpis': { name: 'OPS - KPIs de Diagnóstico', parent: '/core/global-settings/ops', icon: Target },
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
@@ -51,6 +52,11 @@ export const getDynamicRouteInfo = (path: string): RouteInfo | null => {
   const jobEditMatch = path.match(/^\/connect\/jobs\/([^/]+)$/);
   if (jobEditMatch && jobEditMatch[1] !== 'new') {
     return { name: 'Editar Vaga', parent: '/connect/jobs' };
+  }
+
+  const companyEditMatch = path.match(/^\/id\/companies\/([^/]+)$/);
+  if (companyEditMatch && companyEditMatch[1] !== 'new') {
+    return { name: 'Editar Empresa', parent: '/id/companies' };
   }
 
   // Rotas dinâmicas para formulários
