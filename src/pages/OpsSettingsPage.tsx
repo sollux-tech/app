@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo } from 'lucide-react'; // Importar ListTodo
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks } from 'lucide-react'; // Importar Blocks
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,11 @@ const OpsSettingsPage: React.FC = () => {
   };
 
   const handlePillarsClick = () => {
-    navigate('/core/global-settings/ops/pillars'); // Nova rota para Pilares
+    navigate('/core/global-settings/ops/pillars');
+  };
+
+  const handlePillarBlocksClick = () => {
+    navigate('/core/global-settings/ops/pillar-blocks'); // Nova rota para Blocos dos Pilares
   };
 
   return (
@@ -38,10 +42,15 @@ const OpsSettingsPage: React.FC = () => {
             <FeatureCard
               title="Pilares"
               description="Crie e gerencie os pilares do OPS, associando-os a tipos específicos."
-              icon={ListTodo} // Ícone para Pilares
+              icon={ListTodo}
               onClick={handlePillarsClick}
             />
-            {/* Outros FeatureCards para configurações do OPS podem ser adicionados aqui */}
+            <FeatureCard
+              title="Blocos dos Pilares"
+              description="Crie e gerencie os blocos que compõem cada pilar do OPS."
+              icon={Blocks} // Ícone para Blocos dos Pilares
+              onClick={handlePillarBlocksClick}
+            />
           </div>
         </CardContent>
       </Card>

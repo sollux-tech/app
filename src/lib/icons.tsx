@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Users, Building2, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Icon as LucideIcon, Home, BarChart2, ListChecks, ListTodo
+  HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Users, Building2, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Icon as LucideIcon, Home, BarChart2, ListChecks, ListTodo, Blocks
 } from 'lucide-react';
 import { IconMap } from '@/types/sidebar';
 
@@ -20,7 +20,8 @@ export const iconMap: IconMap = {
   Home,
   BarChart2,
   ListChecks,
-  ListTodo, // Novo ícone para Pilares
+  ListTodo,
+  Blocks, // Novo ícone para Blocos dos Pilares
 };
 
 export const iconNames = Object.keys(iconMap).sort();
