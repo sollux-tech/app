@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { LayoutDashboard, Settings, Briefcase } from 'lucide-react';
+import { LayoutDashboard, Settings, Briefcase, SlidersHorizontal } from 'lucide-react'; // Importar SlidersHorizontal para OPS
 
 const GlobalSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +12,11 @@ const GlobalSettingsPage: React.FC = () => {
   };
 
   const handleJobSettingsClick = () => {
-    navigate('/core/global-settings/jobs'); // Navega para a nova página de configurações de Jobs
+    navigate('/core/global-settings/jobs');
+  };
+
+  const handleOpsSettingsClick = () => {
+    navigate('/core/global-settings/ops'); // Navega para a nova página de configurações do OPS
   };
 
   return (
@@ -37,6 +41,12 @@ const GlobalSettingsPage: React.FC = () => {
               description="Gerencie áreas, tipos de contrato e modelos de trabalho para vagas."
               icon={Briefcase}
               onClick={handleJobSettingsClick}
+            />
+            <FeatureCard
+              title="Configurações do OPS"
+              description="Gerencie os cadastros e configurações para o SOLLUX OPS."
+              icon={SlidersHorizontal} // Ícone para configurações do OPS
+              onClick={handleOpsSettingsClick}
             />
           </div>
         </CardContent>

@@ -29,6 +29,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/job-sectors': { name: 'Jobs - Áreas/Setores', parent: '/core/global-settings/jobs' },
   '/core/global-settings/contract-types': { name: 'Jobs - Tipos de Contrato', parent: '/core/global-settings/jobs' },
   '/core/global-settings/work-models': { name: 'Jobs - Modelos de Trabalho', parent: '/core/global-settings/jobs' },
+  '/core/global-settings/ops': { name: 'Configurações do OPS', parent: '/core/global-settings' }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

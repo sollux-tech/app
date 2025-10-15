@@ -37,7 +37,8 @@ import PublicFormPage from './pages/PublicFormPage';
 import FormResponsesPage from './pages/FormResponsesPage';
 import FormCreatePage from './pages/FormCreatePage';
 import JobSettingsPage from './pages/JobSettingsPage';
-import SolluxCalcPage from './pages/SolluxCalcPage'; // Importar a nova página
+import SolluxCalcPage from './pages/SolluxCalcPage';
+import OpsSettingsPage from './pages/OpsSettingsPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,7 +97,7 @@ function App() {
                           <Route path="/connect/jobs" element={<JobsPage />} />
                           <Route path="/connect/jobs/new" element={<JobFormPage />} />
                           <Route path="/connect/jobs/:id" element={<JobFormPage />} />
-                          <Route path="/connect/calc" element={<SolluxCalcPage />} /> {/* Nova rota */}
+                          <Route path="/connect/calc" element={<SolluxCalcPage />} />
                           <Route path="/ops" element={<OpsPage />} />
                           <Route path="/core" element={<CorePage />} /> 
                           <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
@@ -108,6 +109,7 @@ function App() {
                           <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
                           <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
                           <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
+                          <Route path="/core/global-settings/ops" element={<OpsSettingsPage />} /> {/* Nova rota */}
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
