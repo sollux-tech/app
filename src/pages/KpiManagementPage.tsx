@@ -380,7 +380,7 @@ const KpiManagementPage: React.FC = () => {
                             </SelectItem>
                           ))
                         )}
-                      </TSelectContent>
+                      </SelectContent> {/* Corrigido aqui */}
                     </Select>
                     <FormMessage />
                   </FormItem>
@@ -453,7 +453,7 @@ const KpiManagementPage: React.FC = () => {
                             </SelectItem>
                           ))
                         )}
-                      </TSelectContent>
+                      </SelectContent> {/* Corrigido aqui */}
                     </Select>
                     <FormMessage />
                   </FormItem>
