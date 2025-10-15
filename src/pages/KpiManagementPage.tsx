@@ -371,15 +371,12 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {pillars?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
-                        ) : (
-                          pillars?.map((pillar) => (
-                            <SelectItem key={pillar.id} value={pillar.id}>
-                              {pillar.description}
-                            </SelectItem>
-                          ))
-                        )}
+                        {/* Removido SelectItem com value="" */}
+                        {pillars?.map((pillar) => (
+                          <SelectItem key={pillar.id} value={pillar.id}>
+                            {pillar.description}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -403,15 +400,12 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredPillarBlocks.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum bloco para este pilar</SelectItem>
-                        ) : (
-                          filteredPillarBlocks.map((block) => (
-                            <SelectItem key={block.id} value={block.id}>
-                              {block.name}
-                            </SelectItem>
-                          ))
-                        )}
+                        {/* Removido SelectItem com value="" */}
+                        {filteredPillarBlocks.map((block) => (
+                          <SelectItem key={block.id} value={block.id}>
+                            {block.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -444,15 +438,12 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {scoringScales?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhuma régua de pontuação cadastrada</SelectItem>
-                        ) : (
-                          scoringScales?.map((scale) => (
-                            <SelectItem key={scale.id} value={scale.id}>
-                              {scale.score} - {scale.description}
-                            </SelectItem>
-                          ))
-                        )}
+                        {/* Removido SelectItem com value="" */}
+                        {scoringScales?.map((scale) => (
+                          <SelectItem key={scale.id} value={scale.id}>
+                            {scale.score} - {scale.description}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
