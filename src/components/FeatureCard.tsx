@@ -22,7 +22,7 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ title, description, icon: Ico
       )}
       onClick={onClick}
     >
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-4 flex flex-col items-center"> {/* Adicionado flex flex-col items-center aqui */}
         <Icon className={cn("h-12 w-12 text-sollux-red mb-2", iconClassName)} />
         <CardTitle className="text-xl font-bold text-sollux-black">{title}</CardTitle>
       </CardHeader>
