@@ -36,7 +36,8 @@ import FormEditPage from './pages/FormEditPage';
 import PublicFormPage from './pages/PublicFormPage';
 import FormResponsesPage from './pages/FormResponsesPage';
 import FormCreatePage from './pages/FormCreatePage';
-import JobSettingsPage from './pages/JobSettingsPage'; // Importar a nova página
+import JobSettingsPage from './pages/JobSettingsPage';
+import SolluxCalcPage from './pages/SolluxCalcPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -95,6 +96,7 @@ function App() {
                           <Route path="/connect/jobs" element={<JobsPage />} />
                           <Route path="/connect/jobs/new" element={<JobFormPage />} />
                           <Route path="/connect/jobs/:id" element={<JobFormPage />} />
+                          <Route path="/connect/calc" element={<SolluxCalcPage />} /> {/* Nova rota */}
                           <Route path="/ops" element={<OpsPage />} />
                           <Route path="/core" element={<CorePage />} /> 
                           <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
@@ -102,7 +104,7 @@ function App() {
                           <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
-                          <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} /> {/* Nova rota */}
+                          <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
                           <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
                           <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
                           <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
