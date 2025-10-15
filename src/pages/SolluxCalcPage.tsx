@@ -13,7 +13,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Calculation, CalculationFormData, PriceComposition } from '@/types/calculation';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -102,11 +102,11 @@ const SolluxCalcPage: React.FC = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       product_name: '',
-      unit_cost: '',
-      fixed_expenses_percentage: '',
-      taxes_percentage: '',
-      commission_percentage: '',
-      desired_margin_percentage: '',
+      unit_cost: undefined,
+      fixed_expenses_percentage: undefined,
+      taxes_percentage: undefined,
+      commission_percentage: undefined,
+      desired_margin_percentage: undefined,
     },
   });
 
@@ -219,7 +219,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || '',
+      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     const result = calculatePricing({
@@ -227,7 +227,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || 0,
+      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     setCalculationResult(result);
@@ -243,7 +243,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || '',
+      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     const result = calculatePricing({
@@ -251,7 +251,7 @@ const SolluxCalcPage: React.FC = () => {
       unit_cost: calc.unit_cost,
       fixed_expenses_percentage: calc.fixed_expenses_percentage,
       taxes_percentage: calc.taxes_percentage,
-      commission_percentage: calc.commission_percentage || 0,
+      commission_percentage: calc.commission_percentage || undefined, // Corrigido para undefined
       desired_margin_percentage: calc.desired_margin_percentage,
     });
     setCalculationResult(result);
