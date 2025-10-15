@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale } from 'lucide-react'; // Importar Scale
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target } from 'lucide-react'; // Importar Target
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,7 +20,11 @@ const OpsSettingsPage: React.FC = () => {
   };
 
   const handleScoringScaleClick = () => {
-    navigate('/core/global-settings/ops/scoring-scale'); // Nova rota para Régua de Pontuação
+    navigate('/core/global-settings/ops/scoring-scale');
+  };
+
+  const handleKpiManagementClick = () => {
+    navigate('/core/global-settings/ops/kpis'); // Nova rota para KPIs de Diagnóstico
   };
 
   return (
@@ -58,8 +62,14 @@ const OpsSettingsPage: React.FC = () => {
             <FeatureCard
               title="Régua de Pontuação"
               description="Crie a padronização de respostas para avaliações."
-              icon={Scale} // Ícone para Régua de Pontuação
+              icon={Scale}
               onClick={handleScoringScaleClick}
+            />
+            <FeatureCard
+              title="KPIs de Diagnóstico"
+              description="Cadastre e gerencie os indicadores-chave de desempenho para diagnóstico."
+              icon={Target} // Ícone para KPIs de Diagnóstico
+              onClick={handleKpiManagementClick}
             />
           </div>
         </CardContent>

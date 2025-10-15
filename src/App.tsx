@@ -42,7 +42,8 @@ import OpsSettingsPage from './pages/OpsSettingsPage';
 import PillarTypeManagementPage from './pages/PillarTypeManagementPage';
 import PillarManagementPage from './pages/PillarManagementPage';
 import PillarBlockManagementPage from './pages/PillarBlockManagementPage';
-import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage'; // Importar a nova página
+import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage';
+import KpiManagementPage from './pages/KpiManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,7 +118,8 @@ function App() {
                           <Route path="/core/global-settings/ops/pillar-types" element={<PillarTypeManagementPage />} />
                           <Route path="/core/global-settings/ops/pillars" element={<PillarManagementPage />} />
                           <Route path="/core/global-settings/ops/pillar-blocks" element={<PillarBlockManagementPage />} />
-                          <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} /> {/* Nova rota */}
+                          <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
+                          <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} /> {/* Nova rota */}
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                           <Route path="/core/notifications" element={<NotificationManagementPage />} />
                           <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
