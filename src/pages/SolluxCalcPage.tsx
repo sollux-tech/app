@@ -259,6 +259,13 @@ const SolluxCalcPage: React.FC = () => {
     showSuccess("Cálculo duplicado no formulário. Clique em 'Calcular' e 'Salvar' para persistir.");
   };
 
+  const handleDeleteCalculation = (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este cálculo?')) {
+      return;
+    }
+    deleteCalculationMutation.mutate(id);
+  };
+
   const handleShareCalculation = (calc: Calculation) => {
     setCalculationToShare(calc);
     setIsShareDialogOpen(true);
@@ -516,7 +523,7 @@ const SolluxCalcPage: React.FC = () => {
                       <Button variant="ghost" size="sm" onClick={() => handleEditCalculation(calc)} disabled={isDeleting} title="Alterar">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => deleteCalculationMutation.mutate(calc.id)} disabled={isDeleting} title="Excluir">
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteCalculation(calc.id)} disabled={isDeleting} title="Excluir">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
