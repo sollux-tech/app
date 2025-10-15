@@ -26,7 +26,7 @@ import DataDoctorPage from './pages/DataDoctorPage';
 import ConnectPage from './pages/ConnectPage';
 import JobsPage from './pages/JobsPage';
 import JobFormPage from './pages/JobFormPage';
-import JobSectorsPage from './pages/JobSectorsPage';
+import JobSectorsPage from './pages/JobSectorsPage'; // Importar a nova página
 import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
 import PublicJobPage from './pages/PublicJobPage';
@@ -35,7 +35,7 @@ import FormsPage from './pages/FormsPage';
 import FormEditPage from './pages/FormEditPage';
 import PublicFormPage from './pages/PublicFormPage';
 import FormResponsesPage from './pages/FormResponsesPage';
-import FormCreatePage from './pages/FormCreatePage'; // Importar a nova página
+import FormCreatePage from './pages/FormCreatePage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,7 +101,7 @@ function App() {
                           <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
-                          <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} />
+                          <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> {/* Nova rota */}
                           <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
                           <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
@@ -111,7 +111,7 @@ function App() {
                           
                           {/* Rotas SOLLUX FORM™ */}
                           <Route path="/connect/forms" element={<FormsPage />} />
-                          <Route path="/connect/forms/new" element={<FormCreatePage />} /> {/* Nova rota */}
+                          <Route path="/connect/forms/new" element={<FormCreatePage />} /> 
                           <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
                           <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
                         </Routes>

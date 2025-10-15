@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -140,7 +140,7 @@ const JobSectorsPage: React.FC = () => {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
-          <DialogHeader><DialogTitle className="text-sollux-black">{editingItem ? 'Editar' : 'Nova'} Área/Setor</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-sollux-black">{editingItem ? 'Editar' : 'Novo'} Área/Setor</DialogTitle></DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel className="text-sollux-black">Nome</FormLabel><FormControl><Input placeholder="Ex: Tecnologia" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>)} />

@@ -16,13 +16,13 @@ export const routeMap: Record<string, RouteInfo> = {
   '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
   '/connect/jobs/new': { name: 'Nova Vaga', parent: '/connect/jobs' },
   '/connect/forms': { name: 'Formulários', parent: '/connect' },
-  '/connect/forms/new': { name: 'Novo Formulário', parent: '/connect/forms' }, // Nova rota
+  '/connect/forms/new': { name: 'Novo Formulário', parent: '/connect/forms' },
   '/ops': { name: 'OPS' },
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
   '/core/pulse-informatives/new': { name: 'Novo Informativo', parent: '/core/pulse-informatives' },
-  '/core/pulse-informatives/:id': { name: 'Editar Informativo', parent: '/core/pulse-informatives' }, // Rota dinâmica para edição
+  '/core/pulse-informatives/:id': { name: 'Editar Informativo', parent: '/core/pulse-informatives' },
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
   '/core/global-settings/job-sectors': { name: 'Jobs - Áreas/Setores', parent: '/core/global-settings' },
   '/core/global-settings/contract-types': { name: 'Jobs - Tipos de Contrato', parent: '/core/global-settings' },

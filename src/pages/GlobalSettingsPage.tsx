@@ -11,6 +11,18 @@ const GlobalSettingsPage: React.FC = () => {
     navigate('/core/sidebar-settings');
   };
 
+  const handleJobSectorsClick = () => {
+    navigate('/core/global-settings/job-sectors');
+  };
+
+  const handleContractTypesClick = () => {
+    navigate('/core/global-settings/contract-types');
+  };
+
+  const handleWorkModelsClick = () => {
+    navigate('/core/global-settings/work-models');
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
@@ -32,19 +44,19 @@ const GlobalSettingsPage: React.FC = () => {
               title="Jobs - Área/Setor"
               description="Gerencie as áreas e setores para as vagas de emprego."
               icon={Briefcase}
-              onClick={() => navigate('/core/global-settings/job-sectors')}
+              onClick={handleJobSectorsClick}
             />
             <FeatureCard
               title="Jobs - Tipo de Contrato"
               description="Gerencie os tipos de contrato (CLT, PJ, etc.)."
               icon={FileText}
-              onClick={() => navigate('/core/global-settings/contract-types')}
+              onClick={handleContractTypesClick}
             />
             <FeatureCard
               title="Jobs - Modelo de Trabalho"
               description="Gerencie os modelos de trabalho (Remoto, Híbrido, etc.)."
               icon={Laptop2}
-              onClick={() => navigate('/core/global-settings/work-models')}
+              onClick={handleWorkModelsClick}
             />
           </div>
         </CardContent>
