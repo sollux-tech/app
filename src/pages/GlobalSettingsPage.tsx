@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { LayoutDashboard, Settings, Briefcase, FileText, Laptop2 } from 'lucide-react';
+import { LayoutDashboard, Settings, Briefcase } from 'lucide-react';
 
 const GlobalSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,16 +11,8 @@ const GlobalSettingsPage: React.FC = () => {
     navigate('/core/sidebar-settings');
   };
 
-  const handleJobSectorsClick = () => {
-    navigate('/core/global-settings/job-sectors');
-  };
-
-  const handleContractTypesClick = () => {
-    navigate('/core/global-settings/contract-types');
-  };
-
-  const handleWorkModelsClick = () => {
-    navigate('/core/global-settings/work-models');
+  const handleJobSettingsClick = () => {
+    navigate('/core/global-settings/jobs'); // Navega para a nova página de configurações de Jobs
   };
 
   return (
@@ -41,22 +33,10 @@ const GlobalSettingsPage: React.FC = () => {
               onClick={handleSidebarSettingsClick}
             />
             <FeatureCard
-              title="Jobs - Área/Setor"
-              description="Gerencie as áreas e setores para as vagas de emprego."
+              title="Configurações de Vagas"
+              description="Gerencie áreas, tipos de contrato e modelos de trabalho para vagas."
               icon={Briefcase}
-              onClick={handleJobSectorsClick}
-            />
-            <FeatureCard
-              title="Jobs - Tipo de Contrato"
-              description="Gerencie os tipos de contrato (CLT, PJ, etc.)."
-              icon={FileText}
-              onClick={handleContractTypesClick}
-            />
-            <FeatureCard
-              title="Jobs - Modelo de Trabalho"
-              description="Gerencie os modelos de trabalho (Remoto, Híbrido, etc.)."
-              icon={Laptop2}
-              onClick={handleWorkModelsClick}
+              onClick={handleJobSettingsClick}
             />
           </div>
         </CardContent>

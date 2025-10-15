@@ -26,7 +26,7 @@ import DataDoctorPage from './pages/DataDoctorPage';
 import ConnectPage from './pages/ConnectPage';
 import JobsPage from './pages/JobsPage';
 import JobFormPage from './pages/JobFormPage';
-import JobSectorsPage from './pages/JobSectorsPage'; // Importar a nova página
+import JobSectorsPage from './pages/JobSectorsPage'; 
 import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
 import PublicJobPage from './pages/PublicJobPage';
@@ -36,6 +36,7 @@ import FormEditPage from './pages/FormEditPage';
 import PublicFormPage from './pages/PublicFormPage';
 import FormResponsesPage from './pages/FormResponsesPage';
 import FormCreatePage from './pages/FormCreatePage';
+import JobSettingsPage from './pages/JobSettingsPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,7 +102,8 @@ function App() {
                           <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
                           <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
-                          <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> {/* Nova rota */}
+                          <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} /> {/* Nova rota */}
+                          <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
                           <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
                           <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
                           <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
