@@ -164,12 +164,20 @@ const SolluxCalcPage: React.FC = () => {
   const deleteCalculationMutation = useMutation({
     mutationFn: async (id: string) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { error } = await supabase
+      const { error, count } = await supabase
         .from('calculations')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id);
-      if (error) throw error;
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (count === 0) {
+        // Se nenhuma linha foi excluída, significa que o ID não existia ou o user_id não correspondia
+        throw new Error("Cálculo não encontrado ou você não tem permissão para excluí-lo.");
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calculations', user?.id] });
