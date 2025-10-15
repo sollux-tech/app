@@ -20,7 +20,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
-  name: z.string().min(1, { message: 'O nome do KPI é obrigatório.' }),
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
   pillar_block_id: z.string().min(1, { message: 'O bloco é obrigatório.' }),
   question: z.string().min(1, { message: 'A pergunta é obrigatória.' }),
@@ -35,7 +34,6 @@ const KpiManagementPage: React.FC = () => {
   const form = useForm<KpiFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
       pillar_id: '',
       pillar_block_id: '',
       question: '',
@@ -47,14 +45,12 @@ const KpiManagementPage: React.FC = () => {
   useEffect(() => {
     if (editingKpi) {
       form.reset({
-        name: editingKpi.name,
         pillar_id: editingKpi.pillar_id || '',
         pillar_block_id: editingKpi.pillar_block_id || '',
         question: editingKpi.question,
       });
     } else {
       form.reset({
-        name: '',
         pillar_id: '',
         pillar_block_id: '',
         question: '',
@@ -132,7 +128,6 @@ const KpiManagementPage: React.FC = () => {
       const { data: newKpi, error } = await supabase
         .from('kpis')
         .insert({
-          name: data.name,
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
@@ -156,7 +151,6 @@ const KpiManagementPage: React.FC = () => {
       const { data: updatedKpi, error } = await supabase
         .from('kpis')
         .update({
-          name: data.name,
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
@@ -237,16 +231,15 @@ const KpiManagementPage: React.FC = () => {
     <div className="space-y-6">
       <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar KPIs de Diagnóstico</CardTitle>
+          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Perguntas para KPIs de Diagnóstico</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
-            <Plus className="mr-2 h-4 w-4" /> Adicionar KPI
+            <Plus className="mr-2 h-4 w-4" /> Adicionar Pergunta
           </Button>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Nome do KPI</TableHead>
                 <TableHead className="text-sollux-black">Pilar</TableHead>
                 <TableHead className="text-sollux-black">Bloco</TableHead>
                 <TableHead className="text-sollux-black">Pergunta</TableHead>
@@ -256,21 +249,20 @@ const KpiManagementPage: React.FC = () => {
             <TableBody>
               {kpis?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500">
-                    Nenhum KPI encontrado.
+                  <TableCell colSpan={4} className="text-center text-gray-500">
+                    Nenhuma pergunta de KPI encontrada.
                   </TableCell>
                 </TableRow>
               ) : (
                 kpis?.map((kpi) => (
                   <TableRow key={kpi.id}>
-                    <TableCell className="font-medium text-sollux-black">{kpi.name}</TableCell>
                     <TableCell className="text-gray-700">
                       {(kpi as any).pillars?.description || 'N/A'}
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {(kpi as any).pillar_blocks?.name || 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">{kpi.question}</TableCell>
+                    <TableCell className="font-medium text-sollux-black">{kpi.question}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -302,23 +294,10 @@ const KpiManagementPage: React.FC = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingKpi ? 'Editar KPI de Diagnóstico' : 'Adicionar Novo KPI de Diagnóstico'}</DialogTitle>
+            <DialogTitle className="text-sollux-black">{editingKpi ? 'Editar Pergunta de KPI' : 'Adicionar Nova Pergunta de KPI'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sollux-black">Nome do KPI</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: Satisfação do Cliente" {...field} className="rounded-lg" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="pillar_id"
@@ -335,13 +314,17 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {pillars?.map((pillar) => (
-                          pillar.id && pillar.id !== '' ? (
-                            <SelectItem key={pillar.id} value={pillar.id}>
-                              {pillar.description}
-                            </SelectItem>
-                          ) : null
-                        ))}
+                        {pillars?.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
+                        ) : (
+                          pillars?.map((pillar) => (
+                            pillar.id && pillar.id !== '' ? (
+                              <SelectItem key={pillar.id} value={pillar.id}>
+                                {pillar.description}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -365,13 +348,17 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredPillarBlocks.map((block) => (
-                          block.id && block.id !== '' ? (
-                            <SelectItem key={block.id} value={block.id}>
-                              {block.name}
-                            </SelectItem>
-                          ) : null
-                        ))}
+                        {filteredPillarBlocks.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum bloco para este pilar</SelectItem>
+                        ) : (
+                          filteredPillarBlocks.map((block) => (
+                            block.id && block.id !== '' ? (
+                              <SelectItem key={block.id} value={block.id}>
+                                {block.name}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -396,7 +383,7 @@ const KpiManagementPage: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {editingKpi ? 'Salvar Alterações' : 'Adicionar KPI'}
+                  {editingKpi ? 'Salvar Alterações' : 'Adicionar Pergunta'}
                 </Button>
               </DialogFooter>
             </form>
