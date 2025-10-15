@@ -180,10 +180,12 @@ const SolluxCalcPage: React.FC = () => {
         throw new Error("Cálculo não encontrado ou você não tem permissão para excluí-lo.");
       }
     },
-    ...mutationOptions,
     onSuccess: () => {
-      mutationOptions.onSuccess();
+      queryClient.invalidateQueries({ queryKey: ['calculations', user?.id] });
       showSuccess('Cálculo excluído com sucesso!');
+    },
+    onError: (error) => {
+      showError(`Erro ao excluir cálculo: ${error.message}`);
     },
   });
 
