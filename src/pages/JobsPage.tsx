@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Share2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Share2, QrCode } from 'lucide-react'; // Importar QrCode
 import { supabase } from '@/integrations/supabase/client';
 import { useCompany } from '@/components/CompanyContext';
 import { showSuccess, showError } from '@/utils/toast';
@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import ShareJobDialog from '@/components/ShareJobDialog';
+import ShareJobQrDialog from '@/components/ShareJobQrDialog'; // Importar o novo componente
 import { Badge } from '@/components/ui/badge';
 
 const JobsPage: React.FC = () => {
@@ -20,6 +21,8 @@ const JobsPage: React.FC = () => {
   const navigate = useNavigate();
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [jobToShare, setJobToShare] = useState<{ id: string; title: string } | null>(null);
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false); // Novo estado para o diálogo de QR Code
+  const [jobToQr, setJobToQr] = useState<{ id: string; title: string } | null>(null); // Novo estado para a vaga do QR Code
 
   const { data: jobs, isLoading, error } = useQuery<Job[], Error>({
     queryKey: ['jobs', selectedCompany?.id],
@@ -71,6 +74,15 @@ const JobsPage: React.FC = () => {
     }
     setJobToShare({ id: job.id, title: job.title });
     setIsShareDialogOpen(true);
+  };
+
+  const handleGenerateQrClick = (job: Job) => { // Nova função para gerar QR Code
+    if (job.status !== 'active') {
+      showError('Apenas vagas ativas podem ter QR Code gerado publicamente.');
+      return;
+    }
+    setJobToQr({ id: job.id, title: job.title });
+    setIsQrDialogOpen(true);
   };
 
   const isMutating = deleteJobMutation.isPending;
@@ -127,6 +139,9 @@ const JobsPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-gray-700">{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
                       <TableCell className="text-right flex justify-end items-center gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleGenerateQrClick(job)} className="text-purple-600 hover:bg-purple-50 rounded-lg" disabled={isMutating} title="Gerar QR Code">
+                          <QrCode className="h-4 w-4" />
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleShareClick(job)} className="text-blue-600 hover:bg-blue-50 rounded-lg" disabled={isMutating} title="Compartilhar Vaga">
                           <Share2 className="h-4 w-4" />
                         </Button>
@@ -152,6 +167,15 @@ const JobsPage: React.FC = () => {
           onOpenChange={setIsShareDialogOpen}
           jobId={jobToShare.id}
           jobTitle={jobToShare.title}
+        />
+      )}
+
+      {jobToQr && (
+        <ShareJobQrDialog
+          open={isQrDialogOpen}
+          onOpenChange={setIsQrDialogOpen}
+          jobId={jobToQr.id}
+          jobTitle={jobToQr.title}
         />
       )}
     </div>
