@@ -344,9 +344,9 @@ const CompanyFormPage: React.FC = () => {
                           </FormControl>
                           <SelectContent>
                             {isLoadingMarkets ? (
-                              <SelectItem value="" disabled>Carregando mercados...</SelectItem>
+                              <SelectItem value="loading-markets" disabled>Carregando mercados...</SelectItem>
                             ) : markets?.length === 0 ? (
-                              <SelectItem value="" disabled>Nenhum mercado cadastrado</SelectItem>
+                              <SelectItem value="no-markets" disabled>Nenhum mercado cadastrado</SelectItem>
                             ) : (
                               markets?.map((market) => (
                                 <SelectItem key={market.id} value={market.id}>
