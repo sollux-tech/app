@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks } from 'lucide-react'; // Importar Blocks
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale } from 'lucide-react'; // Importar Scale
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,7 +16,11 @@ const OpsSettingsPage: React.FC = () => {
   };
 
   const handlePillarBlocksClick = () => {
-    navigate('/core/global-settings/ops/pillar-blocks'); // Nova rota para Blocos dos Pilares
+    navigate('/core/global-settings/ops/pillar-blocks');
+  };
+
+  const handleScoringScaleClick = () => {
+    navigate('/core/global-settings/ops/scoring-scale'); // Nova rota para Régua de Pontuação
   };
 
   return (
@@ -48,8 +52,14 @@ const OpsSettingsPage: React.FC = () => {
             <FeatureCard
               title="Blocos dos Pilares"
               description="Crie e gerencie os blocos que compõem cada pilar do OPS."
-              icon={Blocks} // Ícone para Blocos dos Pilares
+              icon={Blocks}
               onClick={handlePillarBlocksClick}
+            />
+            <FeatureCard
+              title="Régua de Pontuação"
+              description="Crie a padronização de respostas para avaliações."
+              icon={Scale} // Ícone para Régua de Pontuação
+              onClick={handleScoringScaleClick}
             />
           </div>
         </CardContent>

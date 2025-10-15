@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks } from 'lucide-react'; // Importar Blocks
+import { Home, ListChecks, ListTodo, Blocks, Scale } from 'lucide-react'; // Importar Scale
 
 interface RouteInfo {
   name: string;
@@ -32,7 +32,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops': { name: 'Configurações do OPS', parent: '/core/global-settings' },
   '/core/global-settings/ops/pillar-types': { name: 'OPS - Tipos de Pilares', parent: '/core/global-settings/ops', icon: ListChecks },
   '/core/global-settings/ops/pillars': { name: 'OPS - Pilares', parent: '/core/global-settings/ops', icon: ListTodo },
-  '/core/global-settings/ops/pillar-blocks': { name: 'OPS - Blocos dos Pilares', parent: '/core/global-settings/ops', icon: Blocks }, // Nova rota
+  '/core/global-settings/ops/pillar-blocks': { name: 'OPS - Blocos dos Pilares', parent: '/core/global-settings/ops', icon: Blocks },
+  '/core/global-settings/ops/scoring-scale': { name: 'OPS - Régua de Pontuação', parent: '/core/global-settings/ops', icon: Scale }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
