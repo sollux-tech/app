@@ -37,21 +37,21 @@ const PublicInformativePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <p className="text-gray-600">Carregando informativo...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Carregando informativo...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-sollux-red">Erro</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">Não foi possível carregar o informativo: {error.message}</p>
+            <p className="text-muted-foreground">Não foi possível carregar o informativo: {error.message}</p>
             <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
             </Button>
@@ -65,13 +65,13 @@ const PublicInformativePage: React.FC = () => {
     // This case should ideally be caught by the error handler above if single() fails
     // but as a fallback, if data is null and no error, show not found.
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-sollux-black">Informativo não encontrado</CardTitle>
+            <CardTitle className="text-2xl font-bold text-foreground">Informativo não encontrado</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">O informativo que você está procurando não existe ou foi removido.</p>
+            <p className="text-muted-foreground">O informativo que você está procurando não existe ou foi removido.</p>
             <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
             </Button>
@@ -82,15 +82,15 @@ const PublicInformativePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sollux-light-gray py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <Card className="w-full max-w-3xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border p-8">
+    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+      <Card className="w-full max-w-3xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border p-8">
         <CardHeader className="text-center pb-6">
-          <CardTitle className="text-4xl font-bold text-sollux-black mb-2">{informative.title}</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-4xl font-bold text-foreground mb-2">{informative.title}</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Publicado em: {informative.publication_date ? format(new Date(informative.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="prose prose-lg max-w-none text-sollux-black">
+        <CardContent className="prose prose-lg max-w-none text-foreground">
           <div dangerouslySetInnerHTML={{ __html: informative.content }} />
         </CardContent>
         <div className="mt-8 text-center">

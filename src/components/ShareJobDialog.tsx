@@ -52,10 +52,10 @@ const ShareJobDialog: React.FC<ShareJobDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+      <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
         <DialogHeader>
-          <DialogTitle className="text-sollux-black">Compartilhar Vaga</DialogTitle>
-          <DialogDescription className="text-gray-600">
+          <DialogTitle className="text-foreground">Compartilhar Vaga</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Escolha como você gostaria de compartilhar a vaga "{jobTitle}".
           </DialogDescription>
         </DialogHeader>
@@ -69,14 +69,14 @@ const ShareJobDialog: React.FC<ShareJobDialogProps> = ({
           <Button
             variant="outline"
             onClick={handleShareEmail}
-            className="w-full flex items-center justify-center gap-2 rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100"
+            className="w-full flex items-center justify-center gap-2 rounded-lg text-foreground border-border hover:bg-accent"
           >
             <Mail className="h-4 w-4" /> Compartilhar por E-mail
           </Button>
           <Button
             variant="outline"
             onClick={handleShareWhatsApp}
-            className="w-full flex items-center justify-center gap-2 rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100"
+            className="w-full flex items-center justify-center gap-2 rounded-lg text-foreground border-border hover:bg-accent"
           >
             <MessageCircle className="h-4 w-4" /> Compartilhar no WhatsApp
           </Button>
@@ -90,7 +90,7 @@ const ShareJobDialog: React.FC<ShareJobDialogProps> = ({
                 });
                 onOpenChange(false);
               }}
-              className="w-full flex items-center justify-center gap-2 rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100"
+              className="w-full flex items-center justify-center gap-2 rounded-lg text-foreground border-border hover:bg-accent"
             >
               <Share2 className="h-4 w-4" /> Compartilhar (Nativo)
             </Button>

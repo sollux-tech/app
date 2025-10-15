@@ -25,10 +25,10 @@ const AllCompaniesManagementPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-sollux-black uppercase font-bold">Diagnóstico de Empresas</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-foreground uppercase font-bold">Diagnóstico de Empresas</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Esta tabela mostra todas as empresas no banco de dados, ignorando as regras de segurança, para fins de diagnóstico.
           </CardDescription>
         </CardHeader>
@@ -46,36 +46,36 @@ const AllCompaniesManagementPage: React.FC = () => {
               <Skeleton className="h-8 w-full" />
             </div>
           )}
-          {error && <p className="text-red-500">Erro ao carregar dados: {error.message}</p>}
+          {error && <p className="text-destructive">Erro ao carregar dados: {error.message}</p>}
 
           {!isLoading && !error && (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">Nome da Empresa</TableHead>
-                  <TableHead className="text-sollux-black">ID do Proprietário (user_id)</TableHead>
-                  <TableHead className="text-sollux-black">Data de Criação</TableHead>
+                  <TableHead className="text-foreground">Nome da Empresa</TableHead>
+                  <TableHead className="text-foreground">ID do Proprietário (user_id)</TableHead>
+                  <TableHead className="text-foreground">Data de Criação</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {allCompanies?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-gray-500">
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">
                       Nenhuma empresa encontrada no banco de dados.
                     </TableCell>
                   </TableRow>
                 ) : (
                   allCompanies?.map((company) => (
                     <TableRow key={company.id} className={company.user_id === user?.id ? 'bg-green-100' : ''}>
-                      <TableCell className="font-medium text-sollux-black">{company.name}</TableCell>
+                      <TableCell className="font-medium text-foreground">{company.name}</TableCell>
                       <TableCell className="font-mono text-xs break-all">
                         {company.user_id ? company.user_id : (
-                          <span className="text-red-600 font-bold flex items-center gap-2">
+                          <span className="text-destructive font-bold flex items-center gap-2">
                             <AlertCircle className="h-4 w-4" /> NENHUM (Órfã)
                           </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-700">
+                      <TableCell className="text-muted-foreground">
                         {format(new Date(company.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                       </TableCell>
                     </TableRow>

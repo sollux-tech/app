@@ -148,18 +148,18 @@ const FormResponsesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sollux-black">Respostas do Formulário</CardTitle>
-            <p className="text-gray-600">
+            <CardTitle className="text-foreground">Respostas do Formulário</CardTitle>
+            <p className="text-muted-foreground">
               {formDetail?.title || 'Formulário'}
             </p>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => navigate('/forms')}
+              onClick={() => navigate('/connect/forms')}
               className="rounded-lg"
             >
               Voltar
@@ -176,7 +176,7 @@ const FormResponsesPage: React.FC = () => {
         <CardContent>
           <div className="mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Buscar respostas..."
                 value={searchTerm}
@@ -188,15 +188,15 @@ const FormResponsesPage: React.FC = () => {
 
           {filteredResponses.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
+              <div className="text-muted-foreground mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-sollux-black mb-2">
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 {responses.length === 0 ? 'Nenhuma resposta encontrada' : 'Nenhuma resposta encontrada para a busca'}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {responses.length === 0 
                   ? 'Seu formulário ainda não recebeu respostas.' 
                   : 'Tente ajustar seus termos de busca.'
@@ -207,32 +207,32 @@ const FormResponsesPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">ID</TableHead>
-                  <TableHead className="text-sollux-black">Data de Envio</TableHead>
-                  <TableHead className="text-sollux-black">Prévia das Respostas</TableHead>
-                  <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                  <TableHead className="text-foreground">ID</TableHead>
+                  <TableHead className="text-foreground">Data de Envio</TableHead>
+                  <TableHead className="text-foreground">Prévia das Respostas</TableHead>
+                  <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredResponses.map((response) => (
                   <TableRow key={response.id}>
-                    <TableCell className="font-mono text-sm">
+                    <TableCell className="font-mono text-sm text-foreground">
                       {response.id.substring(0, 8)}...
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {format(new Date(response.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         {questions.slice(0, 2).map((question, index) => (
                           <div key={question.id}>
-                            <span className="font-medium">{question.title}:</span>{' '}
+                            <span className="font-medium text-foreground">{question.title}:</span>{' '}
                             {formatResponseValue(question.id, response.responses[question.id])}
                             {index < Math.min(2, questions.length) - 1 && <br />}
                           </div>
                         ))}
                         {questions.length > 2 && (
-                          <div className="text-gray-400">
+                          <div className="text-muted-foreground">
                             + {questions.length - 2} mais...
                           </div>
                         )}
@@ -246,7 +246,7 @@ const FormResponsesPage: React.FC = () => {
                           setSelectedResponse(response);
                           setIsResponseDialogOpen(true);
                         }}
-                        className="text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="text-foreground hover:bg-accent rounded-lg"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -261,21 +261,21 @@ const FormResponsesPage: React.FC = () => {
 
       {/* Dialog de Detalhes da Resposta */}
       <Dialog open={isResponseDialogOpen} onOpenChange={setIsResponseDialogOpen}>
-        <DialogContent className="sm:max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">Detalhes da Resposta</DialogTitle>
+            <DialogTitle className="text-foreground">Detalhes da Resposta</DialogTitle>
           </DialogHeader>
           {selectedResponse && (
             <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-muted p-4 rounded-lg">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700">ID da Resposta:</span>
-                    <p className="font-mono text-sollux-black">{selectedResponse.id}</p>
+                    <span className="font-medium text-muted-foreground">ID da Resposta:</span>
+                    <p className="font-mono text-foreground">{selectedResponse.id}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700">Data de Envio:</span>
-                    <p className="text-sollux-black">
+                    <span className="font-medium text-muted-foreground">Data de Envio:</span>
+                    <p className="text-foreground">
                       {format(new Date(selectedResponse.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}
                     </p>
                   </div>
@@ -283,16 +283,16 @@ const FormResponsesPage: React.FC = () => {
               </div>
 
               <div className="space-y-4">
-                <h3 className="font-semibold text-sollux-black">Respostas</h3>
+                <h3 className="font-semibold text-foreground">Respostas</h3>
                 {questions.map((question) => (
-                  <div key={question.id} className="border-b border-gray-200 pb-4 last:border-b-0">
+                  <div key={question.id} className="border-b border-border pb-4 last:border-b-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-medium text-sollux-black">{question.title}</h4>
+                      <h4 className="font-medium text-foreground">{question.title}</h4>
                       {question.required && (
                         <Badge variant="destructive" className="text-xs">Obrigatório</Badge>
                       )}
                     </div>
-                    <div className="text-gray-700">
+                    <div className="text-muted-foreground">
                       {formatResponseValue(question.id, selectedResponse.responses[question.id])}
                     </div>
                   </div>

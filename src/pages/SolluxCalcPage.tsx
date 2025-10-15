@@ -180,12 +180,10 @@ const SolluxCalcPage: React.FC = () => {
         throw new Error("Cálculo não encontrado ou você não tem permissão para excluí-lo.");
       }
     },
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calculations', user?.id] });
+      mutationOptions.onSuccess();
       showSuccess('Cálculo excluído com sucesso!');
-    },
-    onError: (error) => {
-      showError(`Erro ao excluir cálculo: ${error.message}`);
     },
   });
 
@@ -350,13 +348,13 @@ const SolluxCalcPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
           <div className="flex items-center gap-4">
             <Calculator className="h-8 w-8 text-sollux-red" />
             <div>
-              <CardTitle className="text-sollux-black uppercase font-bold">SOLLUX CALC™</CardTitle>
-              <CardDescription className="text-gray-600">
+              <CardTitle className="text-foreground uppercase font-bold">SOLLUX CALC™</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Calcule o preço ideal de venda e simule cenários de rentabilidade.
               </CardDescription>
             </div>
@@ -370,7 +368,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="product_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Nome do Produto/Serviço</FormLabel>
+                    <FormLabel className="text-foreground">Nome do Produto/Serviço</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Kit Ferramentas 12 peças" {...field} className="rounded-lg" />
                     </FormControl>
@@ -383,7 +381,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="unit_cost"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Custo Total Unitário (R$)</FormLabel>
+                    <FormLabel className="text-foreground">Custo Total Unitário (R$)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 120,00" {...field} className="rounded-lg" />
                     </FormControl>
@@ -396,7 +394,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="fixed_expenses_percentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Despesas Fixas Rateadas (%)</FormLabel>
+                    <FormLabel className="text-foreground">Despesas Fixas Rateadas (%)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 12,00" {...field} className="rounded-lg" />
                     </FormControl>
@@ -409,7 +407,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="taxes_percentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Impostos (%)</FormLabel>
+                    <FormLabel className="text-foreground">Impostos (%)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 8,00" {...field} className="rounded-lg" />
                     </FormControl>
@@ -422,7 +420,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="commission_percentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Comissão (%) (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Comissão (%) (Opcional)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 5,00" {...field} className="rounded-lg" />
                     </FormControl>
@@ -435,7 +433,7 @@ const SolluxCalcPage: React.FC = () => {
                 name="desired_margin_percentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Margem de Lucro Desejada (%)</FormLabel>
+                    <FormLabel className="text-foreground">Margem de Lucro Desejada (%)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 40,00" {...field} className="rounded-lg" />
                     </FormControl>
@@ -460,33 +458,33 @@ const SolluxCalcPage: React.FC = () => {
       </Card>
 
       {isResultPanelVisible && calculationResult && !calculationResult.error && (
-        <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+        <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl animate-in fade-in slide-in-from-top-4 duration-300">
           <CardHeader>
-            <CardTitle className="text-sollux-black uppercase font-bold">Resultado do Cálculo</CardTitle>
-            <CardDescription className="text-gray-600">
+            <CardTitle className="text-foreground uppercase font-bold">Resultado do Cálculo</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Preço ideal de venda para "{form.getValues('product_name')}"
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sollux-black">
+              <div className="flex items-center gap-2 text-foreground">
                 <DollarSign className="h-6 w-6 text-sollux-red" />
                 <span className="text-xl font-semibold">Preço de venda ideal:</span>
                 <span className="text-2xl font-bold text-sollux-red">
                   R$ {calculationResult.sellingPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sollux-black">
+              <div className="flex items-center gap-2 text-foreground">
                 <Percent className="h-6 w-6 text-sollux-orange" />
                 <span className="text-xl font-semibold">Margem líquida:</span>
                 <span className="text-2xl font-bold text-sollux-orange">
                   {calculationResult.netMargin.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-sollux-black">
-                <TrendingUp className="h-6 w-6 text-sollux-black" />
+              <div className="flex items-center gap-2 text-foreground">
+                <TrendingUp className="h-6 w-6 text-foreground" />
                 <span className="text-xl font-semibold">Lucro líquido por unidade:</span>
-                <span className="text-2xl font-bold text-sollux-black">
+                <span className="text-2xl font-bold text-foreground">
                   R$ {calculationResult.netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
@@ -517,10 +515,10 @@ const SolluxCalcPage: React.FC = () => {
         </Card>
       )}
 
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-sollux-black uppercase font-bold">Meus Cálculos Salvos</CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardTitle className="text-foreground uppercase font-bold">Meus Cálculos Salvos</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Visualize, edite ou exclua seus cálculos de precificação.
           </CardDescription>
         </CardHeader>
@@ -535,43 +533,43 @@ const SolluxCalcPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">Produto/Serviço</TableHead>
-                  <TableHead className="text-sollux-black">Preço Venda</TableHead>
-                  <TableHead className="text-sollux-black">Margem Líquida</TableHead>
-                  <TableHead className="text-sollux-black">Criado em</TableHead>
-                  <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                  <TableHead className="text-foreground">Produto/Serviço</TableHead>
+                  <TableHead className="text-foreground">Preço Venda</TableHead>
+                  <TableHead className="text-foreground">Margem Líquida</TableHead>
+                  <TableHead className="text-foreground">Criado em</TableHead>
+                  <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {savedCalculations.map((calc) => (
                   <TableRow key={calc.id}>
-                    <TableCell className="font-medium text-sollux-black">{calc.product_name}</TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="font-medium text-foreground">{calc.product_name}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {calc.calculated_selling_price?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) || 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {calc.calculated_net_margin?.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) || 'N/A'}%
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {format(new Date(calc.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                     </TableCell>
                     <TableCell className="text-right flex justify-end items-center gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => handleViewCalculation(calc)} disabled={isDeleting} title="Visualizar">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewCalculation(calc)} disabled={isDeleting} title="Visualizar" className="text-foreground hover:bg-accent">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDuplicateCalculation(calc)} disabled={isDeleting} title="Duplicar">
+                      <Button variant="ghost" size="sm" onClick={() => handleDuplicateCalculation(calc)} disabled={isDeleting} title="Duplicar" className="text-foreground hover:bg-accent">
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleSimulateFromSavedCalculation(calc)} disabled={isDeleting} title="Simular Cenário">
+                      <Button variant="ghost" size="sm" onClick={() => handleSimulateFromSavedCalculation(calc)} disabled={isDeleting} title="Simular Cenário" className="text-foreground hover:bg-accent">
                         <BarChart2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleShareCalculation(calc)} disabled={isDeleting} title="Compartilhar">
+                      <Button variant="ghost" size="sm" onClick={() => handleShareCalculation(calc)} disabled={isDeleting} title="Compartilhar" className="text-foreground hover:bg-accent">
                         <Share2 className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleEditCalculation(calc)} disabled={isDeleting} title="Alterar">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditCalculation(calc)} disabled={isDeleting} title="Alterar" className="text-foreground hover:bg-accent">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteCalculation(calc.id)} disabled={isDeleting} title="Excluir">
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteCalculation(calc.id)} disabled={isDeleting} title="Excluir" className="bg-sollux-red hover:bg-red-700 text-white">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -580,17 +578,17 @@ const SolluxCalcPage: React.FC = () => {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-center text-gray-500 py-4">Nenhum cálculo salvo ainda. Faça um cálculo e clique em "Salvar Cálculo".</p>
+            <p className="text-center text-muted-foreground py-4">Nenhum cálculo salvo ainda. Faça um cálculo e clique em "Salvar Cálculo".</p>
           )}
         </CardContent>
       </Card>
 
       {/* Dialog de Compartilhamento */}
       <Dialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">Compartilhar Cálculo</DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogTitle className="text-foreground">Compartilhar Cálculo</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Compartilhe o cálculo "{calculationToShare?.product_name}".
             </DialogDescription>
           </DialogHeader>
@@ -607,10 +605,10 @@ const SolluxCalcPage: React.FC = () => {
 
       {/* Dialog de Visualização de Cálculo */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">Detalhes do Cálculo</DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogTitle className="text-foreground">Detalhes do Cálculo</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Informações detalhadas para "{calculationToView?.product_name}"
             </DialogDescription>
           </DialogHeader>
@@ -618,32 +616,32 @@ const SolluxCalcPage: React.FC = () => {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Nome do Produto/Serviço:</p>
-                  <p className="text-sollux-black font-semibold">{calculationToView.product_name}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Nome do Produto/Serviço:</p>
+                  <p className="text-foreground font-semibold">{calculationToView.product_name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Custo Total Unitário:</p>
-                  <p className="text-sollux-black font-semibold">R$ {calculationToView.unit_cost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Custo Total Unitário:</p>
+                  <p className="text-foreground font-semibold">R$ {calculationToView.unit_cost.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Despesas Fixas Rateadas:</p>
-                  <p className="text-sollux-black font-semibold">{calculationToView.fixed_expenses_percentage}%</p>
+                  <p className="text-sm font-medium text-muted-foreground">Despesas Fixas Rateadas:</p>
+                  <p className="text-foreground font-semibold">{calculationToView.fixed_expenses_percentage}%</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Impostos:</p>
-                  <p className="text-sollux-black font-semibold">{calculationToView.taxes_percentage}%</p>
+                  <p className="text-sm font-medium text-muted-foreground">Impostos:</p>
+                  <p className="text-foreground font-semibold">{calculationToView.taxes_percentage}%</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Comissão:</p>
-                  <p className="text-sollux-black font-semibold">{calculationToView.commission_percentage || 0}%</p>
+                  <p className="text-sm font-medium text-muted-foreground">Comissão:</p>
+                  <p className="text-foreground font-semibold">{calculationToView.commission_percentage || 0}%</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Margem de Lucro Desejada:</p>
-                  <p className="text-sollux-black font-semibold">{calculationToView.desired_margin_percentage}%</p>
+                  <p className="text-sm font-medium text-muted-foreground">Margem de Lucro Desejada:</p>
+                  <p className="text-foreground font-semibold">{calculationToView.desired_margin_percentage}%</p>
                 </div>
               </div>
-              <div className="border-t border-gray-200 pt-4 mt-4 space-y-2">
-                <h4 className="text-lg font-semibold text-sollux-black">Resultados:</h4>
+              <div className="border-t border-border pt-4 mt-4 space-y-2">
+                <h4 className="text-lg font-semibold text-foreground">Resultados:</h4>
                 <p className="flex items-center gap-2 text-sollux-red">
                   <DollarSign className="h-5 w-5" />
                   <span className="font-semibold">Preço de venda ideal:</span> R$ {calculationToView.calculated_selling_price?.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -652,7 +650,7 @@ const SolluxCalcPage: React.FC = () => {
                   <Percent className="h-5 w-5" />
                   <span className="font-semibold">Margem líquida:</span> {calculationToView.calculated_net_margin?.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
                 </p>
-                <p className="flex items-center gap-2 text-sollux-black">
+                <p className="flex items-center gap-2 text-foreground">
                   <TrendingUp className="h-5 w-5" />
                   <span className="font-semibold">Lucro líquido por unidade:</span> R$ {calculationToView.calculated_net_profit?.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
@@ -669,38 +667,38 @@ const SolluxCalcPage: React.FC = () => {
 
       {/* Dialog de Simulação de Cenários */}
       <Dialog open={isScenarioDialogOpen} onOpenChange={setIsScenarioDialogOpen}>
-        <DialogContent className="sm:max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">Simulação de Cenários</DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogTitle className="text-foreground">Simulação de Cenários</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Compare diferentes configurações para o seu produto/serviço.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             {scenarios.length === 0 ? (
-              <p className="text-center text-gray-500">Adicione um cenário clicando em "Adicionar Cenário Atual" no formulário principal ou "Simular Cenário" em um cálculo salvo.</p>
+              <p className="text-center text-muted-foreground">Adicione um cenário clicando em "Adicionar Cenário Atual" no formulário principal ou "Simular Cenário" em um cálculo salvo.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {scenarios.map((scenario, index) => (
-                  <Card key={scenario.id} className="bg-white/50 border border-gray-200 shadow-sm rounded-lg p-4">
+                  <Card key={scenario.id} className="bg-card border border-border shadow-sm rounded-lg p-4">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <CardTitle className="text-lg font-bold text-sollux-black">Cenário {index + 1}: {scenario.product_name}</CardTitle>
-                      <Button variant="ghost" size="sm" onClick={() => handleRemoveScenario(scenario.id)} className="text-red-600 hover:bg-red-50 rounded-lg">
+                      <CardTitle className="text-lg font-bold text-foreground">Cenário {index + 1}: {scenario.product_name}</CardTitle>
+                      <Button variant="ghost" size="sm" onClick={() => handleRemoveScenario(scenario.id)} className="text-destructive hover:bg-destructive/10 rounded-lg">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <p className="text-sm text-gray-700">Custo: R$ {Number(scenario.unit_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                      <p className="text-sm text-gray-700">Despesas Fixas: {Number(scenario.fixed_expenses_percentage)}%</p>
-                      <p className="text-sm text-gray-700">Impostos: {Number(scenario.taxes_percentage)}%</p>
-                      <p className="text-sm text-gray-700">Comissão: {Number(scenario.commission_percentage || 0)}%</p>
-                      <p className="text-sm text-gray-700">Margem Desejada: {Number(scenario.desired_margin_percentage)}%</p>
+                      <p className="text-sm text-muted-foreground">Custo: R$ {Number(scenario.unit_cost).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      <p className="text-sm text-muted-foreground">Despesas Fixas: {Number(scenario.fixed_expenses_percentage)}%</p>
+                      <p className="text-sm text-muted-foreground">Impostos: {Number(scenario.taxes_percentage)}%</p>
+                      <p className="text-sm text-muted-foreground">Comissão: {Number(scenario.commission_percentage || 0)}%</p>
+                      <p className="text-sm text-muted-foreground">Margem Desejada: {Number(scenario.desired_margin_percentage)}%</p>
                       
                       {scenario.result && !scenario.result.error ? (
                         <div className="mt-4 space-y-1">
                           <p className="text-sollux-red font-semibold">Preço de Venda: R$ {scenario.result.sellingPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           <p className="text-sollux-orange font-semibold">Margem Líquida: {scenario.result.netMargin.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</p>
-                          <p className="text-sollux-black font-semibold">Lucro Líquido: R$ {scenario.result.netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                          <p className="text-foreground font-semibold">Lucro Líquido: R$ {scenario.result.netProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           <div className="h-48 w-full mt-4">
                             <ResponsiveContainer width="100%" height="100%">
                               <PieChart>
@@ -724,7 +722,7 @@ const SolluxCalcPage: React.FC = () => {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-red-500 text-sm mt-2">Erro no cálculo do cenário.</p>
+                        <p className="text-destructive text-sm mt-2">Erro no cálculo do cenário.</p>
                       )}
                     </CardContent>
                   </Card>

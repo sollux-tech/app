@@ -196,21 +196,21 @@ const PillarManagementPage: React.FC = () => {
   const isLoadingPage = isLoadingPillars || isLoadingPillarTypes;
 
   if (isLoadingPage) {
-    return <div className="text-center text-gray-600">Carregando pilares...</div>;
+    return <div className="text-center text-muted-foreground">Carregando pilares...</div>;
   }
 
   if (errorPillars) {
-    return <div className="text-center text-red-600">Erro ao carregar pilares: {errorPillars.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar pilares: {errorPillars.message}</div>;
   }
   if (errorPillarTypes) {
-    return <div className="text-center text-red-600">Erro ao carregar tipos de pilares: {errorPillarTypes.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar tipos de pilares: {errorPillarTypes.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Pilares</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Pilares</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Pilar
           </Button>
@@ -219,24 +219,24 @@ const PillarManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Descrição do Pilar</TableHead>
-                <TableHead className="text-sollux-black">Tipo de Pilar</TableHead>
-                <TableHead className="text-sollux-black">Status</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Descrição do Pilar</TableHead>
+                <TableHead className="text-foreground">Tipo de Pilar</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pillars?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Nenhum pilar encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 pillars?.map((pillar) => (
                   <TableRow key={pillar.id}>
-                    <TableCell className="font-medium text-sollux-black">{pillar.description}</TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="font-medium text-foreground">{pillar.description}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {(pillar as any).pillar_types?.description || 'N/A'}
                     </TableCell>
                     <TableCell>
@@ -252,7 +252,7 @@ const PillarManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(pillar)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -276,9 +276,9 @@ const PillarManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingPillar ? 'Editar Pilar' : 'Adicionar Novo Pilar'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingPillar ? 'Editar Pilar' : 'Adicionar Novo Pilar'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -287,7 +287,7 @@ const PillarManagementPage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição do Pilar</FormLabel>
+                    <FormLabel className="text-foreground">Descrição do Pilar</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Pilar de Inovação" {...field} className="rounded-lg" />
                     </FormControl>
@@ -300,7 +300,7 @@ const PillarManagementPage: React.FC = () => {
                 name="pillar_type_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Tipo de Pilar</FormLabel>
+                    <FormLabel className="text-foreground">Tipo de Pilar</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingPillarTypes}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -329,7 +329,7 @@ const PillarManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sollux-black">Status</FormLabel>
+                      <FormLabel className="text-foreground">Status</FormLabel>
                     </div>
                     <FormControl>
                       <Switch

@@ -21,10 +21,10 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
     if (this.state.hasError) {
       // Você pode renderizar qualquer UI de fallback personalizada
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-sollux-light-gray text-center p-4">
-          <div className="bg-white p-8 rounded-2xl shadow-lg border border-sollux-card-border">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-4">
+          <div className="bg-card p-8 rounded-2xl shadow-lg border border-border">
             <h1 className="text-2xl font-bold text-sollux-red mb-4">Oops! Algo deu errado.</h1>
-            <p className="text-gray-700 mb-6">
+            <p className="text-muted-foreground mb-6">
               Ocorreu um erro inesperado na aplicação. Por favor, tente recarregar a página.
             </p>
             <Button onClick={() => window.location.reload()} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">

@@ -110,25 +110,25 @@ const WorkModelsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Modelos de Trabalho</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Modelos de Trabalho</CardTitle>
           <Button onClick={() => { setEditingItem(null); setIsDialogOpen(true); }} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar
           </Button>
         </CardHeader>
         <CardContent>
-          {isLoading ? <p>Carregando...</p> : (
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : (
             <Table>
-              <TableHeader><TableRow><TableHead className="text-sollux-black">Nome</TableHead><TableHead className="text-sollux-black">Descrição</TableHead><TableHead className="text-right text-sollux-black">Ações</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead className="text-foreground">Nome</TableHead><TableHead className="text-foreground">Descrição</TableHead><TableHead className="text-right text-foreground">Ações</TableHead></TableRow></TableHeader>
               <TableBody>
                 {items?.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-medium text-sollux-black">{item.name}</TableCell>
-                    <TableCell className="text-gray-700">{item.description || 'N/A'}</TableCell>
+                    <TableCell className="font-medium text-foreground">{item.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.description || 'N/A'}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setIsDialogOpen(true); }} className="mr-2 rounded-lg" disabled={isMutating}><Edit className="h-4 w-4" /></Button>
-                      <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(item.id)} className="rounded-lg" disabled={isMutating}><Trash2 className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setIsDialogOpen(true); }} className="mr-2 rounded-lg text-foreground hover:bg-accent" disabled={isMutating}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(item.id)} className="rounded-lg bg-sollux-red hover:bg-red-700 text-white" disabled={isMutating}><Trash2 className="h-4 w-4" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -139,12 +139,12 @@ const WorkModelsPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
-          <DialogHeader><DialogTitle className="text-sollux-black">{editingItem ? 'Editar' : 'Novo'} Modelo de Trabalho</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-lg bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
+          <DialogHeader><DialogTitle className="text-foreground">{editingItem ? 'Editar' : 'Novo'} Modelo de Trabalho</DialogTitle></DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel className="text-sollux-black">Nome</FormLabel><FormControl><Input placeholder="Ex: Remoto" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel className="text-sollux-black">Descrição</FormLabel><FormControl><Textarea placeholder="Breve descrição" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel className="text-foreground">Nome</FormLabel><FormControl><Input placeholder="Ex: Remoto" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
+              <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel className="text-foreground">Descrição</FormLabel><FormControl><Textarea placeholder="Breve descrição" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>)} />
               <DialogFooter className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isMutating} className="rounded-lg">Cancelar</Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">{editingItem ? 'Salvar' : 'Criar'}</Button>

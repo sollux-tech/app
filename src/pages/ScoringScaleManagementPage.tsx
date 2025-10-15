@@ -179,18 +179,18 @@ const ScoringScaleManagementPage: React.FC = () => {
   const isMutating = createScoringScaleMutation.isPending || updateScoringScaleMutation.isPending || deleteScoringScaleMutation.isPending;
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando réguas de pontuação...</div>;
+    return <div className="text-center text-muted-foreground">Carregando réguas de pontuação...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-600">Erro ao carregar réguas de pontuação: {error.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar réguas de pontuação: {error.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Régua de Pontuação</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Régua de Pontuação</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Régua
           </Button>
@@ -199,24 +199,24 @@ const ScoringScaleManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Nota</TableHead>
-                <TableHead className="text-sollux-black">Descrição</TableHead>
-                <TableHead className="text-sollux-black">Status</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Nota</TableHead>
+                <TableHead className="text-foreground">Descrição</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {scoringScales?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Nenhuma régua de pontuação encontrada.
                   </TableCell>
                 </TableRow>
               ) : (
                 scoringScales?.map((scale) => (
                   <TableRow key={scale.id}>
-                    <TableCell className="font-medium text-sollux-black">{scale.score}</TableCell>
-                    <TableCell className="text-gray-700">{scale.description}</TableCell>
+                    <TableCell className="font-medium text-foreground">{scale.score}</TableCell>
+                    <TableCell className="text-muted-foreground">{scale.description}</TableCell>
                     <TableCell>
                       <Badge
                         variant={scale.status === 'active' ? 'default' : 'secondary'}
@@ -230,7 +230,7 @@ const ScoringScaleManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(scale)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -254,9 +254,9 @@ const ScoringScaleManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingScoringScale ? 'Editar Régua de Pontuação' : 'Adicionar Nova Régua de Pontuação'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingScoringScale ? 'Editar Régua de Pontuação' : 'Adicionar Nova Régua de Pontuação'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -265,7 +265,7 @@ const ScoringScaleManagementPage: React.FC = () => {
                 name="score"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Nota</FormLabel>
+                    <FormLabel className="text-foreground">Nota</FormLabel>
                     <Select onValueChange={field.onChange} value={String(field.value)} disabled={isMutating}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -289,7 +289,7 @@ const ScoringScaleManagementPage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição</FormLabel>
+                    <FormLabel className="text-foreground">Descrição</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Resposta excelente" {...field} className="rounded-lg" />
                     </FormControl>
@@ -303,7 +303,7 @@ const ScoringScaleManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sollux-black">Status</FormLabel>
+                      <FormLabel className="text-foreground">Status</FormLabel>
                     </div>
                     <FormControl>
                       <Switch

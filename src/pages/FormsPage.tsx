@@ -165,16 +165,16 @@ const FormsPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando formulários...</div>;
+    return <div className="text-center text-muted-foreground">Carregando formulários...</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sollux-black uppercase font-bold">SOLLUX FORM™</CardTitle>
-            <p className="text-gray-600">Crie formulários elegantes e colete respostas com clareza e precisão.</p>
+            <CardTitle className="text-foreground uppercase font-bold">SOLLUX FORM™</CardTitle>
+            <p className="text-muted-foreground">Crie formulários elegantes e colete respostas com clareza e precisão.</p>
           </div>
           <Button onClick={() => navigate('/connect/forms/new')} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Novo Formulário
@@ -183,13 +183,13 @@ const FormsPage: React.FC = () => {
         <CardContent>
           {forms?.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
+              <div className="text-muted-foreground mb-4">
                 <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-sollux-black mb-2">Nenhum formulário criado</h3>
-              <p className="text-gray-600 mb-6">Crie seu primeiro formulário para começar a coletar respostas.</p>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Nenhum formulário criado</h3>
+              <p className="text-muted-foreground mb-6">Crie seu primeiro formulário para começar a coletar respostas.</p>
               <Button onClick={() => navigate('/connect/forms/new')} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
                 <Plus className="mr-2 h-4 w-4" /> Criar Formulário
               </Button>
@@ -198,11 +198,11 @@ const FormsPage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">Título</TableHead>
-                  <TableHead className="text-sollux-black">Status</TableHead>
-                  <TableHead className="text-sollux-black">Criado em</TableHead>
-                  <TableHead className="text-sollux-black">Respostas</TableHead>
-                  <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                  <TableHead className="text-foreground">Título</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
+                  <TableHead className="text-foreground">Criado em</TableHead>
+                  <TableHead className="text-foreground">Respostas</TableHead>
+                  <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -210,9 +210,9 @@ const FormsPage: React.FC = () => {
                   <TableRow key={form.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium text-sollux-black">{form.title}</div>
+                        <div className="font-medium text-foreground">{form.title}</div>
                         {form.description && (
-                          <div className="text-sm text-gray-600">{form.description}</div>
+                          <div className="text-sm text-muted-foreground">{form.description}</div>
                         )}
                       </div>
                     </TableCell>
@@ -224,10 +224,10 @@ const FormsPage: React.FC = () => {
                         {form.status === 'published' ? 'Publicado' : 'Rascunho'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {format(new Date(form.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {form.response_count || 0}
                     </TableCell>
                     <TableCell className="text-right">
@@ -263,9 +263,9 @@ const FormsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleExportCSV(form.id)}
+                          onClick={() => navigate(`/connect/forms/${form.id}/responses`)}
                           className="text-orange-600 hover:bg-orange-50 rounded-lg"
-                          title="Exportar CSV"
+                          title="Ver Respostas"
                         >
                           <Download className="h-4 w-4" />
                         </Button>
@@ -273,7 +273,7 @@ const FormsPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => window.open(`/form/${form.id}`, '_blank')}
-                          className="text-sollux-black hover:bg-gray-100 rounded-lg"
+                          className="text-foreground hover:bg-accent rounded-lg"
                           title="Visualizar"
                         >
                           <Eye className="h-4 w-4" />
@@ -281,8 +281,8 @@ const FormsPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => window.open(`/connect/forms/${form.id}/edit`, '_blank')}
-                          className="text-sollux-black hover:bg-gray-100 rounded-lg"
+                          onClick={() => navigate(`/connect/forms/${form.id}/edit`)}
+                          className="text-foreground hover:bg-accent rounded-lg"
                           title="Editar"
                         >
                           <Edit className="h-4 w-4" />
@@ -291,7 +291,7 @@ const FormsPage: React.FC = () => {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteForm(form.id)}
-                          className="rounded-lg"
+                          className="rounded-lg bg-sollux-red hover:bg-red-700 text-white"
                           title="Excluir"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -308,22 +308,22 @@ const FormsPage: React.FC = () => {
 
       {/* Dialog de QR Code */}
       <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">QR Code do Formulário</DialogTitle>
+            <DialogTitle className="text-foreground">QR Code do Formulário</DialogTitle>
           </DialogHeader>
           <div className="text-center">
             {currentForm && (
               <>
-                <h3 className="font-semibold text-sollux-black mb-2">{currentForm.title}</h3>
-                <p className="text-sm text-gray-600 mb-4">Escaneie o QR Code ou copie o link</p>
+                <h3 className="font-semibold text-foreground mb-2">{currentForm.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4">Escaneie o QR Code ou copie o link</p>
                 {qrCodeUrl && (
                   <div className="flex justify-center mb-4">
                     <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48 border rounded-lg" />
                   </div>
                 )}
-                <div className="bg-gray-100 p-3 rounded-lg mb-4">
-                  <p className="text-sm font-mono text-sollux-black break-all">
+                <div className="bg-muted p-3 rounded-lg mb-4">
+                  <p className="text-sm font-mono text-foreground break-all">
                     {window.location.origin}/form/{currentForm.id}
                   </p>
                 </div>

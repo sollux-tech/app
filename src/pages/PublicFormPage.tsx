@@ -218,7 +218,7 @@ const PublicFormPage: React.FC = () => {
                       }
                     }}
                   />
-                  <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground">
                     {option}
                   </label>
                 </div>
@@ -239,7 +239,7 @@ const PublicFormPage: React.FC = () => {
                 {question.options?.map((option, index) => (
                   <div key={index} className="flex items-center space-x-2">
                     <RadioGroupItem value={option} id={`${fieldId}_${index}`} />
-                    <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground">
                       {option}
                     </label>
                   </div>
@@ -266,7 +266,7 @@ const PublicFormPage: React.FC = () => {
                       form.setValue(fieldId, newValues);
                     }}
                   />
-                  <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  <label htmlFor={`${fieldId}_${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground">
                     {option}
                   </label>
                 </div>
@@ -318,11 +318,11 @@ const PublicFormPage: React.FC = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-border">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-sollux-black mb-2">Formulário Enviado!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Formulário Enviado!</h2>
+          <p className="text-muted-foreground mb-6">
             Obrigado por responder nosso formulário. Suas respostas foram recebidas com sucesso.
           </p>
           <Button onClick={() => navigate('/')} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
@@ -335,11 +335,11 @@ const PublicFormPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-border">
           <Loader2 className="h-16 w-16 text-sollux-red mx-auto mb-4 animate-spin" />
-          <h2 className="text-2xl font-bold text-sollux-black mb-2">Carregando...</h2>
-          <p className="text-gray-600">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Carregando...</h2>
+          <p className="text-muted-foreground">
             Por favor, aguarde enquanto carregamos o formulário.
           </p>
         </Card>
@@ -349,10 +349,10 @@ const PublicFormPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
-          <h2 className="text-2xl font-bold text-sollux-black mb-2">Erro ao carregar formulário</h2>
-          <p className="text-gray-600 mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-border">
+          <h2 className="text-2xl font-bold text-foreground mb-2">Erro ao carregar formulário</h2>
+          <p className="text-muted-foreground mb-6">
             {error.message}
           </p>
           <Button onClick={() => navigate('/')} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
@@ -363,33 +363,16 @@ const PublicFormPage: React.FC = () => {
     );
   }
 
-  if (!formDetail) {
-    // This case should ideally be caught by the error handler above if the function returns null/empty data
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-sollux-card-border">
-          <h2 className="text-2xl font-bold text-sollux-black mb-2">Formulário não encontrado</h2>
-          <p className="text-gray-600 mb-6">
-            O formulário que você está procurando não existe ou não está publicado.
-          </p>
-          <Button onClick={() => navigate('/')} className="bg-sollux-red hover:bg-sollux-orange text-white rounded-lg">
-            Voltar para o Início
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-sollux-light-gray py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <Card className="bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <Card className="bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-sollux-black mb-2">
-              {formDetail.title}
+            <CardTitle className="text-3xl font-bold text-foreground mb-2">
+              {formDetail?.title}
             </CardTitle>
-            {formDetail.description && (
-              <p className="text-gray-600">{formDetail.description}</p>
+            {formDetail?.description && (
+              <p className="text-muted-foreground">{formDetail.description}</p>
             )}
           </CardHeader>
           <CardContent>
@@ -398,7 +381,7 @@ const PublicFormPage: React.FC = () => {
                 {questions?.map((question) => (
                   <div key={question.id} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-sollux-black">
+                      <label className="text-sm font-medium text-foreground">
                         {question.title}
                       </label>
                       {question.required && (

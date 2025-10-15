@@ -181,37 +181,37 @@ const NotificationManagementPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Notificações</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Notificações</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Notificação
           </Button>
         </CardHeader>
         <CardContent>
-          {isLoading ? <p>Carregando...</p> : (
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">Título</TableHead>
-                  <TableHead className="text-sollux-black">Público</TableHead>
-                  <TableHead className="text-sollux-black">Criado em</TableHead>
-                  <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                  <TableHead className="text-foreground">Título</TableHead>
+                  <TableHead className="text-foreground">Público</TableHead>
+                  <TableHead className="text-foreground">Criado em</TableHead>
+                  <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {notifications?.map((notification) => (
                   <TableRow key={notification.id}>
-                    <TableCell className="font-medium text-sollux-black">{notification.title}</TableCell>
-                    <TableCell className="text-gray-700 capitalize">{
+                    <TableCell className="font-medium text-foreground">{notification.title}</TableCell>
+                    <TableCell className="text-muted-foreground capitalize">{
                       { all: 'Todos', users: 'Usuários Específicos', companies: 'Empresas Específicas' }[notification.target_type]
                     }</TableCell>
-                    <TableCell className="text-gray-700">{format(new Date(notification.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
+                    <TableCell className="text-muted-foreground">{format(new Date(notification.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleEditClick(notification)} className="mr-2 rounded-lg" disabled={isMutating}>
+                      <Button variant="ghost" size="sm" onClick={() => handleEditClick(notification)} className="mr-2 rounded-lg text-foreground hover:bg-accent" disabled={isMutating}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(notification.id)} className="rounded-lg" disabled={isMutating}>
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(notification.id)} className="rounded-lg bg-sollux-red hover:bg-red-700 text-white" disabled={isMutating}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -224,35 +224,35 @@ const NotificationManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-lg bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingNotification ? 'Editar Notificação' : 'Nova Notificação'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingNotification ? 'Editar Notificação' : 'Nova Notificação'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField control={form.control} name="title" render={({ field }) => (
-                <FormItem><FormLabel className="text-sollux-black">Título</FormLabel><FormControl><Input placeholder="Título da notificação" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="text-foreground">Título</FormLabel><FormControl><Input placeholder="Título da notificação" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="message" render={({ field }) => (
-                <FormItem><FormLabel className="text-sollux-black">Mensagem</FormLabel><FormControl><Textarea placeholder="Conteúdo da notificação" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel className="text-foreground">Mensagem</FormLabel><FormControl><Textarea placeholder="Conteúdo da notificação" {...field} className="rounded-lg" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="type" render={({ field }) => (
-                <FormItem><FormLabel className="text-sollux-black">Tipo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-lg"><SelectValue placeholder="Selecione um tipo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="info">Informativo</SelectItem><SelectItem value="success">Sucesso</SelectItem><SelectItem value="warning">Aviso</SelectItem><SelectItem value="error">Erro</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                <FormItem><FormLabel className="text-foreground">Tipo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-lg"><SelectValue placeholder="Selecione um tipo" /></SelectTrigger></FormControl><SelectContent><SelectItem value="info">Informativo</SelectItem><SelectItem value="success">Sucesso</SelectItem><SelectItem value="warning">Aviso</SelectItem><SelectItem value="error">Erro</SelectItem></SelectContent></Select><FormMessage /></FormItem>
               )} />
               
               <FormField control={form.control} name="target_type" render={({ field }) => (
-                <FormItem className="space-y-3"><FormLabel className="text-sollux-black">Enviar para</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="all" /></FormControl><FormLabel className="font-normal">Todos</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="users" /></FormControl><FormLabel className="font-normal">Usuários Específicos</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="companies" /></FormControl><FormLabel className="font-normal">Empresas Específicas</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-3"><FormLabel className="text-foreground">Enviar para</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex space-x-4"><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="all" /></FormControl><FormLabel className="font-normal">Todos</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="users" /></FormControl><FormLabel className="font-normal">Usuários Específicos</FormLabel></FormItem><FormItem className="flex items-center space-x-2"><FormControl><RadioGroupItem value="companies" /></FormControl><FormLabel className="font-normal">Empresas Específicas</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
               )} />
 
               {targetType === 'users' && (
                 <FormField control={form.control} name="target_user_ids" render={({ field }) => (
-                  <FormItem><FormLabel className="text-sollux-black">Selecionar Usuários</FormLabel><FormControl><MultiSelect options={userOptions} selected={field.value || []} onChange={field.onChange} placeholder="Selecione os usuários..." /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="text-foreground">Selecionar Usuários</FormLabel><FormControl><MultiSelect options={userOptions} selected={field.value || []} onChange={field.onChange} placeholder="Selecione os usuários..." /></FormControl><FormMessage /></FormItem>
                 )} />
               )}
 
               {targetType === 'companies' && (
                 <FormField control={form.control} name="target_company_ids" render={({ field }) => (
-                  <FormItem><FormLabel className="text-sollux-black">Selecionar Empresas</FormLabel><FormControl><MultiSelect options={companyOptions} selected={field.value || []} onChange={field.onChange} placeholder="Selecione as empresas..." /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel className="text-foreground">Selecionar Empresas</FormLabel><FormControl><MultiSelect options={companyOptions} selected={field.value || []} onChange={field.onChange} placeholder="Selecione as empresas..." /></FormControl><FormMessage /></FormItem>
                 )} />
               )}
 

@@ -55,7 +55,7 @@ const DataDoctorPage: React.FC = () => {
 
     if (error) {
       return (
-        <div className="flex items-center gap-4 text-red-600 p-4 bg-red-50 rounded-lg">
+        <div className="flex items-center gap-4 text-destructive p-4 bg-destructive/10 rounded-lg">
           <AlertCircle className="h-8 w-8" />
           <div>
             <p className="font-semibold">Erro ao verificar os dados.</p>
@@ -91,17 +91,17 @@ const DataDoctorPage: React.FC = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome da Empresa</TableHead>
-              <TableHead>ID do Proprietário Atual</TableHead>
-              <TableHead className="text-right">Ação</TableHead>
+              <TableHead className="text-foreground">Nome da Empresa</TableHead>
+              <TableHead className="text-foreground">ID do Proprietário Atual</TableHead>
+              <TableHead className="text-right text-foreground">Ação</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {problemCompanies.map(company => (
               <TableRow key={company.id}>
-                <TableCell className="font-medium">{company.name}</TableCell>
+                <TableCell className="font-medium text-foreground">{company.name}</TableCell>
                 <TableCell className="font-mono text-xs">
-                  {company.user_id ? company.user_id : <span className="text-red-600 font-bold">NENHUM (Órfã)</span>}
+                  {company.user_id ? company.user_id : <span className="text-destructive font-bold">NENHUM (Órfã)</span>}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -123,13 +123,13 @@ const DataDoctorPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
           <div className="flex items-center gap-4">
             <Wrench className="h-8 w-8 text-sollux-red" />
             <div>
-              <CardTitle className="text-sollux-black uppercase font-bold">Reparo de Dados</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-foreground uppercase font-bold">Reparo de Dados</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Esta ferramenta permite que você reivindique a propriedade de empresas que não estão associadas à sua conta.
               </CardDescription>
             </div>

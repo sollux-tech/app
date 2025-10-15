@@ -105,8 +105,8 @@ const FormEditPage: React.FC = () => {
       const { error } = await supabase
         .from('forms')
         .update({
-          title: data.title,
-          description: data.description,
+          title: data.title, // Garantir que title é sempre string
+          description: data.description, // Pode ser undefined
           questions: data.questions,
           updated_at: new Date().toISOString(),
         })
@@ -247,29 +247,29 @@ const FormEditPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando formulário...</div>;
+    return <div className="text-center text-muted-foreground">Carregando formulário...</div>;
   }
 
   if (error) {
     return (
-      <div className="text-center text-red-600">
+      <div className="text-center text-destructive">
         Erro ao carregar formulário: {error.message}
       </div>
     );
   }
 
   if (!formDetail) {
-    return <div className="text-center text-gray-600">Formulário não encontrado.</div>;
+    return <div className="text-center text-muted-foreground">Formulário não encontrado.</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="text-sollux-black">Editar Formulário</CardTitle>
-              <p className="text-gray-600">Personalize seu formulário com perguntas e configurações.</p>
+              <CardTitle className="text-foreground">Editar Formulário</CardTitle>
+              <p className="text-muted-foreground">Personalize seu formulário com perguntas e configurações.</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -299,7 +299,7 @@ const FormEditPage: React.FC = () => {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sollux-black">Título do Formulário</FormLabel>
+                      <FormLabel className="text-foreground">Título do Formulário</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Ex: Pesquisa de Clima Organizacional"
@@ -316,19 +316,19 @@ const FormEditPage: React.FC = () => {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sollux-black">Descrição</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Breve descrição sobre o objetivo do formulário"
-                          {...field}
-                          className="rounded-lg"
-                          rows={3}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <FormLabel className="text-foreground">Descrição</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Breve descrição sobre o objetivo do formulário"
+                        {...field}
+                        className="rounded-lg"
+                        rows={3}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               </div>
             </form>
           </Form>
@@ -336,15 +336,15 @@ const FormEditPage: React.FC = () => {
           {/* Perguntas do Formulário */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-sollux-black">Perguntas</h3>
+              <h3 className="text-lg font-semibold text-foreground">Perguntas</h3>
               <Button onClick={handleAddQuestion} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
                 <Plus className="mr-2 h-4 w-4" /> Adicionar Pergunta
               </Button>
             </div>
 
             {questions.length === 0 ? (
-              <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                <p className="text-gray-500">Nenhuma pergunta adicionada ainda.</p>
+              <div className="text-center py-8 border-2 border-dashed border-border rounded-lg">
+                <p className="text-muted-foreground">Nenhuma pergunta adicionada ainda.</p>
                 <Button onClick={handleAddQuestion} className="mt-4 bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
                   <Plus className="mr-2 h-4 w-4" /> Adicionar Primeira Pergunta
                 </Button>
@@ -358,29 +358,29 @@ const FormEditPage: React.FC = () => {
                     onDragStart={() => handleDragStart(index)}
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
-                    className={`p-4 bg-white rounded-lg border border-gray-200 cursor-move transition-colors ${
+                    className={`p-4 bg-card rounded-lg border border-border cursor-move transition-colors ${
                       draggedIndex === index ? 'opacity-50' : ''
                     }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         <div className="flex items-center gap-2 mt-1">
-                          <GripVertical className="h-4 w-4 text-gray-400" />
+                          <GripVertical className="h-4 w-4 text-muted-foreground" />
                           <Badge variant="outline" className="text-xs">
                             {getQuestionIcon(question.type)}
                           </Badge>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-sollux-black">{question.title}</h4>
+                            <h4 className="font-medium text-foreground">{question.title}</h4>
                             {question.required && (
                               <Badge variant="destructive" className="text-xs">Obrigatório</Badge>
                             )}
                           </div>
                           {question.description && (
-                            <p className="text-sm text-gray-600">{question.description}</p>
+                            <p className="text-sm text-muted-foreground">{question.description}</p>
                           )}
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Tipo: {getQuestionTypeName(question.type)}
                           </p>
                         </div>
@@ -390,7 +390,7 @@ const FormEditPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditQuestion(question)}
-                          className="text-sollux-black hover:bg-gray-100 rounded-lg"
+                          className="text-foreground hover:bg-accent rounded-lg"
                         >
                           Editar
                         </Button>
@@ -398,7 +398,7 @@ const FormEditPage: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteQuestion(index)}
-                          className="text-red-600 hover:bg-red-50 rounded-lg"
+                          className="text-destructive hover:bg-destructive/10 rounded-lg"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -485,9 +485,9 @@ const QuestionDialog: React.FC<{
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-sollux-black">
+          <DialogTitle className="text-foreground">
             {question ? 'Editar Pergunta' : 'Adicionar Pergunta'}
           </DialogTitle>
         </DialogHeader>
@@ -499,7 +499,7 @@ const QuestionDialog: React.FC<{
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Tipo de Pergunta</FormLabel>
+                    <FormLabel className="text-foreground">Tipo de Pergunta</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -528,7 +528,7 @@ const QuestionDialog: React.FC<{
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Título da Pergunta</FormLabel>
+                    <FormLabel className="text-foreground">Título da Pergunta</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Ex: Qual é o seu nome completo?"
@@ -545,7 +545,7 @@ const QuestionDialog: React.FC<{
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Descrição (Opcional)</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Ajuda adicional para o respondente"
@@ -564,7 +564,7 @@ const QuestionDialog: React.FC<{
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sollux-black">Campo Obrigatório</FormLabel>
+                      <FormLabel className="text-foreground">Campo Obrigatório</FormLabel>
                     </div>
                     <FormControl>
                       <Switch
@@ -580,7 +580,7 @@ const QuestionDialog: React.FC<{
             {/* Opções para tipos que precisam */}
             {(questionType === 'select' || questionType === 'multiselect' || questionType === 'radio' || questionType === 'checkbox') && (
               <div>
-                <FormLabel className="text-sollux-black">Opções</FormLabel>
+                <FormLabel className="text-foreground">Opções</FormLabel>
                 <div className="space-y-2 mt-2">
                   {form.watch('options')?.map((option, index) => (
                     <div key={index} className="flex gap-2">
@@ -603,7 +603,7 @@ const QuestionDialog: React.FC<{
                           newOptions.splice(index, 1);
                           form.setValue('options', newOptions);
                         }}
-                        className="text-red-600 hover:bg-red-50 rounded-lg"
+                        className="text-destructive hover:bg-destructive/10 rounded-lg"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -632,7 +632,7 @@ const QuestionDialog: React.FC<{
                   name="validation.min"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sollux-black">Valor Mínimo</FormLabel>
+                      <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -651,7 +651,7 @@ const QuestionDialog: React.FC<{
                   name="validation.max"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sollux-black">Valor Máximo</FormLabel>
+                      <FormLabel className="text-foreground">Valor Máximo</FormLabel>
                       <FormControl>
                         <Input
                           type="number"

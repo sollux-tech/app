@@ -57,12 +57,12 @@ const Breadcrumbs: React.FC = () => {
             <BreadcrumbItem>
               {index < breadcrumbs.length - 1 ? (
                 <BreadcrumbLink asChild>
-                  <Link to={crumb.path} className="text-gray-600 hover:text-sollux-red">
+                  <Link to={crumb.path} className="text-muted-foreground hover:text-sollux-red">
                     {crumb.name}
                   </Link>
                 </BreadcrumbLink>
               ) : (
-                <BreadcrumbPage className="font-semibold text-sollux-black">{crumb.name}</BreadcrumbPage>
+                <BreadcrumbPage className="font-semibold text-foreground">{crumb.name}</BreadcrumbPage>
               )}
             </BreadcrumbItem>
             {index < breadcrumbs.length - 1 && (

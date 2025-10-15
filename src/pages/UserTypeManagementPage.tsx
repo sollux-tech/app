@@ -146,18 +146,18 @@ const UserTypeManagementPage: React.FC = () => {
   const isMutating = createUserTypeMutation.isPending || updateUserTypeMutation.isPending || deleteUserTypeMutation.isPending;
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando tipos de usuário...</div>;
+    return <div className="text-center text-muted-foreground">Carregando tipos de usuário...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-600">Erro ao carregar tipos de usuário: {error.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar tipos de usuário: {error.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Tipos de Usuário</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Tipos de Usuário</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Tipo
           </Button>
@@ -166,29 +166,29 @@ const UserTypeManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Nome</TableHead>
-                <TableHead className="text-sollux-black">Descrição</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Nome</TableHead>
+                <TableHead className="text-foreground">Descrição</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {userTypes?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-gray-500">
+                  <TableCell colSpan={3} className="text-center text-muted-foreground">
                     Nenhum tipo de usuário encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 userTypes?.map((type) => (
                   <TableRow key={type.id}>
-                    <TableCell className="font-medium text-sollux-black">{type.name}</TableCell>
-                    <TableCell className="text-gray-700">{type.description || 'N/A'}</TableCell>
+                    <TableCell className="font-medium text-foreground">{type.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{type.description || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(type)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -212,9 +212,9 @@ const UserTypeManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingUserType ? 'Editar Tipo de Usuário' : 'Adicionar Novo Tipo de Usuário'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingUserType ? 'Editar Tipo de Usuário' : 'Adicionar Novo Tipo de Usuário'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -223,7 +223,7 @@ const UserTypeManagementPage: React.FC = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Nome</FormLabel>
+                    <FormLabel className="text-foreground">Nome</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Admin Sollux" {...field} className="rounded-lg" />
                     </FormControl>
@@ -236,7 +236,7 @@ const UserTypeManagementPage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Descrição (Opcional)</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Breve descrição do tipo de usuário" {...field} className="rounded-lg" />
                     </FormControl>

@@ -74,10 +74,10 @@ const FormCreatePage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <Card className="w-full max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold mb-2 text-sollux-black">Criar Novo Formulário</CardTitle>
-          <CardDescription className="text-lg text-gray-600">
+          <CardTitle className="text-3xl font-bold mb-2 text-foreground">Criar Novo Formulário</CardTitle>
+          <CardDescription className="text-lg text-muted-foreground">
             Comece definindo o título e a descrição do seu formulário.
           </CardDescription>
         </CardHeader>
@@ -89,7 +89,7 @@ const FormCreatePage: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Título do Formulário</FormLabel>
+                    <FormLabel className="text-foreground">Título do Formulário</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Ex: Pesquisa de Clima Organizacional"
@@ -106,7 +106,7 @@ const FormCreatePage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Descrição (Opcional)</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Breve descrição sobre o objetivo do formulário"
@@ -145,7 +145,7 @@ const FormCreatePage: React.FC = () => {
                 </Button>
               </div>
               {!selectedCompany && (
-                <p className="text-red-500 text-sm mt-2">Por favor, selecione uma empresa na barra lateral para criar um formulário.</p>
+                <p className="text-destructive text-sm mt-2">Por favor, selecione uma empresa na barra lateral para criar um formulário.</p>
               )}
             </form>
           </Form>

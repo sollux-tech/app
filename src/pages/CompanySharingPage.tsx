@@ -217,14 +217,14 @@ const CompanySharingPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Compartilhar Minhas Empresas</CardTitle>
-          <CardDescription>Selecione uma das suas empresas para gerenciar o compartilhamento com outros usuários.</CardDescription>
+          <CardTitle className="text-foreground">Compartilhar Minhas Empresas</CardTitle>
+          <CardDescription className="text-muted-foreground">Selecione uma das suas empresas para gerenciar o compartilhamento com outros usuários.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Label className="text-sollux-black">Minhas Empresas</Label>
+            <Label className="text-foreground">Minhas Empresas</Label>
             <Select
               value={companyToManageSharing?.id || ''}
               onValueChange={(value) => setCompanyToManageSharing(ownedCompanies.find(c => c.id === value) || null)}
@@ -233,7 +233,7 @@ const CompanySharingPage: React.FC = () => {
               <SelectTrigger className="w-full rounded-lg">
                 <SelectValue placeholder="Selecione uma empresa para compartilhar..." />
               </SelectTrigger>
-              <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+              <SelectContent className="bg-card backdrop-blur-md rounded-lg shadow-lg border border-border">
                 {isLoadingCompanies ? (
                   <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
                 ) : ownedCompanies.length === 0 ? (
@@ -248,15 +248,15 @@ const CompanySharingPage: React.FC = () => {
               </SelectContent>
             </Select>
             {ownedCompanies.length === 0 && (
-              <p className="text-sm text-red-500 mt-2">Você precisa criar uma empresa em "ID | Gerenciar Empresas" antes de poder compartilhar.</p>
+              <p className="text-sm text-destructive mt-2">Você precisa criar uma empresa em "ID | Gerenciar Empresas" antes de poder compartilhar.</p>
             )}
           </div>
 
           {!companyToManageSharing ? (
-            <p className="text-gray-500 text-center py-4">Selecione uma empresa acima para gerenciar o compartilhamento.</p>
+            <p className="text-muted-foreground text-center py-4">Selecione uma empresa acima para gerenciar o compartilhamento.</p>
           ) : (
             <>
-              <h3 className="font-semibold mb-4 text-sollux-black">
+              <h3 className="font-semibold mb-4 text-foreground">
                 Convidar para: <span className="text-sollux-red">{companyToManageSharing.name}</span>
               </h3>
               <Form {...form}>
@@ -267,20 +267,20 @@ const CompanySharingPage: React.FC = () => {
                   <Button type="submit" disabled={inviteMutation.isPending} className="rounded-lg bg-sollux-red hover:bg-sollux-orange"><UserPlus className="mr-2 h-4 w-4" /> Convidar</Button>
                 </form>
               </Form>
-              <h4 className="font-semibold mb-2 text-sollux-black">Usuários com Acesso a "{companyToManageSharing.name}"</h4>
+              <h4 className="font-semibold mb-2 text-foreground">Usuários com Acesso a "{companyToManageSharing.name}"</h4>
               <Table>
-                <TableHeader><TableRow><TableHead className="text-sollux-black">Nome</TableHead><TableHead className="text-right text-sollux-black">Ações</TableHead></TableRow></TableHeader>
+                <TableHeader><TableRow><TableHead className="text-foreground">Nome</TableHead><TableHead className="text-right text-foreground">Ações</TableHead></TableRow></TableHeader>
                 <TableBody>
                   {isLoadingSharedUsers ? (
-                    <TableRow><TableCell colSpan={2} className="text-center">Carregando...</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow>
                   ) : sharedUsersError ? (
-                    <TableRow><TableCell colSpan={2} className="text-center text-red-500">Erro ao carregar usuários: {sharedUsersError.message}</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={2} className="text-center text-destructive">Erro ao carregar usuários: {sharedUsersError.message}</TableCell></TableRow>
                   ) : sharedUsers && sharedUsers.length > 0 ? (
                     sharedUsers.map(u => (
-                      <TableRow key={u.id}><TableCell className="font-medium text-sollux-black">{u.full_name}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => removeMutation.mutate(u.id)} disabled={removeMutation.isPending} className="rounded-lg"><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>
+                      <TableRow key={u.id}><TableCell className="font-medium text-foreground">{u.full_name}</TableCell><TableCell className="text-right"><Button variant="destructive" size="sm" onClick={() => removeMutation.mutate(u.id)} disabled={removeMutation.isPending} className="rounded-lg bg-sollux-red hover:bg-red-700 text-white"><Trash2 className="h-4 w-4" /></Button></TableCell></TableRow>
                     ))
                   ) : (
-                    <TableRow><TableCell colSpan={2} className="text-center text-gray-500">Ninguém com acesso ainda.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">Ninguém com acesso ainda.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -289,19 +289,19 @@ const CompanySharingPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle>Empresas Compartilhadas Comigo</CardTitle>
-          <CardDescription>Lista de empresas que outros usuários compartilharam com você.</CardDescription>
+          <CardTitle className="text-foreground">Empresas Compartilhadas Comigo</CardTitle>
+          <CardDescription className="text-muted-foreground">Lista de empresas que outros usuários compartilharam com você.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
-            <TableHeader><TableRow><TableHead className="text-sollux-black">Nome da Empresa</TableHead><TableHead className="text-sollux-black">Proprietário</TableHead><TableHead className="text-sollux-black">Status</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead className="text-foreground">Nome da Empresa</TableHead><TableHead className="text-foreground">Proprietário</TableHead><TableHead className="text-foreground">Status</TableHead></TableRow></TableHeader>
             <TableBody>
               {isLoadingSharedWithMe ? (
-                <TableRow><TableCell colSpan={3} className="text-center">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">Carregando...</TableCell></TableRow>
               ) : sharedWithMeError ? (
-                <TableRow><TableCell colSpan={3} className="text-center text-red-500">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-destructive">Erro ao carregar empresas compartilhadas: {sharedWithMeError.message}</TableCell></TableRow>
               ) : sharedWithMe && sharedWithMe.length > 0 ? (
                 sharedWithMe.map(item => {
                   const company = item.companies[0]; // Acessar o primeiro item do array
@@ -314,8 +314,8 @@ const CompanySharingPage: React.FC = () => {
                     : 'Desconhecido';
                   return (
                     <TableRow key={company.id}>
-                      <TableCell className="font-medium text-sollux-black">{company.name}</TableCell>
-                      <TableCell className="text-gray-700">{ownerName}</TableCell>
+                      <TableCell className="font-medium text-foreground">{company.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{ownerName}</TableCell>
                       <TableCell>
                         <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 hover:bg-green-200">
                           <CheckCircle className="mr-2 h-4 w-4" />
@@ -326,7 +326,7 @@ const CompanySharingPage: React.FC = () => {
                   );
                 })
               ) : (
-                <TableRow><TableCell colSpan={3} className="text-center text-gray-500">Nenhuma empresa compartilhada com você.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">Nenhuma empresa compartilhada com você.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

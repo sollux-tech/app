@@ -12,10 +12,10 @@ interface CompanyCardProps {
 
 const CompanyCard: React.FC<CompanyCardProps> = ({ company, onEdit, onDelete }) => {
   return (
-    <Card className="flex flex-col items-center justify-between p-4 bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
+    <Card className="flex flex-col items-center justify-between p-4 bg-card backdrop-blur-md border border-border rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-2 flex flex-col items-center">
         <Building2 className="h-8 w-8 text-sollux-red mb-2" />
-        <CardTitle className="text-lg font-semibold text-sollux-black text-center">{company.name}</CardTitle>
+        <CardTitle className="text-lg font-semibold text-foreground text-center">{company.name}</CardTitle>
       </CardHeader>
       <CardContent className="flex gap-2 mt-4">
         <Button
@@ -25,7 +25,7 @@ const CompanyCard: React.FC<CompanyCardProps> = ({ company, onEdit, onDelete }) 
             e.stopPropagation(); // Prevent card's default click
             onEdit(company);
           }}
-          className="flex items-center gap-1 text-sollux-black border-sollux-gray hover:bg-gray-100 rounded-lg"
+          className="flex items-center gap-1 text-foreground border-border hover:bg-accent rounded-lg"
         >
           <Edit className="h-4 w-4" /> Editar
         </Button>

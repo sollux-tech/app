@@ -214,21 +214,21 @@ const PillarBlockManagementPage: React.FC = () => {
   const selectedPillarTypeName = (selectedPillar as any)?.pillar_types?.description || 'N/A';
 
   if (isLoadingPage) {
-    return <div className="text-center text-gray-600">Carregando blocos de pilares...</div>;
+    return <div className="text-center text-muted-foreground">Carregando blocos de pilares...</div>;
   }
 
   if (errorPillarBlocks) {
-    return <div className="text-center text-red-600">Erro ao carregar blocos de pilares: {errorPillarBlocks.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar blocos de pilares: {errorPillarBlocks.message}</div>;
   }
   if (errorPillarsList) {
-    return <div className="text-center text-red-600">Erro ao carregar lista de pilares: {errorPillarsList.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar lista de pilares: {errorPillarsList.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Blocos dos Pilares</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Blocos dos Pilares</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Bloco
           </Button>
@@ -237,32 +237,32 @@ const PillarBlockManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Nome do Bloco</TableHead>
-                <TableHead className="text-sollux-black">Pilar</TableHead>
-                <TableHead className="text-sollux-black">Tipo do Pilar</TableHead>
-                <TableHead className="text-sollux-black">Peso (%)</TableHead>
-                <TableHead className="text-sollux-black">Status</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Nome do Bloco</TableHead>
+                <TableHead className="text-foreground">Pilar</TableHead>
+                <TableHead className="text-foreground">Tipo do Pilar</TableHead>
+                <TableHead className="text-foreground">Peso (%)</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pillarBlocks?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-gray-500">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     Nenhum bloco de pilar encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 pillarBlocks?.map((block) => (
                   <TableRow key={block.id}>
-                    <TableCell className="font-medium text-sollux-black">{block.name}</TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="font-medium text-foreground">{block.name}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {(block as any).pillars?.description || 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {(block as any).pillars?.pillar_types?.description || 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">{block.weight_percentage}%</TableCell>
+                    <TableCell className="text-muted-foreground">{block.weight_percentage}%</TableCell>
                     <TableCell>
                       <Badge
                         variant={block.status === 'active' ? 'default' : 'secondary'}
@@ -276,7 +276,7 @@ const PillarBlockManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(block)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -300,9 +300,9 @@ const PillarBlockManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingPillarBlock ? 'Editar Bloco do Pilar' : 'Adicionar Novo Bloco do Pilar'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingPillarBlock ? 'Editar Bloco do Pilar' : 'Adicionar Novo Bloco do Pilar'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -311,7 +311,7 @@ const PillarBlockManagementPage: React.FC = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Nome do Bloco</FormLabel>
+                    <FormLabel className="text-foreground">Nome do Bloco</FormLabel>
                     <FormControl>
                       <Input placeholder="Ex: Bloco de Estratégia" {...field} className="rounded-lg" />
                     </FormControl>
@@ -324,7 +324,7 @@ const PillarBlockManagementPage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição do Bloco (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Descrição do Bloco (Opcional)</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Breve descrição do bloco" {...field} className="rounded-lg" />
                     </FormControl>
@@ -337,7 +337,7 @@ const PillarBlockManagementPage: React.FC = () => {
                 name="pillar_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Pilar</FormLabel>
+                    <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingPillars}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -361,15 +361,15 @@ const PillarBlockManagementPage: React.FC = () => {
                 )}
               />
               <FormItem>
-                <FormLabel className="text-sollux-black">Tipo do Pilar</FormLabel>
-                <Input value={selectedPillarTypeName} readOnly className="rounded-lg bg-gray-100 text-gray-700" />
+                <FormLabel className="text-foreground">Tipo do Pilar</FormLabel>
+                <Input value={selectedPillarTypeName} readOnly className="rounded-lg bg-muted text-muted-foreground" />
               </FormItem>
               <FormField
                 control={form.control}
                 name="weight_percentage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Peso do Bloco (%)</FormLabel>
+                    <FormLabel className="text-foreground">Peso do Bloco (%)</FormLabel>
                     <FormControl>
                       <Input type="number" step="0.01" placeholder="Ex: 25" {...field} className="rounded-lg" />
                     </FormControl>
@@ -383,7 +383,7 @@ const PillarBlockManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sollux-black">Status</FormLabel>
+                      <FormLabel className="text-foreground">Status</FormLabel>
                     </div>
                     <FormControl>
                       <Switch

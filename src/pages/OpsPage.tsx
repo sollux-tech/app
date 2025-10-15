@@ -9,10 +9,10 @@ const OpsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
-          <CardTitle className="text-4xl font-bold mb-4 text-sollux-black">SOLLUX OPS</CardTitle>
-          <p className="text-xl text-gray-600">
+          <CardTitle className="text-4xl font-bold mb-4 text-foreground">SOLLUX OPS</CardTitle>
+          <p className="text-xl text-muted-foreground">
             Gerencie operações e estratégias da sua plataforma.
           </p>
         </CardHeader>

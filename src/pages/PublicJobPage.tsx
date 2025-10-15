@@ -50,7 +50,7 @@ const PublicJobPage: React.FC = () => {
   const renderDetailItem = (Icon: React.ElementType, label: string, value: string | null | undefined) => {
     if (!value) return null;
     return (
-      <div className="flex items-center gap-2 text-gray-700">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <Icon className="h-5 w-5 text-sollux-red" />
         <span><strong>{label}:</strong> {value}</span>
       </div>
@@ -61,8 +61,8 @@ const PublicJobPage: React.FC = () => {
     if (!items || items.length === 0) return null;
     return (
       <div>
-        <h3 className="text-xl font-semibold text-sollux-black mb-2">{title}</h3>
-        <ul className="list-disc list-inside space-y-1">
+        <h3 className="text-xl font-semibold text-foreground mb-2">{title}</h3>
+        <ul className="list-disc list-inside space-y-1 text-muted-foreground">
           {items.map((item, index) => <li key={index}>{item}</li>)}
         </ul>
       </div>
@@ -71,21 +71,21 @@ const PublicJobPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <p className="text-gray-600">Carregando vaga...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">Carregando vaga...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-sollux-light-gray">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-sollux-red">Erro</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">Não foi possível carregar a vaga: {error.message}</p>
+            <p className="text-muted-foreground">Não foi possível carregar a vaga: {error.message}</p>
             <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
               <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
             </Button>
@@ -96,16 +96,16 @@ const PublicJobPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sollux-light-gray py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border p-8">
-        <CardHeader className="text-center pb-6 border-b border-gray-200">
-          <CardTitle className="text-4xl font-bold text-sollux-black mb-2">{job.title}</CardTitle>
-          <CardDescription className="text-gray-600 text-lg">
+    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border p-8">
+        <CardHeader className="text-center pb-6 border-b border-border">
+          <CardTitle className="text-4xl font-bold text-foreground mb-2">{job.title}</CardTitle>
+          <CardDescription className="text-muted-foreground text-lg">
             {job.company_name}
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted rounded-lg">
             {renderDetailItem(Building, "Empresa", job.company_name)}
             {renderDetailItem(MapPin, "Localização", job.city && job.state ? `${job.city}, ${job.state}` : job.city || job.state)}
             {renderDetailItem(Briefcase, "Área", job.job_sector_name)}
@@ -121,8 +121,8 @@ const PublicJobPage: React.FC = () => {
           )}
 
           <div>
-            <h3 className="text-xl font-semibold text-sollux-black mb-2">Descrição da Vaga</h3>
-            <div className="prose max-w-none text-sollux-black" dangerouslySetInnerHTML={{ __html: job.detailed_description || '' }} />
+            <h3 className="text-xl font-semibold text-foreground mb-2">Descrição da Vaga</h3>
+            <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: job.detailed_description || '' }} />
           </div>
 
           {renderListSection("Requisitos Obrigatórios", job.mandatory_requirements)}
@@ -130,7 +130,7 @@ const PublicJobPage: React.FC = () => {
           {renderListSection("Benefícios", job.benefits)}
 
           {(job.salary_min || job.salary_max) && (
-            <div className="flex items-center gap-2 text-gray-700">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <DollarSign className="h-5 w-5 text-sollux-red" />
               <span><strong>Faixa Salarial:</strong> {job.salary_min && `R$ ${job.salary_min}`} {job.salary_min && job.salary_max && ' - '} {job.salary_max && `R$ ${job.salary_max}`}</span>
             </div>

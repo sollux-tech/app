@@ -172,18 +172,18 @@ const PillarTypeManagementPage: React.FC = () => {
   const isMutating = createPillarTypeMutation.isPending || updatePillarTypeMutation.isPending || deletePillarTypeMutation.isPending;
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando tipos de pilares...</div>;
+    return <div className="text-center text-muted-foreground">Carregando tipos de pilares...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-600">Erro ao carregar tipos de pilares: {error.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar tipos de pilares: {error.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Tipos de Pilares</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Tipos de Pilares</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Tipo
           </Button>
@@ -192,22 +192,22 @@ const PillarTypeManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Descrição do Pilar</TableHead>
-                <TableHead className="text-sollux-black">Status</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Descrição do Pilar</TableHead>
+                <TableHead className="text-foreground">Status</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pillarTypes?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-gray-500">
+                  <TableCell colSpan={3} className="text-center text-muted-foreground">
                     Nenhum tipo de pilar encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 pillarTypes?.map((type) => (
                   <TableRow key={type.id}>
-                    <TableCell className="font-medium text-sollux-black">{type.description}</TableCell>
+                    <TableCell className="font-medium text-foreground">{type.description}</TableCell>
                     <TableCell>
                       <Badge
                         variant={type.status === 'active' ? 'default' : 'secondary'}
@@ -221,7 +221,7 @@ const PillarTypeManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(type)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -245,9 +245,9 @@ const PillarTypeManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingPillarType ? 'Editar Tipo de Pilar' : 'Adicionar Novo Tipo de Pilar'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingPillarType ? 'Editar Tipo de Pilar' : 'Adicionar Novo Tipo de Pilar'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -256,7 +256,7 @@ const PillarTypeManagementPage: React.FC = () => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Descrição do Pilar</FormLabel>
+                    <FormLabel className="text-foreground">Descrição do Pilar</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Pilar de Inovação" {...field} className="rounded-lg" />
                     </FormControl>
@@ -270,7 +270,7 @@ const PillarTypeManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sollux-black">Status</FormLabel>
+                      <FormLabel className="text-foreground">Status</FormLabel>
                     </div>
                     <FormControl>
                       <Switch

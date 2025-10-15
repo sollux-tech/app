@@ -92,15 +92,15 @@ const SidebarSettingsPage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Carregando configurações...</div>;
-  if (error) return <div className="text-red-500">Erro: {error.message}</div>;
+  if (isLoading) return <div className="text-center text-muted-foreground">Carregando configurações...</div>;
+  if (error) return <div className="text-center text-destructive">Erro: {error.message}</div>;
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-sollux-black uppercase font-bold">Configurações da Logo</CardTitle>
-          <CardDescription>Insira a URL da imagem para a logo da barra lateral.</CardDescription>
+          <CardTitle className="text-foreground uppercase font-bold">Configurações da Logo</CardTitle>
+          <CardDescription className="text-muted-foreground">Insira a URL da imagem para a logo da barra lateral.</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <Input
@@ -115,9 +115,9 @@ const SidebarSettingsPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Itens de Navegação</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Itens de Navegação</CardTitle>
           <Button onClick={() => { setEditingItem(null); setIsDialogOpen(true); }} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Item
           </Button>
@@ -126,11 +126,11 @@ const SidebarSettingsPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Ordem</TableHead>
-                <TableHead className="text-sollux-black">Ícone</TableHead>
-                <TableHead className="text-sollux-black">Nome</TableHead>
-                <TableHead className="text-sollux-black">Caminho</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Ordem</TableHead>
+                <TableHead className="text-foreground">Ícone</TableHead>
+                <TableHead className="text-foreground">Nome</TableHead>
+                <TableHead className="text-foreground">Caminho</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -138,15 +138,15 @@ const SidebarSettingsPage: React.FC = () => {
                 const Icon = getIcon(item.icon);
                 return (
                   <TableRow key={item.id}>
-                    <TableCell>{item.order}</TableCell>
-                    <TableCell><Icon className="h-5 w-5" /></TableCell>
-                    <TableCell className="font-medium">{item.label}</TableCell>
-                    <TableCell>{item.to}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.order}</TableCell>
+                    <TableCell><Icon className="h-5 w-5 text-foreground" /></TableCell>
+                    <TableCell className="font-medium text-foreground">{item.label}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.to}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setIsDialogOpen(true); }} className="mr-2 rounded-lg">
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingItem(item); setIsDialogOpen(true); }} className="mr-2 rounded-lg text-foreground hover:bg-accent">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)} className="rounded-lg">
+                      <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)} className="rounded-lg bg-sollux-red hover:bg-red-700 text-white">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

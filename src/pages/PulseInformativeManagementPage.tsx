@@ -80,18 +80,18 @@ const PulseInformativeManagementPage: React.FC = () => {
   const isMutating = deleteInformativeMutation.isPending;
 
   if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando informativos...</div>;
+    return <div className="text-center text-muted-foreground">Carregando informativos...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-600">Erro ao carregar informativos: {error.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar informativos: {error.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Informativos PULSE</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Informativos PULSE</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Informativo
           </Button>
@@ -100,27 +100,27 @@ const PulseInformativeManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Título</TableHead>
-                <TableHead className="text-sollux-black">Publicado em</TableHead>
-                <TableHead className="text-sollux-black">Criado em</TableHead>
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Título</TableHead>
+                <TableHead className="text-foreground">Publicado em</TableHead>
+                <TableHead className="text-foreground">Criado em</TableHead>
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {informatives?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Nenhum informativo encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 informatives?.map((informative) => (
                   <TableRow key={informative.id}>
-                    <TableCell className="font-medium text-sollux-black">{informative.title}</TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="font-medium text-foreground">{informative.title}</TableCell>
+                    <TableCell className="text-muted-foreground">
                       {informative.publication_date ? format(new Date(informative.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {format(new Date(informative.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
                     <TableCell className="text-right flex justify-end items-center gap-2">
@@ -146,7 +146,7 @@ const PulseInformativeManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(informative.id)}
-                        className="text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />

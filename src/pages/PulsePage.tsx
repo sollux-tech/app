@@ -95,27 +95,27 @@ const PulsePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Informativo PULSE do Dia */}
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Informativo PULSE do Dia</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Informativo PULSE do Dia</CardTitle>
           <Link to="/core/pulse-informatives">
-            <Button variant="outline" size="sm" className="rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100">
+            <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
               Ver Todos
             </Button>
           </Link>
         </CardHeader>
         <CardContent>
           {isLoadingInformative ? (
-            <p className="text-gray-600 text-center">Carregando informativo...</p>
+            <p className="text-muted-foreground text-center">Carregando informativo...</p>
           ) : errorInformative ? (
-            <p className="text-red-600 text-center">Erro ao carregar informativo: {errorInformative.message}</p>
+            <p className="text-destructive text-center">Erro ao carregar informativo: {errorInformative.message}</p>
           ) : informativeToday ? (
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
               </p>
-              <div className="prose max-w-none text-sollux-black" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
+              <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
               <div className="mt-4 text-right">
                 <Link to={`/informative/${informativeToday.id}`}>
                   <Button variant="link" className="text-sollux-red hover:underline">
@@ -125,23 +125,23 @@ const PulsePage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <p className="text-gray-600 text-center">Nenhum informativo PULSE publicado para hoje.</p>
+            <p className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</p>
           )}
         </CardContent>
       </Card>
 
       {/* Dashboard de Vagas Publicadas */}
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sollux-black uppercase font-bold">Dashboard de Vagas Publicadas</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Vagas Publicadas</CardTitle>
+            <CardDescription className="text-muted-foreground">
               {selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
             </CardDescription>
           </div>
           {selectedCompany && (
             <Link to="/connect/jobs">
-              <Button variant="outline" size="sm" className="rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100">
+              <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
                 Gerenciar Vagas
               </Button>
             </Link>
@@ -149,14 +149,14 @@ const PulsePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {!selectedCompany ? (
-            <p className="text-center text-gray-500 py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de vagas.</p>
+            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de vagas.</p>
           ) : isLoadingJobs ? (
-            <p className="text-center text-gray-600">Carregando estatísticas...</p>
+            <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
           ) : (
             <div className="space-y-6">
               {/* Estatísticas Principais */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
                     <Briefcase className="h-5 w-5 text-blue-600" />
                     <span className="text-sm font-medium text-blue-900">Total de Vagas</span>
@@ -165,7 +165,7 @@ const PulsePage: React.FC = () => {
                   <p className="text-xs text-blue-700">Últimos 30 dias</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-2">
                     <Activity className="h-5 w-5 text-green-600" />
                     <span className="text-sm font-medium text-green-900">Vagas Ativas</span>
@@ -174,16 +174,16 @@ const PulsePage: React.FC = () => {
                   <p className="text-xs text-green-700">Disponíveis para candidatos</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200">
+                <div className="bg-muted p-4 rounded-lg border border-border">
                   <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-5 w-5 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-900">Vagas Inativas</span>
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Vagas Inativas</span>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{inactiveJobs}</div>
-                  <p className="text-xs text-gray-700">Pausadas ou encerradas</p>
+                  <div className="text-2xl font-bold text-foreground">{inactiveJobs}</div>
+                  <p className="text-xs text-muted-foreground">Pausadas ou encerradas</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-5 w-5 text-purple-600" />
                     <span className="text-sm font-medium text-purple-900">Média Salarial</span>
@@ -198,13 +198,13 @@ const PulsePage: React.FC = () => {
               {/* Vagas Recentes */}
               {recentJobs && recentJobs.length > 0 && (
                 <div>
-                  <h4 className="text-lg font-semibold text-sollux-black mb-4">Vagas Recentes</h4>
+                  <h4 className="text-lg font-semibold text-foreground mb-4">Vagas Recentes</h4>
                   <div className="space-y-3">
                     {recentJobs.slice(0, 5).map((job) => (
-                      <div key={job.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={job.id} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
                         <div className="flex-1">
-                          <h5 className="font-medium text-sollux-black">{job.title}</h5>
-                          <p className="text-sm text-gray-600">
+                          <h5 className="font-medium text-foreground">{job.title}</h5>
+                          <p className="text-sm text-muted-foreground">
                             {format(new Date(job.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                           </p>
                         </div>
@@ -228,7 +228,7 @@ const PulsePage: React.FC = () => {
                   {recentJobs.length > 5 && (
                     <div className="text-center mt-4">
                       <Link to="/connect/jobs">
-                        <Button variant="outline" className="text-sollux-black border-sollux-gray hover:bg-gray-100">
+                        <Button variant="outline" className="text-foreground border-border hover:bg-accent">
                           Ver todas as vagas
                         </Button>
                       </Link>
@@ -242,17 +242,17 @@ const PulsePage: React.FC = () => {
       </Card>
 
       {/* Novo Dashboard de Formulários */}
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sollux-black uppercase font-bold">Dashboard de Formulários</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Formulários</CardTitle>
+            <CardDescription className="text-muted-foreground">
               {selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
             </CardDescription>
           </div>
           {selectedCompany && (
             <Link to="/connect/forms">
-              <Button variant="outline" size="sm" className="rounded-lg text-sollux-black border-sollux-gray hover:bg-gray-100">
+              <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
                 Gerenciar Formulários
               </Button>
             </Link>
@@ -260,14 +260,14 @@ const PulsePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {!selectedCompany ? (
-            <p className="text-center text-gray-500 py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de formulários.</p>
+            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de formulários.</p>
           ) : isLoadingForms ? (
-            <p className="text-center text-gray-600">Carregando estatísticas...</p>
+            <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
           ) : (
             <div className="space-y-6">
               {/* Estatísticas Principais de Formulários */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="h-5 w-5 text-blue-600" />
                     <span className="text-sm font-medium text-blue-900">Total de Formulários</span>
@@ -276,7 +276,7 @@ const PulsePage: React.FC = () => {
                   <p className="text-xs text-blue-700">Últimos 30 dias</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="h-5 w-5 text-green-600" />
                     <span className="text-sm font-medium text-green-900">Formulários Publicados</span>
@@ -285,16 +285,16 @@ const PulsePage: React.FC = () => {
                   <p className="text-xs text-green-700">Disponíveis para respostas</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200">
+                <div className="bg-muted p-4 rounded-lg border border-border">
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText className="h-5 w-5 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-900">Formulários em Rascunho</span>
+                    <FileText className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Formulários em Rascunho</span>
                   </div>
-                  <div className="text-2xl font-bold text-gray-900">{draftForms}</div>
-                  <p className="text-xs text-gray-700">Aguardando edição</p>
+                  <div className="text-2xl font-bold text-foreground">{draftForms}</div>
+                  <p className="text-xs text-muted-foreground">Aguardando edição</p>
                 </div>
                 
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageSquareText className="h-5 w-5 text-purple-600" />
                     <span className="text-sm font-medium text-purple-900">Total de Respostas</span>
@@ -307,13 +307,13 @@ const PulsePage: React.FC = () => {
               {/* Formulários Recentes */}
               {recentForms && recentForms.length > 0 && (
                 <div>
-                  <h4 className="text-lg font-semibold text-sollux-black mb-4">Formulários Recentes</h4>
+                  <h4 className="text-lg font-semibold text-foreground mb-4">Formulários Recentes</h4>
                   <div className="space-y-3">
                     {recentForms.slice(0, 5).map((formItem) => (
-                      <div key={formItem.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={formItem.id} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
                         <div className="flex-1">
-                          <h5 className="font-medium text-sollux-black">{formItem.title}</h5>
-                          <p className="text-sm text-gray-600">
+                          <h5 className="font-medium text-foreground">{formItem.title}</h5>
+                          <p className="text-sm text-muted-foreground">
                             {format(new Date(formItem.created_at), 'dd/MM/yyyy', { locale: ptBR })}
                           </p>
                         </div>
@@ -337,7 +337,7 @@ const PulsePage: React.FC = () => {
                   {recentForms.length > 5 && (
                     <div className="text-center mt-4">
                       <Link to="/connect/forms">
-                        <Button variant="outline" className="text-sollux-black border-sollux-gray hover:bg-gray-100">
+                        <Button variant="outline" className="text-foreground border-border hover:bg-accent">
                           Ver todos os formulários
                         </Button>
                       </Link>

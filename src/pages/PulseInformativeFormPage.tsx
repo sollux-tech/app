@@ -155,18 +155,18 @@ const PulseInformativeFormPage: React.FC = () => {
   const isLoadingForm = createInformativeMutation.isPending || updateInformativeMutation.isPending || isLoadingInformative;
 
   if (isEditing && isLoadingInformative) {
-    return <div className="text-center text-gray-600">Carregando informativo...</div>;
+    return <div className="text-center text-muted-foreground">Carregando informativo...</div>;
   }
 
   if (isEditing && errorInformative) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-sollux-red">Erro ao Carregar Informativo</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">{errorInformative.message}</p>
+            <p className="text-muted-foreground">{errorInformative.message}</p>
             <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 rounded-lg bg-sollux-red hover:bg-sollux-orange">
               Voltar para Informativos
             </Button>
@@ -178,12 +178,12 @@ const PulseInformativeFormPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold mb-4 text-sollux-black">
+          <CardTitle className="text-3xl font-bold mb-4 text-foreground">
             {isEditing ? 'Editar Informativo PULSE' : 'Novo Informativo PULSE'}
           </CardTitle>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-muted-foreground">
             {isEditing ? 'Atualize os detalhes do informativo.' : 'Crie um novo informativo para seus usuários.'}
           </p>
         </CardHeader>
@@ -195,7 +195,7 @@ const PulseInformativeFormPage: React.FC = () => {
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Título</FormLabel>
+                    <FormLabel className="text-foreground">Título</FormLabel>
                     <FormControl>
                       <Input placeholder="Título do informativo" {...field} className="rounded-lg" />
                     </FormControl>
@@ -208,7 +208,7 @@ const PulseInformativeFormPage: React.FC = () => {
                 name="publication_date"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel className="text-sollux-black text-left">Data de Publicação (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground text-left">Data de Publicação (Opcional)</FormLabel>
                     <FormControl>
                       <DatePicker
                         date={field.value || undefined}
@@ -226,14 +226,14 @@ const PulseInformativeFormPage: React.FC = () => {
                 name="content"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Conteúdo</FormLabel>
+                    <FormLabel className="text-foreground">Conteúdo</FormLabel>
                     <FormControl>
                       {editorLoaded ? (
                         <ReactQuill
                           theme="snow"
                           value={field.value}
                           onChange={field.onChange}
-                          className="bg-white rounded-lg"
+                          className="bg-card rounded-lg"
                           modules={{
                             toolbar: [
                               [{ 'header': [1, 2, false] }],
@@ -247,7 +247,7 @@ const PulseInformativeFormPage: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <div className="h-[200px] w-full bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                        <div className="h-[200px] w-full bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
                           Carregando editor de texto...
                         </div>
                       )}

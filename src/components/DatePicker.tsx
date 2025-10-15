@@ -23,7 +23,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "S
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal rounded-lg",
+            "w-full justify-start text-left font-normal rounded-lg text-foreground border-border hover:bg-accent",
             !date && "text-muted-foreground"
           )}
           disabled={disabled}
@@ -32,7 +32,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "S
           {date ? format(date, "PPP", { locale: ptBR }) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+      <PopoverContent className="w-auto p-0 bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
         <Calendar
           mode="single"
           selected={date}

@@ -7,8 +7,8 @@ const SolluxLogo: React.FC = () => {
         <span className="text-white font-bold text-4xl">S</span>
       </div>
       <div>
-        <h1 className="text-4xl font-bold text-sollux-black">SOLLUX</h1>
-        <p className="text-lg text-gray-600">Business Platform</p>
+        <h1 className="text-4xl font-bold text-foreground">SOLLUX</h1>
+        <p className="text-lg text-muted-foreground">Business Platform</p>
       </div>
     </div>
   );

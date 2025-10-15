@@ -58,7 +58,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full justify-between rounded-lg", className)}
+          className={cn("w-full justify-between rounded-lg text-foreground border-border hover:bg-accent", className)}
           onClick={() => setOpen(!open)}
         >
           <div className="flex gap-1 flex-wrap">
@@ -87,7 +87,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0 bg-popover text-popover-foreground rounded-lg border border-border">
         <Command>
           <CommandInput placeholder="Buscar..." />
           <CommandList>

@@ -46,9 +46,9 @@ const SidebarItemFormDialog: React.FC<SidebarItemFormDialogProps> = ({ open, onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+      <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
         <DialogHeader>
-          <DialogTitle className="text-sollux-black">{item ? 'Editar Item' : 'Adicionar Novo Item'}</DialogTitle>
+          <DialogTitle className="text-foreground">{item ? 'Editar Item' : 'Adicionar Novo Item'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -57,7 +57,7 @@ const SidebarItemFormDialog: React.FC<SidebarItemFormDialogProps> = ({ open, onO
               name="label"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sollux-black">Nome</FormLabel>
+                  <FormLabel className="text-foreground">Nome</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: Dashboard" {...field} className="rounded-lg" />
                   </FormControl>
@@ -70,7 +70,7 @@ const SidebarItemFormDialog: React.FC<SidebarItemFormDialogProps> = ({ open, onO
               name="to"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sollux-black">Caminho</FormLabel>
+                  <FormLabel className="text-foreground">Caminho</FormLabel>
                   <FormControl>
                     <Input placeholder="/dashboard" {...field} className="rounded-lg" />
                   </FormControl>
@@ -83,7 +83,7 @@ const SidebarItemFormDialog: React.FC<SidebarItemFormDialogProps> = ({ open, onO
               name="icon"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sollux-black">Ícone</FormLabel>
+                  <FormLabel className="text-foreground">Ícone</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-lg">
@@ -113,7 +113,7 @@ const SidebarItemFormDialog: React.FC<SidebarItemFormDialogProps> = ({ open, onO
               name="order"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sollux-black">Ordem</FormLabel>
+                  <FormLabel className="text-foreground">Ordem</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" {...field} className="rounded-lg" />
                   </FormControl>

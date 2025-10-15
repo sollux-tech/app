@@ -160,46 +160,46 @@ const JobFormPage: React.FC = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
-          <CardHeader><CardTitle>Dados Básicos</CardTitle></CardHeader>
+        <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
+          <CardHeader><CardTitle className="text-foreground">Dados Básicos</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="title" render={({ field }) => <FormItem><FormLabel>Título da vaga</FormLabel><FormControl><Input placeholder="Ex: Engenheiro de Software" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="job_sector_id" render={({ field }) => <FormItem><FormLabel>Área / Setor</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{jobSectors?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="contract_type_id" render={({ field }) => <FormItem><FormLabel>Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{contractTypes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="work_model_id" render={({ field }) => <FormItem><FormLabel>Modelo de Trabalho</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{workModels?.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="city" render={({ field }) => <FormItem><FormLabel>Localidade (Cidade)</FormLabel><FormControl><Input placeholder="Ex: São Paulo" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="state" render={({ field }) => <FormItem><FormLabel>Estado</FormLabel><FormControl><Input placeholder="Ex: SP" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="publication_deadline_days" render={({ field }) => <FormItem><FormLabel>Prazo de publicação (dias)</FormLabel><FormControl><Input type="number" placeholder="Ex: 30" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="status" render={({ field }) => <FormItem className="flex flex-col"><FormLabel>Status da Vaga</FormLabel><div className="flex items-center gap-2 pt-2"><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel>{field.value ? 'Ativa' : 'Inativa'}</FormLabel></div><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="title" render={({ field }) => <FormItem><FormLabel className="text-foreground">Título da vaga</FormLabel><FormControl><Input placeholder="Ex: Engenheiro de Software" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="job_sector_id" render={({ field }) => <FormItem><FormLabel className="text-foreground">Área / Setor</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{jobSectors?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="contract_type_id" render={({ field }) => <FormItem><FormLabel className="text-foreground">Tipo de Contrato</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{contractTypes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="work_model_id" render={({ field }) => <FormItem><FormLabel className="text-foreground">Modelo de Trabalho</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl><SelectContent>{workModels?.map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="city" render={({ field }) => <FormItem><FormLabel className="text-foreground">Localidade (Cidade)</FormLabel><FormControl><Input placeholder="Ex: São Paulo" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="state" render={({ field }) => <FormItem><FormLabel className="text-foreground">Estado</FormLabel><FormControl><Input placeholder="Ex: SP" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="publication_deadline_days" render={({ field }) => <FormItem><FormLabel className="text-foreground">Prazo de publicação (dias)</FormLabel><FormControl><Input type="number" placeholder="Ex: 30" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="status" render={({ field }) => <FormItem className="flex flex-col"><FormLabel className="text-foreground">Status da Vaga</FormLabel><div className="flex items-center gap-2 pt-2"><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl><FormLabel className="text-muted-foreground">{field.value ? 'Ativa' : 'Inativa'}</FormLabel></div><FormMessage /></FormItem>} />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Descrição da Vaga</CardTitle></CardHeader>
+        <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
+          <CardHeader><CardTitle className="text-foreground">Descrição da Vaga</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <FormField control={form.control} name="short_summary" render={({ field }) => <FormItem><FormLabel>Resumo Curto da Vaga</FormLabel><FormControl><Textarea placeholder="Um resumo breve e atrativo da vaga." {...field} /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="detailed_description" render={({ field }) => <FormItem><FormLabel>Descrição Detalhada</FormLabel><FormControl><ReactQuill theme="snow" value={field.value} onChange={field.onChange} className="bg-white" /></FormControl><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="mandatory_requirements" render={({ field }) => <FormItem><FormLabel>Requisitos Obrigatórios</FormLabel><FormControl><Textarea placeholder="Liste os requisitos essenciais para a vaga." {...field} rows={5} /></FormControl><FormDescription>Insira um requisito por linha.</FormDescription><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="differential_requirements" render={({ field }) => <FormItem><FormLabel>Diferenciais da vaga</FormLabel><FormControl><Textarea placeholder="Liste os diferenciais que somarão pontos." {...field} rows={5} /></FormControl><FormDescription>Insira um diferencial por linha.</FormDescription><FormMessage /></FormItem>} />
-            <FormField control={form.control} name="benefits" render={({ field }) => <FormItem><FormLabel>Benefícios da vaga</FormLabel><FormControl><Textarea placeholder="Liste os benefícios oferecidos." {...field} rows={5} /></FormControl><FormDescription>Insira um benefício por linha.</FormDescription><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="short_summary" render={({ field }) => <FormItem><FormLabel className="text-foreground">Resumo Curto da Vaga</FormLabel><FormControl><Textarea placeholder="Um resumo breve e atrativo da vaga." {...field} rows={3} /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="detailed_description" render={({ field }) => <FormItem><FormLabel className="text-foreground">Descrição Detalhada</FormLabel><FormControl><ReactQuill theme="snow" value={field.value} onChange={field.onChange} className="bg-card" /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="mandatory_requirements" render={({ field }) => <FormItem><FormLabel className="text-foreground">Requisitos Obrigatórios</FormLabel><FormControl><Textarea placeholder="Liste os requisitos essenciais para a vaga." {...field} rows={5} /></FormControl><FormDescription className="text-muted-foreground">Insira um requisito por linha.</FormDescription><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="differential_requirements" render={({ field }) => <FormItem><FormLabel className="text-foreground">Diferenciais da vaga</FormLabel><FormControl><Textarea placeholder="Liste os diferenciais que somarão pontos." {...field} rows={5} /></FormControl><FormDescription className="text-muted-foreground">Insira um diferencial por linha.</FormDescription><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="benefits" render={({ field }) => <FormItem><FormLabel className="text-foreground">Benefícios da vaga</FormLabel><FormControl><Textarea placeholder="Liste os benefícios oferecidos." {...field} rows={5} /></FormControl><FormDescription className="text-muted-foreground">Insira um benefício por linha.</FormDescription><FormMessage /></FormItem>} />
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Configurações e Visibilidade</CardTitle></CardHeader>
+        <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
+          <CardHeader><CardTitle className="text-foreground">Configurações e Visibilidade</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="salary_min" render={({ field }) => <FormItem><FormLabel>Faixa Salarial (Mínimo)</FormLabel><FormControl><Input type="number" placeholder="Ex: 5500" {...field} /></FormControl><FormMessage /></FormItem>} />
-              <FormField control={form.control} name="salary_max" render={({ field }) => <FormItem><FormLabel>Faixa Salarial (Máximo)</FormLabel><FormControl><Input type="number" placeholder="Ex: 7000" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="salary_min" render={({ field }) => <FormItem><FormLabel className="text-foreground">Faixa Salarial (Mínimo)</FormLabel><FormControl><Input type="number" placeholder="Ex: 5500" {...field} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="salary_max" render={({ field }) => <FormItem><FormLabel className="text-foreground">Faixa Salarial (Máximo)</FormLabel><FormControl><Input type="number" placeholder="Ex: 7000" {...field} /></FormControl><FormMessage /></FormItem>} />
             </div>
-            <FormField control={form.control} name="hashtags" render={({ field }) => <FormItem><FormLabel>Hashtags</FormLabel><FormControl><Input placeholder="react, typescript, nodejs" {...field} /></FormControl><FormDescription>Separe as hashtags por vírgula.</FormDescription><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="hashtags" render={({ field }) => <FormItem><FormLabel className="text-foreground">Hashtags</FormLabel><FormControl><Input placeholder="react, typescript, nodejs" {...field} /></FormControl><FormDescription className="text-muted-foreground">Separe as hashtags por vírgula.</FormDescription><FormMessage /></FormItem>} />
           </CardContent>
         </Card>
 
         <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={() => navigate('/connect/jobs')} disabled={isLoading}>Cancelar</Button>
+          <Button type="button" variant="outline" onClick={() => navigate('/connect/jobs')} disabled={isLoading} className="rounded-lg">Cancelar</Button>
           <Button type="submit" disabled={isLoading} className="bg-sollux-red hover:bg-sollux-orange">{isLoading ? 'Salvando...' : (isEditing ? 'Salvar Alterações' : 'Criar Vaga')}</Button>
         </div>
       </form>

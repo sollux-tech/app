@@ -29,13 +29,13 @@ const OpsSettingsPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
           <div className="flex items-center justify-center gap-4 mb-4">
             <Settings className="h-10 w-10 text-sollux-red" />
-            <CardTitle className="text-4xl font-bold text-sollux-black">Configurações do OPS</CardTitle>
+            <CardTitle className="text-4xl font-bold text-foreground">Configurações do OPS</CardTitle>
           </div>
-          <CardDescription className="text-xl text-gray-600">
+          <CardDescription className="text-xl text-muted-foreground">
             Gerencie os cadastros e configurações para o SOLLUX OPS.
           </CardDescription>
         </CardHeader>
