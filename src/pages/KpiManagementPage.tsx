@@ -335,15 +335,13 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {pillars?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
-                        ) : (
-                          pillars?.map((pillar) => (
+                        {pillars?.map((pillar) => (
+                          pillar.id && pillar.id !== '' ? (
                             <SelectItem key={pillar.id} value={pillar.id}>
                               {pillar.description}
                             </SelectItem>
-                          ))
-                        )}
+                          ) : null
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -367,15 +365,13 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredPillarBlocks.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum bloco para este pilar</SelectItem>
-                        ) : (
-                          filteredPillarBlocks.map((block) => (
+                        {filteredPillarBlocks.map((block) => (
+                          block.id && block.id !== '' ? (
                             <SelectItem key={block.id} value={block.id}>
                               {block.name}
                             </SelectItem>
-                          ))
-                        )}
+                          ) : null
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
