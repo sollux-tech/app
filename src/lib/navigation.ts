@@ -1,4 +1,4 @@
-import { Home, ListChecks } from 'lucide-react'; // Importar ListChecks
+import { Home, ListChecks, ListTodo } from 'lucide-react'; // Importar ListTodo
 
 interface RouteInfo {
   name: string;
@@ -30,7 +30,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/contract-types': { name: 'Jobs - Tipos de Contrato', parent: '/core/global-settings/jobs' },
   '/core/global-settings/work-models': { name: 'Jobs - Modelos de Trabalho', parent: '/core/global-settings/jobs' },
   '/core/global-settings/ops': { name: 'Configurações do OPS', parent: '/core/global-settings' },
-  '/core/global-settings/ops/pillar-types': { name: 'OPS - Tipos de Pilares', parent: '/core/global-settings/ops', icon: ListChecks }, // Nova rota
+  '/core/global-settings/ops/pillar-types': { name: 'OPS - Tipos de Pilares', parent: '/core/global-settings/ops', icon: ListChecks },
+  '/core/global-settings/ops/pillars': { name: 'OPS - Pilares', parent: '/core/global-settings/ops', icon: ListTodo }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

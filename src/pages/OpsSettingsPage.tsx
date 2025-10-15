@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks } from 'lucide-react'; // Importar ListChecks
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo } from 'lucide-react'; // Importar ListTodo
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,6 +9,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handlePillarTypesClick = () => {
     navigate('/core/global-settings/ops/pillar-types');
+  };
+
+  const handlePillarsClick = () => {
+    navigate('/core/global-settings/ops/pillars'); // Nova rota para Pilares
   };
 
   return (
@@ -28,8 +32,14 @@ const OpsSettingsPage: React.FC = () => {
             <FeatureCard
               title="Tipos de Pilares"
               description="Crie e gerencie os tipos de pilares para as suas operações."
-              icon={ListChecks} // Ícone para Tipos de Pilares
+              icon={ListChecks}
               onClick={handlePillarTypesClick}
+            />
+            <FeatureCard
+              title="Pilares"
+              description="Crie e gerencie os pilares do OPS, associando-os a tipos específicos."
+              icon={ListTodo} // Ícone para Pilares
+              onClick={handlePillarsClick}
             />
             {/* Outros FeatureCards para configurações do OPS podem ser adicionados aqui */}
           </div>
