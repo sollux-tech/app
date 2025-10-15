@@ -159,13 +159,13 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
   };
 
   return (
-    <header className={cn("fixed top-0 right-0 h-16 bg-white border-b border-gray-200 shadow-sm z-50", className)}>
+    <header className={cn("fixed top-0 right-0 h-16 bg-background border-b border-border shadow-sm z-50", className)}>
       <div className="h-full px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {isMobile && (
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-gray-600">
+                <Button variant="ghost" size="icon" className="text-muted-foreground">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -182,33 +182,33 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
         <div className="flex items-center gap-4">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative text-gray-600 hover:bg-gray-100 rounded-lg">
+              <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:bg-accent rounded-lg">
                 {unreadCount > 0 && (
-                  <div className="w-3 h-3 bg-sollux-red rounded-full absolute -top-1 -right-1 border-2 border-white"></div>
+                  <div className="w-3 h-3 bg-sollux-red rounded-full absolute -top-1 -right-1 border-2 border-background"></div>
                 )}
                 <Bell className="h-5 w-5" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 mt-2 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+            <PopoverContent align="end" className="w-80 mt-2 bg-popover text-popover-foreground rounded-2xl shadow-lg border border-border">
               <div className="p-2">
-                <h4 className="font-medium leading-none mb-4 text-sollux-black">Notificações</h4>
+                <h4 className="font-medium leading-none mb-4 text-foreground">Notificações</h4>
                 {userNotifications.length > 0 ? (
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {userNotifications.map(notification => (
                       <div key={notification.id} className={cn(
-                        "p-3 rounded-lg border border-gray-200 bg-white/50 transition-opacity",
+                        "p-3 rounded-lg border border-border bg-card transition-opacity",
                         notification.is_read && "opacity-60"
                       )}>
-                        <p className="font-semibold text-sollux-black">{notification.title}</p>
-                        <p className="text-sm text-gray-700">{notification.message}</p>
-                        <p className="text-xs text-gray-500 mt-1 text-right">
+                        <p className="font-semibold text-foreground">{notification.title}</p>
+                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1 text-right">
                           {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: ptBR })}
                         </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">Nenhuma notificação nova.</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhuma notificação nova.</p>
                 )}
               </div>
             </PopoverContent>
@@ -216,16 +216,16 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-2 bg-gray-100 p-2 rounded-full pr-4 cursor-pointer hover:bg-gray-200 transition-colors">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-gray-600" />
+              <div className="flex items-center gap-2 bg-secondary p-2 rounded-full pr-4 cursor-pointer hover:bg-secondary/80 transition-colors">
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <span className="text-sm font-medium text-sollux-black hidden md:block">
+                <span className="text-sm font-medium text-foreground hidden md:block">
                   Olá, {profile?.first_name || 'Usuário'}
                 </span>
               </div>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 mt-2 bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+            <DropdownMenuContent align="end" className="w-56 mt-2 bg-popover text-popover-foreground rounded-2xl shadow-lg border border-border">
               <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate('/id/users')} className="cursor-pointer">

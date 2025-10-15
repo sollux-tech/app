@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SheetClose } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCompany } from '@/components/CompanyContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,10 +50,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
 
   return (
     <TooltipProvider>
-      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-white relative w-20">
+      <div className="h-full py-6 flex flex-col bg-sollux-dark-gray text-sollux-white relative w-20">
         {isMobileSheet && (
           <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-gray-300 hover:bg-gray-700 rounded-lg">
+            <Button variant="ghost" size="icon" className="absolute top-4 right-4 text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg">
               <X className="h-5 w-5" />
             </Button>
           </SheetClose>
@@ -87,14 +87,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                       onClick={onLinkClick}
                       className={cn(
                         "flex items-center justify-center w-full h-12 rounded-lg transition-all duration-200",
-                        "text-gray-300 hover:text-white hover:bg-gray-700",
+                        "text-muted-foreground hover:text-foreground hover:bg-accent",
                         isActive && "bg-sollux-red text-white font-semibold"
                       )}
                     >
                       <Icon className="h-6 w-6" />
                     </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+                  <TooltipContent side="right" className="bg-popover text-popover-foreground text-sm rounded-md px-3 py-1">
                     {item.label}
                   </TooltipContent>
                 </Tooltip>
@@ -103,7 +103,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           )}
         </nav>
 
-        <div className="px-2 mt-auto pt-4 border-t border-gray-700">
+        <div className="px-2 mt-auto pt-4 border-t border-border"> {/* Alterado border-gray-700 para border-border */}
           <Select
             value={selectedCompany?.id || ''}
             onValueChange={handleCompanyChange}
@@ -111,11 +111,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white rounded-lg border-none focus:ring-0 focus:ring-offset-0">
+                <SelectTrigger className="w-full h-12 flex items-center justify-center bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-lg border-none focus:ring-0 focus:ring-offset-0">
                   <Building2 className="h-6 w-6" />
                 </SelectTrigger>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-gray-800 text-white text-sm rounded-md px-3 py-1">
+              <TooltipContent side="right" className="bg-popover text-popover-foreground text-sm rounded-md px-3 py-1">
                 {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
               </TooltipContent>
             </Tooltip>

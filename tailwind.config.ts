@@ -52,18 +52,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // SOLLUX Specific Colors
+        // SOLLUX Specific Colors usando variáveis CSS
         sollux: {
-          red: '#E53935',
-          orange: '#FB8C00',
-          black: '#212121',
-          gray: '#9E9E9E',
-          white: '#FFFFFF',
-          // Novas cores inspiradas na imagem
-          'dark-gray': '#2C2C2C', // Para a sidebar
-          'light-gray': '#F0F2F5', // Para o fundo principal
-          'card-bg': 'rgba(255, 255, 255, 0.8)', // Fundo do card com transparência
-          'card-border': 'rgba(255, 255, 255, 0.2)', // Borda do card
+          red: 'hsl(var(--sollux-red))',
+          orange: 'hsl(var(--sollux-orange))',
+          black: 'hsl(var(--sollux-black))',
+          gray: 'hsl(var(--sollux-gray))',
+          white: 'hsl(var(--sollux-white))',
+          'dark-gray': 'hsl(var(--sollux-dark-gray))',
+          'light-gray': 'hsl(var(--sollux-light-gray))',
+          'card-bg': 'hsl(var(--sollux-card-bg))',
+          'card-border': 'hsl(var(--sollux-card-border))',
         },
       },
       borderRadius: {

@@ -14,14 +14,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="min-h-screen bg-sollux-light-gray flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col"> {/* Alterado bg-sollux-light-gray para bg-background e adicionado text-foreground */}
       {/* Topbar */}
       <Topbar className={cn(!isMobile && "left-20")} /> {/* Ajusta a posição da topbar */}
       
       <div className="flex flex-1 pt-16"> {/* pt-16 para compensar a topbar fixa */}
         {/* Sidebar - apenas em desktop */}
         {!isMobile && (
-          <aside className="w-20 bg-sollux-dark-gray border-r border-gray-200 shadow-sm fixed left-0 top-0 h-full z-60"> {/* z-60 para sobrepor a topbar, removido pt-16 */}
+          <aside className="w-20 bg-sollux-dark-gray border-r border-border shadow-sm fixed left-0 top-0 h-full z-60"> {/* z-60 para sobrepor a topbar, removido pt-16 */}
             <Sidebar />
           </aside>
         )}

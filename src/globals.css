@@ -4,8 +4,8 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 0 0% 100%; /* White */
+    --foreground: 222.2 84% 4.9%; /* Near Black */
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -33,6 +33,17 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
+
+    /* Sollux Custom Colors - Light Theme */
+    --sollux-red: 0 70.3% 55.9%; /* #E53935 */
+    --sollux-orange: 29.9 100% 49.2%; /* #FB8C00 */
+    --sollux-black: 210 10% 13.7%; /* #212121 */
+    --sollux-gray: 210 10% 62%; /* #9E9E9E */
+    --sollux-white: 0 0% 100%; /* #FFFFFF */
+    --sollux-dark-gray: 210 10% 17.3%; /* #2C2C2C */
+    --sollux-light-gray: 210 10% 95.1%; /* #F0F2F5 */
+    --sollux-card-bg: 0 0% 100%; /* White for light theme cards */
+    --sollux-card-border: 210 10% 90%; /* Light gray border for light theme cards */
   }
 
   .dark {
@@ -63,6 +74,17 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Sollux Custom Colors - Dark Theme */
+    --sollux-red: 0 70.3% 55.9%; /* #E53935 */
+    --sollux-orange: 29.9 100% 49.2%; /* #FB8C00 */
+    --sollux-black: 210 40% 98%; /* White for dark theme text */
+    --sollux-gray: 210 10% 40%; /* Darker gray for dark theme */
+    --sollux-white: 0 0% 100%; /* White for dark theme text, if needed for specific elements */
+    --sollux-dark-gray: 222.2 84% 4.9%; /* Main background for dark theme sidebar */
+    --sollux-light-gray: 222.2 84% 4.9%; /* Main background for dark theme */
+    --sollux-card-bg: 217.2 32.6% 17.5%; /* Darker background for dark theme cards */
+    --sollux-card-border: 217.2 32.6% 25%; /* Darker border for dark theme cards */
   }
 }
 
@@ -72,7 +94,7 @@
   }
 
   body {
-    @apply bg-sollux-light-gray text-sollux-black; /* Usando a nova cor de fundo principal */
+    /* Removido bg-sollux-light-gray e text-sollux-black para permitir o controle do tema */
   }
 }
 
