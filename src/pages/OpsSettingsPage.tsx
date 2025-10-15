@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target } from 'lucide-react'; // Importar Target
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -66,9 +66,9 @@ const OpsSettingsPage: React.FC = () => {
               onClick={handleScoringScaleClick}
             />
             <FeatureCard
-              title="KPIs de Diagnóstico"
-              description="Cadastre e gerencie os indicadores-chave de desempenho para diagnóstico."
-              icon={Target} // Ícone para KPIs de Diagnóstico
+              title="Perguntas para os KPIs de Diagnóstico"
+              description="Cadastre e gerencie as perguntas para o questionário de diagnóstico."
+              icon={Target} 
               onClick={handleKpiManagementClick}
             />
           </div>
