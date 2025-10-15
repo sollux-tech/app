@@ -14,11 +14,9 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Kpi, KpiFormData } from '@/types/kpi';
 import { Pillar } from '@/types/pillar';
 import { PillarBlock } from '@/types/pillarBlock';
-import { ScoringScale } from '@/types/scoringScale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
@@ -26,8 +24,6 @@ const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
   pillar_block_id: z.string().min(1, { message: 'O bloco é obrigatório.' }),
   question: z.string().min(1, { message: 'A pergunta é obrigatória.' }),
-  scoring_scale_id: z.string().min(1, { message: 'A nota da régua de pontuação é obrigatória.' }),
-  weight_percentage: z.coerce.number().min(0, { message: 'O peso deve ser entre 0 e 100.' }).max(100, { message: 'O peso deve ser entre 0 e 100.' }),
 });
 
 const KpiManagementPage: React.FC = () => {
@@ -43,8 +39,6 @@ const KpiManagementPage: React.FC = () => {
       pillar_id: '',
       pillar_block_id: '',
       question: '',
-      scoring_scale_id: '',
-      weight_percentage: '',
     },
   });
 
@@ -57,8 +51,6 @@ const KpiManagementPage: React.FC = () => {
         pillar_id: editingKpi.pillar_id || '',
         pillar_block_id: editingKpi.pillar_block_id || '',
         question: editingKpi.question,
-        scoring_scale_id: editingKpi.scoring_scale_id || '',
-        weight_percentage: editingKpi.weight_percentage,
       });
     } else {
       form.reset({
@@ -66,8 +58,6 @@ const KpiManagementPage: React.FC = () => {
         pillar_id: '',
         pillar_block_id: '',
         question: '',
-        scoring_scale_id: '',
-        weight_percentage: '',
       });
     }
   }, [editingKpi, form, isDialogOpen]);
@@ -78,7 +68,7 @@ const KpiManagementPage: React.FC = () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('kpis')
-        .select('*, pillars(description, pillar_types(description)), pillar_blocks(name), scoring_scales(score)')
+        .select('*, pillars(description, pillar_types(description)), pillar_blocks(name)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -117,21 +107,6 @@ const KpiManagementPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const { data: scoringScales, isLoading: isLoadingScoringScales } = useQuery<ScoringScale[], Error>({
-    queryKey: ['scoringScalesListForKpi', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('scoring_scales')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('score', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
   const filteredPillarBlocks = useMemo(() => {
     if (!pillarBlocks || !selectedPillarId) return [];
     return pillarBlocks.filter(block => block.pillar_id === selectedPillarId);
@@ -139,7 +114,6 @@ const KpiManagementPage: React.FC = () => {
 
   const selectedPillar = pillars?.find(p => p.id === selectedPillarId);
   const selectedPillarTypeName = (selectedPillar as any)?.pillar_types?.description || 'N/A';
-  const selectedScoringScaleScore = scoringScales?.find(s => s.id === form.watch('scoring_scale_id'))?.score || 'N/A';
 
   const mutationOptions = {
     onSuccess: () => {
@@ -162,8 +136,6 @@ const KpiManagementPage: React.FC = () => {
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
-          scoring_scale_id: data.scoring_scale_id,
-          weight_percentage: Number(data.weight_percentage),
           user_id: user.id,
         })
         .select()
@@ -188,8 +160,6 @@ const KpiManagementPage: React.FC = () => {
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
-          scoring_scale_id: data.scoring_scale_id,
-          weight_percentage: Number(data.weight_percentage),
         })
         .eq('id', editingKpi.id)
         .eq('user_id', user?.id)
@@ -253,7 +223,7 @@ const KpiManagementPage: React.FC = () => {
   };
 
   const isMutating = createKpiMutation.isPending || updateKpiMutation.isPending || deleteKpiMutation.isPending;
-  const isLoadingPage = isLoadingKpis || isLoadingPillars || isLoadingPillarBlocks || isLoadingScoringScales;
+  const isLoadingPage = isLoadingKpis || isLoadingPillars || isLoadingPillarBlocks;
 
   if (isLoadingPage) {
     return <div className="text-center text-gray-600">Carregando KPIs...</div>;
@@ -280,15 +250,13 @@ const KpiManagementPage: React.FC = () => {
                 <TableHead className="text-sollux-black">Pilar</TableHead>
                 <TableHead className="text-sollux-black">Bloco</TableHead>
                 <TableHead className="text-sollux-black">Pergunta</TableHead>
-                <TableHead className="text-sollux-black">Nota</TableHead>
-                <TableHead className="text-sollux-black">Peso (%)</TableHead>
                 <TableHead className="text-right text-sollux-black">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {kpis?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-gray-500">
+                  <TableCell colSpan={5} className="text-center text-gray-500">
                     Nenhum KPI encontrado.
                   </TableCell>
                 </TableRow>
@@ -303,10 +271,6 @@ const KpiManagementPage: React.FC = () => {
                       {(kpi as any).pillar_blocks?.name || 'N/A'}
                     </TableCell>
                     <TableCell className="text-gray-700">{kpi.question}</TableCell>
-                    <TableCell className="text-gray-700">
-                      {(kpi as any).scoring_scales?.score || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-gray-700">{kpi.weight_percentage}%</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
@@ -371,12 +335,15 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* Removido SelectItem com value="" */}
-                        {pillars?.map((pillar) => (
-                          <SelectItem key={pillar.id} value={pillar.id}>
-                            {pillar.description}
-                          </SelectItem>
-                        ))}
+                        {pillars?.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
+                        ) : (
+                          pillars?.map((pillar) => (
+                            <SelectItem key={pillar.id} value={pillar.id}>
+                              {pillar.description}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -400,12 +367,15 @@ const KpiManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {/* Removido SelectItem com value="" */}
-                        {filteredPillarBlocks.map((block) => (
-                          <SelectItem key={block.id} value={block.id}>
-                            {block.name}
-                          </SelectItem>
-                        ))}
+                        {filteredPillarBlocks.length === 0 ? (
+                          <SelectItem value="" disabled>Nenhum bloco para este pilar</SelectItem>
+                        ) : (
+                          filteredPillarBlocks.map((block) => (
+                            <SelectItem key={block.id} value={block.id}>
+                              {block.name}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -420,48 +390,6 @@ const KpiManagementPage: React.FC = () => {
                     <FormLabel className="text-sollux-black">Pergunta</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Quão satisfeito você está com o produto?" {...field} className="rounded-lg" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="scoring_scale_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sollux-black">Régua de Pontuação</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingScoringScales}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione uma nota da régua" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {/* Removido SelectItem com value="" */}
-                        {scoringScales?.map((scale) => (
-                          <SelectItem key={scale.id} value={scale.id}>
-                            {scale.score} - {scale.description}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormItem>
-                <FormLabel className="text-sollux-black">Nota Selecionada</FormLabel>
-                <Input value={selectedScoringScaleScore} readOnly className="rounded-lg bg-gray-100 text-gray-700" />
-              </FormItem>
-              <FormField
-                control={form.control}
-                name="weight_percentage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sollux-black">Peso (%)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" placeholder="Ex: 10" {...field} className="rounded-lg" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
