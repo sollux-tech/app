@@ -5,14 +5,16 @@ import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useSession } from '@/components/SessionContextProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfileFormData } from '@/types/profile';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
-import { useQueryClient } from '@tanstack/react-query'; // Importar useQueryClient
+import { useQueryClient } from '@tanstack/react-query';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Importar Select
+import { useTheme } from 'next-themes'; // Importar useTheme
 
 const formSchema = z.object({
   first_name: z.string().min(1, { message: 'O primeiro nome é obrigatório.' }),
@@ -25,7 +27,8 @@ const formSchema = z.object({
 
 const UserManagementPage: React.FC = () => {
   const { user, profile, isLoading, refetchProfile } = useSession();
-  const queryClient = useQueryClient(); // Inicializar queryClient
+  const queryClient = useQueryClient();
+  const { setTheme, theme } = useTheme(); // Obter setTheme e theme do hook useTheme
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(formSchema),
@@ -200,6 +203,27 @@ const UserManagementPage: React.FC = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Theme Selector */}
+              <FormItem>
+                <FormLabel className="text-sollux-black text-left">Tema da Interface</FormLabel>
+                <Select value={theme} onValueChange={(value) => setTheme(value)}>
+                  <FormControl>
+                    <SelectTrigger className="rounded-lg">
+                      <SelectValue placeholder="Selecionar tema" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="light">Claro</SelectItem>
+                    <SelectItem value="dark">Escuro</SelectItem>
+                    <SelectItem value="system">Sistema</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription className="text-left">
+                  Selecione o tema da interface: claro, escuro ou baseado nas configurações do seu sistema.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
 
               <Button type="submit" className="w-full rounded-lg bg-sollux-red hover:bg-sollux-orange">
                 Salvar Alterações
