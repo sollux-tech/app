@@ -48,6 +48,7 @@ import CompanyFormPage from './pages/CompanyFormPage';
 import MarketManagementPage from './pages/MarketManagementPage';
 import AllInformativesPage from './pages/AllInformativesPage'; // Importar a nova página
 import { ThemeProvider } from './components/ThemeProvider'; // Importar o ThemeProvider
+import DocumentManagementPage from './pages/DocumentManagementPage'; // Importar a nova página de documentos
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -135,6 +136,7 @@ function App() {
                             <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                             <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                             <Route path="/core/markets" element={<MarketManagementPage />} /> 
+                            <Route path="/core/documents" element={<DocumentManagementPage />} /> {/* Nova rota para documentos */}
                             
                             {/* Rotas SOLLUX FORM™ */}
                             <Route path="/connect/forms" element={<FormsPage />} />

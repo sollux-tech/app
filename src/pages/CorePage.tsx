@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Settings, UserCog, Newspaper, Bell, Building2, Wrench, Store } from 'lucide-react'; // Importar Store para Mercados
+import { Settings, UserCog, Newspaper, Bell, Building2, Wrench, Store, FileText } from 'lucide-react'; // Importar FileText para Documentos
 
 const CorePage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +32,11 @@ const CorePage: React.FC = () => {
   };
 
   const handleMarketManagementClick = () => {
-    navigate('/core/markets'); // Nova rota para gerenciamento de mercados
+    navigate('/core/markets');
+  };
+
+  const handleDocumentManagementClick = () => {
+    navigate('/core/documents'); // Nova rota para gerenciamento de documentos
   };
 
   return (
@@ -87,6 +91,12 @@ const CorePage: React.FC = () => {
               description="Cadastre e gerencie os mercados de atuação das empresas."
               icon={Store}
               onClick={handleMarketManagementClick}
+            />
+            <FeatureCard
+              title="Documentos"
+              description="Cadastre e gerencie documentos para usuários específicos ou todos."
+              icon={FileText}
+              onClick={handleDocumentManagementClick}
             />
           </div>
         </CardContent>

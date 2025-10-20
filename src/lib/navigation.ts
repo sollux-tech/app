@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store } from 'lucide-react'; // Importar Target e Store
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText } from 'lucide-react'; // Importar FileText para Documentos
 
 interface RouteInfo {
   name: string;
@@ -8,11 +8,11 @@ interface RouteInfo {
 
 export const routeMap: Record<string, RouteInfo> = {
   '/pulse': { name: 'Pulse', icon: Home },
-  '/pulse/informatives': { name: 'Todos os Informativos', parent: '/pulse' }, // Nova rota
+  '/pulse/informatives': { name: 'Todos os Informativos', parent: '/pulse' },
   '/id': { name: 'ID' },
   '/id/companies': { name: 'Gerenciar Empresas', parent: '/id' },
   '/id/companies/new': { name: 'Nova Empresa', parent: '/id/companies' },
-  '/id/companies/:id': { name: 'Editar Empresa', parent: '/id/companies' }, // Adicionado para edição
+  '/id/companies/:id': { name: 'Editar Empresa', parent: '/id/companies' },
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
   '/connect': { name: 'Connect' },
@@ -42,7 +42,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
   '/core/data-doctor': { name: 'Diagnóstico de Dados', parent: '/core' },
-  '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store }, // Nova rota para mercados
+  '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store },
+  '/core/documents': { name: 'Documentos', parent: '/core', icon: FileText }, // Nova rota para documentos
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático
