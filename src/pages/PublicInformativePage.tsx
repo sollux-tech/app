@@ -52,8 +52,8 @@ const PublicInformativePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">Não foi possível carregar o informativo: {error.message}</p>
-            <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
+            <Button onClick={() => navigate('/pulse')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o Início
             </Button>
           </CardContent>
         </Card>
@@ -72,8 +72,8 @@ const PublicInformativePage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">O informativo que você está procurando não existe ou foi removido.</p>
-            <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
+            <Button onClick={() => navigate('/pulse')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o Início
             </Button>
           </CardContent>
         </Card>
@@ -100,8 +100,8 @@ const PublicInformativePage: React.FC = () => {
           <div dangerouslySetInnerHTML={{ __html: informative.content }} />
         </CardContent>
         <div className="mt-8 text-center">
-          <Button onClick={() => navigate('/core/pulse-informatives')} className="inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
-            <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
+          <Button onClick={() => navigate('/pulse')} className="inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
+            <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o Início
           </Button>
         </div>
       </Card>
