@@ -37,7 +37,7 @@ const PublicInformativePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-12"> {/* Ajustado para ser um contêiner de carregamento dentro do layout */}
         <p className="text-muted-foreground">Carregando informativo...</p>
       </div>
     );
@@ -45,15 +45,15 @@ const PublicInformativePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-12"> {/* Ajustado para ser um contêiner de erro dentro do layout */}
         <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-sollux-red">Erro</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">Não foi possível carregar o informativo: {error.message}</p>
-            <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
+            <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
             </Button>
           </CardContent>
         </Card>
@@ -65,15 +65,15 @@ const PublicInformativePage: React.FC = () => {
     // This case should ideally be caught by the error handler above if single() fails
     // but as a fallback, if data is null and no error, show not found.
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex items-center justify-center py-12"> {/* Ajustado para ser um contêiner de não encontrado dentro do layout */}
         <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-foreground">Informativo não encontrado</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">O informativo que você está procurando não existe ou foi removido.</p>
-            <Button onClick={() => navigate('/')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
-              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para o início
+            <Button onClick={() => navigate('/core/pulse-informatives')} className="mt-4 inline-flex items-center rounded-lg bg-sollux-red hover:bg-sollux-orange">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Voltar para Gerenciamento
             </Button>
           </CardContent>
         </Card>
@@ -82,7 +82,7 @@ const PublicInformativePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
+    <div className="flex justify-center w-full"> {/* Removido min-h-screen e paddings externos */}
       <Card className="w-full max-w-3xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border p-8">
         <CardHeader className="text-center pb-6">
           <CardTitle className="text-4xl font-bold text-foreground mb-2">{informative.title}</CardTitle>

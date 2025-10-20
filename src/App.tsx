@@ -87,7 +87,7 @@ function App() {
               <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme"> {/* Adicionado ThemeProvider */}
                 <Routes>
                   <Route path="/login" element={<Login />} />
-                  <Route path="/informative/:id" element={<PublicInformativePage />} /> 
+                  {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
                   <Route path="/jobs/:id" element={<PublicJobPage />} />
                   <Route path="/form/:id" element={<PublicFormPage />} />
                   <Route
@@ -115,6 +115,8 @@ function App() {
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
                             <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                             <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
+                            {/* A rota /informative/:id agora está dentro do ProtectedRoute e Layout */}
+                            <Route path="/informative/:id" element={<PublicInformativePage />} /> 
                             <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
                             <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
                             <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 

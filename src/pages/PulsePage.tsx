@@ -119,7 +119,7 @@ const PulsePage: React.FC = () => {
                 <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
               )}
               <div className="mt-4 text-right">
-                <Link to={`/informative/${informativeToday.id}`}>
+                <Link to={`/informative/${informativeToday.id}`}> {/* Alterado para Link */}
                   <Button variant="link" className="text-sollux-red hover:underline">
                     Ler na Íntegra
                   </Button>
