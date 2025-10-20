@@ -8,6 +8,7 @@ interface RouteInfo {
 
 export const routeMap: Record<string, RouteInfo> = {
   '/pulse': { name: 'Pulse', icon: Home },
+  '/pulse/informatives': { name: 'Todos os Informativos', parent: '/pulse' }, // Nova rota
   '/id': { name: 'ID' },
   '/id/companies': { name: 'Gerenciar Empresas', parent: '/id' },
   '/id/companies/new': { name: 'Nova Empresa', parent: '/id/companies' },

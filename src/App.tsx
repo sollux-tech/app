@@ -46,6 +46,7 @@ import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage';
 import KpiManagementPage from './pages/KpiManagementPage';
 import CompanyFormPage from './pages/CompanyFormPage';
 import MarketManagementPage from './pages/MarketManagementPage';
+import AllInformativesPage from './pages/AllInformativesPage'; // Importar a nova página
 import { ThemeProvider } from './components/ThemeProvider'; // Importar o ThemeProvider
 
 const queryClient = new QueryClient({
@@ -98,6 +99,7 @@ function App() {
                           <Routes>
                             <Route path="/" element={<Navigate to="/pulse" replace />} /> 
                             <Route path="/pulse" element={<PulsePage />} /> 
+                            <Route path="/pulse/informatives" element={<AllInformativesPage />} /> {/* Nova rota */}
                             <Route path="/id" element={<IdPage />} />
                             <Route path="/id/companies" element={<CompanyManagementPage />} />
                             <Route path="/id/companies/new" element={<CompanyFormPage />} />
