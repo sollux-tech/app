@@ -46,9 +46,10 @@ import ScoringScaleManagementPage from './pages/ScoringScaleManagementPage';
 import KpiManagementPage from './pages/KpiManagementPage';
 import CompanyFormPage from './pages/CompanyFormPage';
 import MarketManagementPage from './pages/MarketManagementPage';
-import AllInformativesPage from './pages/AllInformativesPage'; // Importar a nova página
-import { ThemeProvider } from './components/ThemeProvider'; // Importar o ThemeProvider
-import DocumentManagementPage from './pages/DocumentManagementPage'; // Importar a nova página de documentos
+import AllInformativesPage from './pages/AllInformativesPage';
+import { ThemeProvider } from './components/ThemeProvider';
+import DocumentManagementPage from './pages/DocumentManagementPage';
+import AllDocumentsPage from './pages/AllDocumentsPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -86,7 +87,7 @@ function App() {
           <SessionContextProvider>
             <CompanyProvider>
               <Toaster />
-              <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme"> {/* Adicionado ThemeProvider */}
+              <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
@@ -100,13 +101,14 @@ function App() {
                           <Routes>
                             <Route path="/" element={<Navigate to="/pulse" replace />} /> 
                             <Route path="/pulse" element={<PulsePage />} /> 
-                            <Route path="/pulse/informatives" element={<AllInformativesPage />} /> {/* Nova rota */}
+                            <Route path="/pulse/informatives" element={<AllInformativesPage />} />
                             <Route path="/id" element={<IdPage />} />
                             <Route path="/id/companies" element={<CompanyManagementPage />} />
                             <Route path="/id/companies/new" element={<CompanyFormPage />} />
                             <Route path="/id/companies/:id" element={<CompanyFormPage />} />
                             <Route path="/id/users" element={<UserManagementPage />} />
                             <Route path="/id/sharing" element={<CompanySharingPage />} />
+                            <Route path="/id/documents" element={<AllDocumentsPage />} /> {/* Nova rota */}
                             <Route path="/connect" element={<ConnectPage />} />
                             <Route path="/connect/jobs" element={<JobsPage />} />
                             <Route path="/connect/jobs/new" element={<JobFormPage />} />
@@ -136,7 +138,7 @@ function App() {
                             <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                             <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                             <Route path="/core/markets" element={<MarketManagementPage />} /> 
-                            <Route path="/core/documents" element={<DocumentManagementPage />} /> {/* Nova rota para documentos */}
+                            <Route path="/core/documents" element={<DocumentManagementPage />} />
                             
                             {/* Rotas SOLLUX FORM™ */}
                             <Route path="/connect/forms" element={<FormsPage />} />

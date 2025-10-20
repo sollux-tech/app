@@ -15,6 +15,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/id/companies/:id': { name: 'Editar Empresa', parent: '/id/companies' },
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
+  '/id/documents': { name: 'Documentos', parent: '/id', icon: FileText }, // Nova rota para documentos
   '/connect': { name: 'Connect' },
   '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
   '/connect/jobs/new': { name: 'Nova Vaga', parent: '/connect/jobs' },
@@ -43,7 +44,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
   '/core/data-doctor': { name: 'Diagnóstico de Dados', parent: '/core' },
   '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store },
-  '/core/documents': { name: 'Documentos', parent: '/core', icon: FileText }, // Nova rota para documentos
+  '/core/documents': { name: 'Documentos', parent: '/core', icon: FileText },
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático

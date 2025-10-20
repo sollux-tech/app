@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Building2, Users, Share2 } from 'lucide-react';
+import { Building2, Users, Share2, FileText } from 'lucide-react'; // Importar FileText para Documentos
 
 const IdPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +17,10 @@ const IdPage: React.FC = () => {
 
   const handleShareCompanyClick = () => {
     navigate('/id/sharing');
+  };
+
+  const handleAllDocumentsClick = () => {
+    navigate('/id/documents'); // Nova rota para todos os documentos
   };
 
   return (
@@ -47,6 +51,12 @@ const IdPage: React.FC = () => {
               description="Convide outros usuários para acessar e colaborar em suas empresas."
               icon={Share2}
               onClick={handleShareCompanyClick}
+            />
+            <FeatureCard
+              title="Documentos"
+              description="Visualize documentos públicos e aqueles compartilhados com você."
+              icon={FileText}
+              onClick={handleAllDocumentsClick}
             />
           </div>
         </CardContent>
