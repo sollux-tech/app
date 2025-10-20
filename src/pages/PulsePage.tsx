@@ -116,7 +116,7 @@ const PulsePage: React.FC = () => {
                 Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
               </p>
               {informativeToday.short_summary && (
-                <p className="text-base text-foreground italic">"{informativeToday.short_summary}"</p>
+                <div className="prose max-w-none text-foreground italic" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
               )}
               <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
               <div className="mt-4 text-right">

@@ -235,13 +235,29 @@ const PulseInformativeFormPage: React.FC = () => {
                   <FormItem>
                     <FormLabel className="text-foreground">Resumo do Informativo (Leitura Rápida)</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Um breve resumo do conteúdo principal do informativo (máx. 500 caracteres)."
-                        {...field}
-                        className="rounded-lg"
-                        rows={4}
-                        maxLength={500}
-                      />
+                      {editorLoaded ? (
+                        <ReactQuill
+                          theme="snow"
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="bg-card rounded-lg"
+                          modules={{
+                            toolbar: [
+                              [{ 'header': [1, 2, false] }],
+                              ['bold', 'italic', 'underline', 'strike', 'link'],
+                              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                              [{ 'indent': '-1'}, { 'indent': '+1' }],
+                              ['image', 'code-block'],
+                              [{ 'color': [] }, { 'background': [] }],
+                              ['clean']
+                            ],
+                          }}
+                        />
+                      ) : (
+                        <div className="h-[150px] w-full bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
+                          Carregando editor de texto...
+                        </div>
+                      )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>

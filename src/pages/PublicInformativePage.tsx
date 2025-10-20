@@ -94,7 +94,7 @@ const PublicInformativePage: React.FC = () => {
           {informative.short_summary && (
             <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
               <h3 className="text-xl font-semibold text-foreground mb-2">Resumo</h3>
-              <p className="text-muted-foreground">{informative.short_summary}</p>
+              <div dangerouslySetInnerHTML={{ __html: informative.short_summary }} />
             </div>
           )}
           <div dangerouslySetInnerHTML={{ __html: informative.content }} />
