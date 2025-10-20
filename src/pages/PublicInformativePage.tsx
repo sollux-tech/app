@@ -91,6 +91,12 @@ const PublicInformativePage: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="prose prose-lg max-w-none text-foreground">
+          {informative.short_summary && (
+            <div className="mb-6 p-4 bg-muted rounded-lg border border-border">
+              <h3 className="text-xl font-semibold text-foreground mb-2">Resumo</h3>
+              <p className="text-muted-foreground">{informative.short_summary}</p>
+            </div>
+          )}
           <div dangerouslySetInnerHTML={{ __html: informative.content }} />
         </CardContent>
         <div className="mt-8 text-center">

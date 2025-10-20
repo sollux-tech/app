@@ -18,9 +18,11 @@ import { format } from 'date-fns';
 // Importar ReactQuill e seus estilos dinamicamente
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Importar os estilos do editor
+import { Textarea } from '@/components/ui/textarea'; // Importar Textarea
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título do informativo é obrigatório.' }),
+  short_summary: z.string().min(1, { message: 'O resumo do informativo é obrigatório.' }).max(500, { message: 'O resumo deve ter no máximo 500 caracteres.' }),
   content: z.string().min(1, { message: 'O conteúdo do informativo é obrigatório.' }),
   publication_date: z.date().optional().nullable(),
 });
@@ -66,6 +68,7 @@ const PulseInformativeFormPage: React.FC = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
+      short_summary: '', // Adicionado default value
       content: '',
       publication_date: undefined,
     },
@@ -79,12 +82,14 @@ const PulseInformativeFormPage: React.FC = () => {
 
       form.reset({
         title: editingInformative.title,
+        short_summary: editingInformative.short_summary || '', // Carrega o resumo
         content: editingInformative.content,
         publication_date: localPublicationDate,
       });
     } else if (!isEditing) {
       form.reset({
         title: '',
+        short_summary: '', // Reseta o resumo
         content: '',
         publication_date: undefined,
       });
@@ -98,6 +103,7 @@ const PulseInformativeFormPage: React.FC = () => {
         .from('pulse_informatives')
         .insert({
           title: data.title,
+          short_summary: data.short_summary, // Inclui o resumo
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           user_id: user.id
@@ -124,6 +130,7 @@ const PulseInformativeFormPage: React.FC = () => {
         .from('pulse_informatives')
         .update({
           title: data.title,
+          short_summary: data.short_summary, // Inclui o resumo
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
         })
@@ -215,6 +222,25 @@ const PulseInformativeFormPage: React.FC = () => {
                         setDate={field.onChange}
                         placeholder="Selecione a data de publicação"
                         disabled={isLoadingForm}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="short_summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Resumo do Informativo (Leitura Rápida)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Um breve resumo do conteúdo principal do informativo (máx. 500 caracteres)."
+                        {...field}
+                        className="rounded-lg"
+                        rows={4}
+                        maxLength={500}
                       />
                     </FormControl>
                     <FormMessage />
