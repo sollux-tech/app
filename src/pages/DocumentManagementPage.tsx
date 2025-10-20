@@ -22,6 +22,9 @@ import { ptBR } from 'date-fns/locale';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import SearchableUserSelect from '@/components/SearchableUserSelect'; // Importar o novo componente
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),
@@ -29,6 +32,7 @@ const formSchema = z.object({
   content: z.string().min(1, { message: 'O conteúdo é obrigatório.' }),
   publication_date: z.date({ required_error: 'A data de publicação é obrigatória.' }),
   target_user_id: z.string().optional().nullable(), // 'all' or specific user ID
+  status: z.boolean().default(true), // Novo campo de status
 });
 
 const DocumentManagementPage: React.FC = () => {
@@ -47,6 +51,7 @@ const DocumentManagementPage: React.FC = () => {
       content: '',
       publication_date: undefined,
       target_user_id: 'all',
+      status: true, // Valor padrão para o novo campo
     },
   });
 
@@ -62,6 +67,7 @@ const DocumentManagementPage: React.FC = () => {
         content: editingDocument.content,
         publication_date: publicationDate,
         target_user_id: editingDocument.target_user_id || 'all',
+        status: editingDocument.status === 'active', // Mapear 'active'/'inactive' para boolean
       });
     } else {
       form.reset({
@@ -70,6 +76,7 @@ const DocumentManagementPage: React.FC = () => {
         content: '',
         publication_date: undefined,
         target_user_id: 'all',
+        status: true,
       });
     }
   }, [editingDocument, form, isDialogOpen]);
@@ -168,6 +175,7 @@ const DocumentManagementPage: React.FC = () => {
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           target_user_id: data.target_user_id === 'all' ? null : data.target_user_id,
           creator_user_id: user.id,
+          status: data.status ? 'active' : 'inactive', // Salvar status
         })
         .select()
         .single();
@@ -193,6 +201,7 @@ const DocumentManagementPage: React.FC = () => {
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           target_user_id: data.target_user_id === 'all' ? null : data.target_user_id,
+          status: data.status ? 'active' : 'inactive', // Atualizar status
         })
         .eq('id', editingDocument.id)
         .eq('creator_user_id', user.id)
@@ -288,13 +297,14 @@ const DocumentManagementPage: React.FC = () => {
                 <TableHead className="text-foreground">Versão</TableHead>
                 <TableHead className="text-foreground">Publicado em</TableHead>
                 <TableHead className="text-foreground">Para</TableHead>
+                <TableHead className="text-foreground">Status</TableHead> {/* Nova coluna */}
                 <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documents?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     Nenhum documento encontrado.
                   </TableCell>
                 </TableRow>
@@ -312,6 +322,14 @@ const DocumentManagementPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {doc.target_user_id === user?.id ? 'Você' : targetUserName}
+                      </TableCell>
+                      <TableCell> {/* Nova célula para status */}
+                        <Badge
+                          variant={doc.status === 'active' ? 'default' : 'secondary'}
+                          className={doc.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}
+                        >
+                          {doc.status === 'active' ? 'Ativo' : 'Inativo'}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right flex justify-end items-center gap-1">
                         <Button
@@ -368,7 +386,7 @@ const DocumentManagementPage: React.FC = () => {
                   <FormItem>
                     <FormLabel className="text-foreground">Título</FormLabel>
                     <FormControl>
-                      <Input placeholder="Título do documento" {...field} className="rounded-lg" />
+                      <Input placeholder="Título do documento" {...field} className="rounded-lg text-foreground placeholder:text-muted-foreground" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -381,7 +399,7 @@ const DocumentManagementPage: React.FC = () => {
                   <FormItem>
                     <FormLabel className="text-foreground">Versão do Documento</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: 1.0.0" {...field} className="rounded-lg" />
+                      <Input placeholder="Ex: 1.0.0" {...field} className="rounded-lg text-foreground placeholder:text-muted-foreground" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -411,21 +429,34 @@ const DocumentManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Visibilidade</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || 'all'} disabled={isLoadingUsers || isMutating}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione o público-alvo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {userOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SearchableUserSelect
+                        options={userOptions}
+                        value={field.value || 'all'}
+                        onChange={field.onChange}
+                        placeholder="Selecione o público-alvo"
+                        disabled={isLoadingUsers || isMutating}
+                      />
+                    </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-foreground">Status</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={isMutating}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
@@ -465,7 +496,7 @@ const DocumentManagementPage: React.FC = () => {
                 )}
               />
               <DialogFooter className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isMutating} className="rounded-lg">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isMutating} className="rounded-lg text-foreground hover:bg-accent">
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
@@ -496,12 +527,21 @@ const DocumentManagementPage: React.FC = () => {
                     {format(new Date(documentToViewContent.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
                   </p>
                 </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Status:</p>
+                  <Badge
+                    variant={documentToViewContent.status === 'active' ? 'default' : 'secondary'}
+                    className={documentToViewContent.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}
+                  >
+                    {documentToViewContent.status === 'active' ? 'Ativo' : 'Inativo'}
+                  </Badge>
+                </div>
               </div>
               <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: documentToViewContent.content }} />
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewContentDialogOpen(false)} className="rounded-lg">
+            <Button variant="outline" onClick={() => setIsViewContentDialogOpen(false)} className="rounded-lg text-foreground hover:bg-accent">
               Fechar
             </Button>
           </DialogFooter>

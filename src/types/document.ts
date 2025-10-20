@@ -10,6 +10,7 @@ export interface Document {
   target_user_id: string | null; // Null for all users
   created_at: string;
   updated_at: string;
+  status: 'active' | 'inactive'; // Novo campo de status
   creator_profile?: BasicProfileInfo | null; // Adicionado para armazenar o perfil do criador
   target_profile?: BasicProfileInfo | null;  // Adicionado para armazenar o perfil do usuário alvo
 }
@@ -20,4 +21,5 @@ export interface DocumentFormData {
   content: string;
   publication_date: Date | undefined;
   target_user_id: string | 'all'; // 'all' for all users, or a specific user ID
+  status: boolean; // Represent 'active'/'inactive' as boolean in form
 }
