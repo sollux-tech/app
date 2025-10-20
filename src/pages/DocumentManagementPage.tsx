@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Profile } from '@/types/profile';
+import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),
@@ -88,7 +88,7 @@ const DocumentManagementPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const { data: allUsers, isLoading: isLoadingUsers } = useQuery<Profile[], Error>({
+  const { data: allUsers, isLoading: isLoadingUsers } = useQuery<BasicProfileInfo[], Error>({ // Usar BasicProfileInfo[]
     queryKey: ['allUsersForDocuments'],
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles').select('id, first_name, last_name');
