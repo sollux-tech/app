@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye } from 'lucide-react';
+import { Eye, Share2 } from 'lucide-react'; // Importar Share2
 import { supabase } from '@/integrations/supabase/client';
 import { PulseInformative } from '@/types/pulseInformative';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
+import ShareInformativeDialog from '@/components/ShareInformativeDialog'; // Importar o componente de diálogo de compartilhamento
 
 const AllInformativesPage: React.FC = () => {
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [informativeToShare, setInformativeToShare] = useState<{ id: string; title: string } | null>(null);
+
   const { data: informatives, isLoading, error } = useQuery<PulseInformative[], Error>({
     queryKey: ['allPulseInformatives'],
     queryFn: async () => {
@@ -22,6 +26,11 @@ const AllInformativesPage: React.FC = () => {
       return data;
     },
   });
+
+  const handleShareClick = (informative: PulseInformative) => {
+    setInformativeToShare({ id: informative.id, title: informative.title });
+    setIsShareDialogOpen(true);
+  };
 
   if (isLoading) {
     return <div className="text-center text-muted-foreground">Carregando informativos...</div>;
@@ -56,7 +65,7 @@ const AllInformativesPage: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-foreground">Título</TableHead>
-                  <TableHead className="text-foreground">Resumo</TableHead>
+                  {/* <TableHead className="text-foreground">Resumo</TableHead> -- Removido */}
                   <TableHead className="text-foreground">Publicado em</TableHead>
                   <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
@@ -65,18 +74,28 @@ const AllInformativesPage: React.FC = () => {
                 {informatives?.map((informative) => (
                   <TableRow key={informative.id}>
                     <TableCell className="font-medium text-foreground">{informative.title}</TableCell>
-                    <TableCell className="text-muted-foreground max-w-xs truncate" dangerouslySetInnerHTML={{ __html: informative.short_summary || 'N/A' }} />
+                    {/* <TableCell className="text-muted-foreground max-w-xs truncate" dangerouslySetInnerHTML={{ __html: informative.short_summary || 'N/A' }} /> -- Removido */}
                     <TableCell className="text-muted-foreground">
                       {informative.publication_date ? format(new Date(informative.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right flex justify-end items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleShareClick(informative)}
+                        className="text-green-600 hover:bg-green-50 rounded-lg"
+                        title="Compartilhar Informativo"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
                       <Link to={`/informative/${informative.id}`}>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-blue-600 hover:bg-blue-50 rounded-lg"
+                          title="Ler Informativo"
                         >
-                          <Eye className="h-4 w-4 mr-2" /> Ler
+                          <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
                     </TableCell>
@@ -87,6 +106,15 @@ const AllInformativesPage: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {informativeToShare && (
+        <ShareInformativeDialog
+          open={isShareDialogOpen}
+          onOpenChange={setIsShareDialogOpen}
+          informativeId={informativeToShare.id}
+          informativeTitle={informativeToShare.title}
+        />
+      )}
     </div>
   );
 };
