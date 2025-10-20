@@ -97,7 +97,7 @@ const PulsePage: React.FC = () => {
       {/* Informativo PULSE do Dia */}
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-foreground uppercase font-bold">Informativo PULSE do Dia</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">PULSE do Dia</CardTitle>
           <Link to="/core/pulse-informatives">
             <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
               Ver Todos
@@ -116,13 +116,12 @@ const PulsePage: React.FC = () => {
                 Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
               </p>
               {informativeToday.short_summary && (
-                <div className="prose max-w-none text-foreground italic" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
+                <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
               )}
-              <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.content }} />
               <div className="mt-4 text-right">
                 <Link to={`/informative/${informativeToday.id}`}>
                   <Button variant="link" className="text-sollux-red hover:underline">
-                    Ler na íntegra
+                    Ler na Íntegra
                   </Button>
                 </Link>
               </div>
