@@ -49,7 +49,7 @@ const AllDocumentsPage: React.FC = () => {
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name')
-          .in('id', uniqueCreatorIds);
+          .in('id', uniqueUserIds);
 
         if (profilesError) {
           console.error("Error fetching creator profiles for documents:", profilesError);
@@ -148,25 +148,25 @@ const AllDocumentsPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-foreground">Título</TableHead>
+                <TableHead className="text-foreground">Documento</TableHead> {/* Renomeado de 'Título' para 'Documento' */}
                 <TableHead className="text-foreground">Versão</TableHead>
                 <TableHead className="text-foreground">Publicado em</TableHead>
-                <TableHead className="text-foreground">Criador</TableHead>
-                <TableHead className="text-foreground">Visibilidade</TableHead>
+                {/* <TableHead className="text-foreground">Criador</TableHead> -- Removido */}
+                {/* <TableHead className="text-foreground">Visibilidade</TableHead> -- Removido */}
                 <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {documents?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center text-muted-foreground"> {/* Colspan ajustado */}
                     Nenhum documento encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
                 documents?.map((doc) => {
-                  const creatorName = doc.creator_profile ? `${doc.creator_profile.first_name || ''} ${doc.creator_profile.last_name || ''}`.trim() : 'Desconhecido';
-                  const visibility = doc.target_user_id === null ? 'Todos os Usuários' : 'Apenas Você';
+                  // const creatorName = doc.creator_profile ? `${doc.creator_profile.first_name || ''} ${doc.creator_profile.last_name || ''}`.trim() : 'Desconhecido'; // Removido
+                  // const visibility = doc.target_user_id === null ? 'Todos os Usuários' : 'Apenas Você'; // Removido
                   return (
                     <TableRow key={doc.id}>
                       <TableCell className="font-medium text-foreground">{doc.title}</TableCell>
@@ -174,12 +174,12 @@ const AllDocumentsPage: React.FC = () => {
                       <TableCell className="text-muted-foreground">
                         {format(new Date(doc.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">{creatorName}</TableCell>
-                      <TableCell>
+                      {/* <TableCell className="text-muted-foreground">{creatorName}</TableCell> -- Removido */}
+                      {/* <TableCell> -- Removido
                         <Badge variant="outline" className="text-xs">
                           {visibility}
                         </Badge>
-                      </TableCell>
+                      </TableCell> -- Removido */}
                       <TableCell className="text-right flex justify-end items-center gap-1">
                         <Button
                           variant="ghost"
