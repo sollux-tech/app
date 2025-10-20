@@ -14,7 +14,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Document, DocumentFormData } from '@/types/document';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
-import { Textarea } => '@/components/ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';

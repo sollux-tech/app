@@ -1,3 +1,5 @@
+import { BasicProfileInfo } from './profile'; // Importar BasicProfileInfo
+
 export interface Document {
   id: string;
   creator_user_id: string;
