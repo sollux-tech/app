@@ -18,11 +18,11 @@ import { format } from 'date-fns';
 // Importar ReactQuill e seus estilos dinamicamente
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css'; // Importar os estilos do editor
-import { Textarea } from '@/components/ui/textarea'; // Importar Textarea
+// import { Textarea } from '@/components/ui/textarea'; // Removido, pois não será mais usado para short_summary
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título do informativo é obrigatório.' }),
-  short_summary: z.string().min(1, { message: 'O resumo do informativo é obrigatório.' }).max(500, { message: 'O resumo deve ter no máximo 500 caracteres.' }),
+  short_summary: z.string().min(1, { message: 'O resumo do informativo é obrigatório.' }).max(2000, { message: 'O resumo deve ter no máximo 2000 caracteres (incluindo HTML).' }), // Aumentado o limite
   content: z.string().min(1, { message: 'O conteúdo do informativo é obrigatório.' }),
   publication_date: z.date().optional().nullable(),
 });
@@ -68,7 +68,7 @@ const PulseInformativeFormPage: React.FC = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      short_summary: '', // Adicionado default value
+      short_summary: '',
       content: '',
       publication_date: undefined,
     },
@@ -82,14 +82,14 @@ const PulseInformativeFormPage: React.FC = () => {
 
       form.reset({
         title: editingInformative.title,
-        short_summary: editingInformative.short_summary || '', // Carrega o resumo
+        short_summary: editingInformative.short_summary || '',
         content: editingInformative.content,
         publication_date: localPublicationDate,
       });
     } else if (!isEditing) {
       form.reset({
         title: '',
-        short_summary: '', // Reseta o resumo
+        short_summary: '',
         content: '',
         publication_date: undefined,
       });
@@ -99,11 +99,12 @@ const PulseInformativeFormPage: React.FC = () => {
   const createInformativeMutation = useMutation({
     mutationFn: async (data: PulseInformativeFormData) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
+      console.log("Creating informative with data:", data); // Log para depuração
       const { data: newInformative, error } = await supabase
         .from('pulse_informatives')
         .insert({
           title: data.title,
-          short_summary: data.short_summary, // Inclui o resumo
+          short_summary: data.short_summary,
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           user_id: user.id
@@ -119,6 +120,7 @@ const PulseInformativeFormPage: React.FC = () => {
       navigate('/core/pulse-informatives');
     },
     onError: (error) => {
+      console.error("Error creating informative:", error); // Log de erro
       showError(`Erro ao criar informativo: ${error.message}`);
     },
   });
@@ -126,16 +128,18 @@ const PulseInformativeFormPage: React.FC = () => {
   const updateInformativeMutation = useMutation({
     mutationFn: async (data: PulseInformativeFormData) => {
       if (!informativeId) throw new Error("ID do informativo está faltando.");
+      if (!user?.id) throw new Error("Usuário não autenticado.");
+      console.log("Updating informative with data:", data); // Log para depuração
       const { data: updatedInformative, error } = await supabase
         .from('pulse_informatives')
         .update({
           title: data.title,
-          short_summary: data.short_summary, // Inclui o resumo
+          short_summary: data.short_summary,
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
         })
         .eq('id', informativeId)
-        .eq('user_id', user?.id) // Garantir que o usuário só edite seus próprios informativos
+        .eq('user_id', user.id) // Garantir que o usuário só edite seus próprios informativos
         .select()
         .single();
       if (error) throw error;
@@ -147,11 +151,13 @@ const PulseInformativeFormPage: React.FC = () => {
       navigate('/core/pulse-informatives');
     },
     onError: (error) => {
+      console.error("Error updating informative:", error); // Log de erro
       showError(`Erro ao atualizar informativo: ${error.message}`);
     },
   });
 
   const onSubmit = (data: PulseInformativeFormData) => {
+    console.log("Form submitted with data:", data); // Log na submissão do formulário
     if (isEditing) {
       updateInformativeMutation.mutate(data);
     } else {
