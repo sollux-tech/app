@@ -111,10 +111,10 @@ const PulsePage: React.FC = () => {
             <p className="text-destructive text-center">Erro ao carregar informativo: {errorInformative.message}</p>
           ) : informativeToday ? (
             <div className="space-y-4">
-              <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3>
-              <p className="text-sm text-muted-foreground">
+              {/* Removido: <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3> */}
+              {/* Removido: <p className="text-sm text-muted-foreground">
                 Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
-              </p>
+              </p> */}
               {informativeToday.short_summary && (
                 <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
               )}
