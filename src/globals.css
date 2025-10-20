@@ -109,4 +109,5 @@
 /* Aumenta a altura do editor de texto ReactQuill */
 .ql-editor {
   min-height: 250px;
+  color: hsl(var(--foreground)); /* Garante que o texto do editor seja visível */
 }
