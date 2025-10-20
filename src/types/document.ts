@@ -8,6 +8,8 @@ export interface Document {
   target_user_id: string | null; // Null for all users
   created_at: string;
   updated_at: string;
+  creator_profile?: BasicProfileInfo | null; // Adicionado para armazenar o perfil do criador
+  target_profile?: BasicProfileInfo | null;  // Adicionado para armazenar o perfil do usuário alvo
 }
 
 export interface DocumentFormData {

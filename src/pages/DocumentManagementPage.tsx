@@ -14,14 +14,14 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Document, DocumentFormData } from '@/types/document';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea } => '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
+import { BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),
@@ -78,17 +78,56 @@ const DocumentManagementPage: React.FC = () => {
     queryKey: ['documents', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+
+      // 1. Fetch documents without direct profile join
+      const { data: documentsData, error: documentsError } = await supabase
         .from('documents')
-        .select('*, profiles(first_name, last_name)') // Fetch creator and target user profiles
+        .select('*') // Select all columns from documents
         .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
+
+      if (documentsError) throw documentsError;
+      if (!documentsData) return [];
+
+      // 2. Collect all unique user IDs (creator and target) from the fetched documents
+      const userIds = new Set<string>();
+      documentsData.forEach(doc => {
+        userIds.add(doc.creator_user_id);
+        if (doc.target_user_id) {
+          userIds.add(doc.target_user_id);
+        }
+      });
+
+      const uniqueUserIds = Array.from(userIds);
+
+      // 3. Fetch profiles for these user IDs
+      let profilesMap = new Map<string, BasicProfileInfo>();
+      if (uniqueUserIds.length > 0) {
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name')
+          .in('id', uniqueUserIds);
+
+        if (profilesError) {
+          console.error("Error fetching profiles for documents:", profilesError);
+          // Log the error but proceed, as the main document data is still valid.
+        } else if (profilesData) {
+          profilesData.forEach(p => profilesMap.set(p.id, p));
+        }
+      }
+
+      // 4. Map profiles back to documents
+      const enrichedDocuments = documentsData.map(doc => ({
+        ...doc,
+        creator_profile: profilesMap.get(doc.creator_user_id) || null,
+        target_profile: doc.target_user_id ? (profilesMap.get(doc.target_user_id) || null) : null,
+      }));
+
+      return enrichedDocuments;
     },
     enabled: !!user?.id,
   });
 
-  const { data: allUsers, isLoading: isLoadingUsers } = useQuery<BasicProfileInfo[], Error>({ // Usar BasicProfileInfo[]
+  const { data: allUsers, isLoading: isLoadingUsers } = useQuery<BasicProfileInfo[], Error>({
     queryKey: ['allUsersForDocuments'],
     queryFn: async () => {
       const { data, error } = await supabase.from('profiles').select('id, first_name, last_name');
@@ -261,8 +300,9 @@ const DocumentManagementPage: React.FC = () => {
                 </TableRow>
               ) : (
                 documents?.map((doc) => {
-                  const targetUser = (doc as any).profiles;
-                  const targetUserName = targetUser ? `${targetUser.first_name || ''} ${targetUser.last_name || ''}`.trim() : 'Todos os Usuários';
+                  const targetUserName = doc.target_user_id
+                    ? (doc.target_profile ? `${doc.target_profile.first_name || ''} ${doc.target_profile.last_name || ''}`.trim() : `Usuário ${doc.target_user_id.substring(0, 8)}`)
+                    : 'Todos os Usuários';
                   return (
                     <TableRow key={doc.id}>
                       <TableCell className="font-medium text-foreground">{doc.title}</TableCell>
