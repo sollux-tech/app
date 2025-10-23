@@ -192,7 +192,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {fields.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  Nenhuma pergunta encontrada para este diagnóstico. Certifique-se de que há KPIs cadastrados para o Pilar e Bloco deste diagnóstico.
+                  Nenhuma pergunta encontrada para este diagnóstico. Certifique-se de que há KPIs cadastrados para o Pilar e Bloco deste diagnóstico em <a href="/core/global-settings/ops/kpis" className="text-sollux-red hover:underline">OPS | KPIs de Diagnóstico</a>.
                 </p>
               ) : (
                 <div className="space-y-4">
