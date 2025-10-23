@@ -94,7 +94,15 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('diagnostic_id', selectedDiagnosticId)
         .order('created_at', { ascending: true });
       if (error) throw error;
-      return data;
+
+      // Post-process data to ensure kpis and scoring_scales are single objects or null
+      const processedData: DiagnosticQuestionnaire[] = data.map((item: any) => ({
+        ...item,
+        kpis: Array.isArray(item.kpis) && item.kpis.length > 0 ? item.kpis[0] : null,
+        scoring_scales: Array.isArray(item.scoring_scales) && item.scoring_scales.length > 0 ? item.scoring_scales[0] : null,
+      }));
+
+      return processedData;
     },
     enabled: !!user?.id && !!selectedCompany?.id && !!selectedDiagnosticId,
   });
