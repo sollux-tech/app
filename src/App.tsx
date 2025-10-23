@@ -50,7 +50,8 @@ import AllInformativesPage from './pages/AllInformativesPage';
 import { ThemeProvider } from './components/ThemeProvider';
 import DocumentManagementPage from './pages/DocumentManagementPage';
 import AllDocumentsPage from './pages/AllDocumentsPage';
-import TagManagementPage from './pages/TagManagementPage'; // Importar a nova página
+import TagManagementPage from './pages/TagManagementPage';
+import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -134,7 +135,8 @@ function App() {
                             <Route path="/core/global-settings/ops/pillar-blocks" element={<PillarBlockManagementPage />} />
                             <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
                             <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
-                            <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} /> {/* Nova rota */}
+                            <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
+                            <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} /> {/* Nova rota */}
                             <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                             <Route path="/core/notifications" element={<NotificationManagementPage />} />
                             <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
