@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, PlusCircle, MinusCircle } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react'; // Importar Search icon
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -23,9 +23,10 @@ import { useCompany } from '@/components/CompanyContext';
 import { Diagnostic } from '@/types/diagnostic';
 import { Kpi } from '@/types/kpi';
 import { ScoringScale } from '@/types/scoringScale';
-import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire'; // Importar o tipo completo
+import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { Card } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox'; // Importar Checkbox
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input'; // Importar Input
 
 interface AddMultipleDiagnosticQuestionsDialogProps {
   open: boolean;
@@ -33,19 +34,17 @@ interface AddMultipleDiagnosticQuestionsDialogProps {
   diagnosticId: string | undefined;
 }
 
-// Tipo para o estado interno de cada KPI no formulário
 interface KpiResponseFormItem {
   kpi_id: string;
-  question: string; // Para exibição
-  pillar_id: string; // Para filtragem
-  pillar_block_id: string; // Para filtragem
+  question: string;
+  pillar_id: string;
+  pillar_block_id: string;
   isSelected: boolean;
   score_id: string;
   evidence: string;
-  existingQuestionnaireId?: string; // ID da resposta existente, se houver
+  existingQuestionnaireId?: string;
 }
 
-// Schema para o formulário completo (um array de KpiResponseFormItem)
 const formSchema = z.object({
   kpiResponses: z.array(z.object({
     kpi_id: z.string(),
@@ -53,15 +52,14 @@ const formSchema = z.object({
     pillar_id: z.string(),
     pillar_block_id: z.string(),
     isSelected: z.boolean(),
-    score_id: z.string().optional(), // Opcional se não estiver selecionado
+    score_id: z.string().optional(),
     evidence: z.string().optional(),
     existingQuestionnaireId: z.string().optional(),
   })).refine(data => {
-    // Validação para garantir que KPIs selecionados tenham score_id
     return data.every(item => !item.isSelected || (item.isSelected && item.score_id && item.score_id !== ''));
   }, {
     message: "Todos os KPIs selecionados devem ter uma nota.",
-    path: ["kpiResponses"], // Caminho para o erro
+    path: ["kpiResponses"],
   }),
 });
 
@@ -73,6 +71,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,7 +80,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     },
   });
 
-  // Fetch diagnostic details to get pillar and pillar block IDs
   const { data: selectedDiagnostic, isLoading: isLoadingDiagnostic } = useQuery<Diagnostic, Error>({
     queryKey: ['diagnosticDetails', diagnosticId],
     queryFn: async () => {
@@ -97,7 +95,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!diagnosticId && open,
   });
 
-  // Fetch KPIs based on selected diagnostic's pillar and pillar block
   const { data: kpis, isLoading: isLoadingKpis } = useQuery<Kpi[], Error>({
     queryKey: ['kpisForDiagnostic', selectedDiagnostic?.pillar_id, selectedDiagnostic?.pillar_block_id],
     queryFn: async () => {
@@ -115,7 +112,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!user?.id && !!selectedDiagnostic?.pillar_id && !!selectedDiagnostic?.pillar_block_id && open,
   });
 
-  // Fetch scoring scales
   const { data: scoringScales, isLoading: isLoadingScoringScales } = useQuery<ScoringScale[], Error>({
     queryKey: ['scoringScalesListForQuestionnaire', user?.id],
     queryFn: async () => {
@@ -131,7 +127,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!user?.id && open,
   });
 
-  // Fetch existing questionnaire responses for the current diagnostic
   const { data: existingQuestionnaires, isLoading: isLoadingExistingQuestionnaires } = useQuery<DiagnosticQuestionnaire[], Error>({
     queryKey: ['existingQuestionnairesForDiagnostic', diagnosticId],
     queryFn: async () => {
@@ -148,7 +143,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!diagnosticId && !!user?.id && !!selectedCompany?.id && open,
   });
 
-  // Initialize form with KPIs and existing responses
   useEffect(() => {
     if (open && kpis && existingQuestionnaires && !isLoadingDiagnostic && !isLoadingKpis && !isLoadingExistingQuestionnaires) {
       const initialKpiResponses: KpiResponseFormItem[] = kpis.map(kpi => {
@@ -165,8 +159,10 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
         };
       });
       form.reset({ kpiResponses: initialKpiResponses });
+      setSearchTerm(''); // Reset search term when dialog opens
     } else if (!open) {
-      form.reset({ kpiResponses: [] }); // Limpar o formulário ao fechar
+      form.reset({ kpiResponses: [] });
+      setSearchTerm(''); // Reset search term when dialog closes
     }
   }, [open, kpis, existingQuestionnaires, isLoadingDiagnostic, isLoadingKpis, isLoadingExistingQuestionnaires, form]);
 
@@ -187,9 +183,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
         const existing = existingResponsesMap.get(item.kpi_id);
 
         if (item.isSelected) {
-          // KPI está selecionado
           if (existing) {
-            // Atualizar se houver mudanças
             if (existing.score_id !== item.score_id || existing.evidence !== item.evidence) {
               updates.push({
                 id: existing.id,
@@ -198,7 +192,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
               });
             }
           } else {
-            // Inserir novo
             inserts.push({
               user_id: user.id,
               company_id: selectedCompany.id,
@@ -209,9 +202,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
             });
           }
         } else {
-          // KPI não está selecionado
           if (existing) {
-            // Excluir se existia antes
             deletes.push(existing.id);
           }
         }
@@ -256,6 +247,26 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
   const isLoadingPage = isLoadingDiagnostic || isLoadingKpis || isLoadingScoringScales || isLoadingExistingQuestionnaires;
   const isSubmitting = createUpdateDeleteQuestionnairesMutation.isPending;
 
+  const allKpiResponses = form.watch('kpiResponses');
+
+  const filteredAndSortedKpiResponses = useMemo(() => {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    
+    const selectedItems = allKpiResponses.filter(item => item.isSelected);
+    const unselectedItems = allKpiResponses.filter(item => !item.isSelected);
+
+    const filteredUnselectedItems = unselectedItems.filter(item => 
+      item.question.toLowerCase().includes(lowerCaseSearchTerm)
+    );
+
+    // Combine selected items (always visible) with filtered unselected items
+    // Sort selected items by question, then filtered unselected items by question
+    return [
+      ...selectedItems.sort((a, b) => a.question.localeCompare(b.question)),
+      ...filteredUnselectedItems.sort((a, b) => a.question.localeCompare(b.question)),
+    ];
+  }, [allKpiResponses, searchTerm]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
@@ -273,85 +284,103 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {form.watch('kpiResponses').length === 0 ? (
+              {allKpiResponses.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Nenhuma pergunta encontrada para este diagnóstico. Certifique-se de que há KPIs cadastrados para o Pilar e Bloco deste diagnóstico em <a href="/core/global-settings/ops/kpis" className="text-sollux-red hover:underline">OPS | KPIs de Diagnóstico</a>.
                 </p>
               ) : (
-                <div className="space-y-4">
-                  {form.watch('kpiResponses').map((item, index) => (
-                    <Card key={item.kpi_id} className="p-4 border border-border rounded-lg">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          <FormField
-                            control={form.control}
-                            name={`kpiResponses.${index}.isSelected`}
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-semibold text-foreground cursor-pointer">
-                                  {index + 1}. {item.question}
-                                </FormLabel>
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                      {item.isSelected && (
-                        <div className="space-y-3 mt-3">
-                          <FormField
-                            control={form.control}
-                            name={`kpiResponses.${index}.score_id`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-foreground">Nota</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingScoringScales}>
-                                  <FormControl>
-                                    <SelectTrigger className="rounded-lg">
-                                      <SelectValue placeholder="Selecione uma nota" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {scoringScales?.length === 0 ? (
-                                      <SelectItem value="no-scores" disabled>Nenhuma régua de pontuação cadastrada</SelectItem>
-                                    ) : (
-                                      scoringScales?.map((score) => (
-                                        score.id && score.id !== '' ? (
-                                          <SelectItem key={score.id} value={score.id}>
-                                            {score.score} - {score.description}
-                                          </SelectItem>
-                                        ) : null
-                                      ))
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`kpiResponses.${index}.evidence`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
-                                <FormControl>
-                                  <Textarea placeholder="Descreva as evidências para esta resposta." {...field} className="rounded-lg" rows={2} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-                    </Card>
-                  ))}
-                </div>
+                <>
+                  <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                    <Input
+                      placeholder="Buscar perguntas..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 rounded-lg"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    {filteredAndSortedKpiResponses.map((item, index) => {
+                      // Find the actual index in the form's kpiResponses array
+                      const formItemIndex = allKpiResponses.findIndex(kpi => kpi.kpi_id === item.kpi_id);
+                      if (formItemIndex === -1) return null; // Should not happen if logic is correct
+
+                      return (
+                        <Card key={item.kpi_id} className="p-4 border border-border rounded-lg">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-2">
+                              <FormField
+                                control={form.control}
+                                name={`kpiResponses.${formItemIndex}.isSelected`}
+                                render={({ field }) => (
+                                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
+                                      />
+                                    </FormControl>
+                                    <FormLabel className="font-semibold text-foreground cursor-pointer">
+                                      {item.question}
+                                    </FormLabel>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                          {item.isSelected && (
+                            <div className="space-y-3 mt-3">
+                              <FormField
+                                control={form.control}
+                                name={`kpiResponses.${formItemIndex}.score_id`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-foreground">Nota</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingScoringScales}>
+                                      <FormControl>
+                                        <SelectTrigger className="rounded-lg">
+                                          <SelectValue placeholder="Selecione uma nota" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {scoringScales?.length === 0 ? (
+                                          <SelectItem value="no-scores" disabled>Nenhuma régua de pontuação cadastrada</SelectItem>
+                                        ) : (
+                                          scoringScales?.map((score) => (
+                                            score.id && score.id !== '' ? (
+                                              <SelectItem key={score.id} value={score.id}>
+                                                {score.score} - {score.description}
+                                              </SelectItem>
+                                            ) : null
+                                          ))
+                                        )}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              <FormField
+                                control={form.control}
+                                name={`kpiResponses.${formItemIndex}.evidence`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
+                                    <FormControl>
+                                      <Textarea placeholder="Descreva as evidências para esta resposta." {...field} className="rounded-lg" rows={2} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          )}
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </>
               )}
 
               <DialogFooter className="flex justify-end gap-2 pt-4">
