@@ -79,7 +79,15 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       const { data, error } = await supabase
         .from('diagnostic_questionnaires')
         .select(`
-          *,
+          id,
+          user_id,
+          company_id,
+          diagnostic_id,
+          kpi_id,
+          score_id,
+          evidence,
+          created_at,
+          updated_at,
           diagnostics(
             id,
             companies(name),
@@ -94,7 +102,32 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         .eq('company_id', selectedCompany.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+
+      const processedData: DiagnosticQuestionnaire[] = data.map((item: any) => ({
+        ...item,
+        diagnostics: item.diagnostics
+          ? (Array.isArray(item.diagnostics)
+            ? (item.diagnostics.length > 0 ? item.diagnostics[0] : null)
+            : item.diagnostics)
+          : null,
+        kpis: item.kpis
+          ? (Array.isArray(item.kpis)
+            ? (item.kpis.length > 0 ? item.kpis[0] : null)
+            : item.kpis)
+          : null,
+        scoring_scales: item.scoring_scales
+          ? (Array.isArray(item.scoring_scales)
+            ? (item.scoring_scales.length > 0 ? item.scoring_scales[0] : null)
+            : item.scoring_scales)
+          : null,
+        profiles: item.profiles
+          ? (Array.isArray(item.profiles)
+            ? (item.profiles.length > 0 ? item.profiles[0] : null)
+            : item.profiles)
+          : null,
+      }));
+
+      return processedData;
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });

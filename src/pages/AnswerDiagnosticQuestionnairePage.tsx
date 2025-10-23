@@ -98,13 +98,15 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       // Post-process data to ensure kpis and scoring_scales are single objects or null
       const processedData: DiagnosticQuestionnaire[] = data.map((item: any) => ({
         ...item,
-        // Ensure kpis is an object or null. Supabase often returns joined tables as arrays.
-        kpis: (Array.isArray(item.kpis) && item.kpis.length > 0)
-          ? item.kpis[0] as { question: string }
+        kpis: item.kpis
+          ? (Array.isArray(item.kpis)
+            ? (item.kpis.length > 0 ? item.kpis[0] : null)
+            : item.kpis)
           : null,
-        // Apply similar logic for scoring_scales
-        scoring_scales: (Array.isArray(item.scoring_scales) && item.scoring_scales.length > 0)
-          ? item.scoring_scales[0] as { score: number; description: string }
+        scoring_scales: item.scoring_scales
+          ? (Array.isArray(item.scoring_scales)
+            ? (item.scoring_scales.length > 0 ? item.scoring_scales[0] : null)
+            : item.scoring_scales)
           : null,
       }));
 
@@ -316,7 +318,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <div className="space-y-2">
                       <Label className="text-lg font-semibold text-foreground">
-                        {currentQuestionnaire?.kpis?.question || 'Pergunta não encontrada. Verifique a integridade dos dados.'}
+                        {currentQuestionnaire?.kpis?.question || (isLoadingQuestionnaireEntries ? 'Carregando pergunta...' : 'Pergunta não disponível.')}
                       </Label>
                       <p className="text-sm text-muted-foreground">
                         {/* Adicionar descrição do KPI se disponível */}
