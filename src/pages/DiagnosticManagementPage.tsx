@@ -351,7 +351,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="" disabled>Selecione um pilar</SelectItem> {/* Adicionado SelectItem vazio */}
+                        <SelectItem value="">Selecione um pilar</SelectItem> {/* Removido disabled */}
                         {pillars?.length === 0 ? (
                           <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
                         ) : (
@@ -382,7 +382,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="" disabled>Selecione um bloco</SelectItem> {/* Adicionado SelectItem vazio */}
+                        <SelectItem value="">Selecione um bloco</SelectItem> {/* Removido disabled */}
                         {filteredPillarBlocks.length === 0 ? (
                           <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
                         ) : (
@@ -413,7 +413,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="" disabled>Selecione um status</SelectItem> {/* Adicionado SelectItem vazio */}
+                        <SelectItem value="">Selecione um status</SelectItem> {/* Removido disabled */}
                         {diagnosticStatuses?.length === 0 ? (
                           <SelectItem value="no-statuses" disabled>Nenhum status cadastrado</SelectItem>
                         ) : (
