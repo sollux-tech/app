@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagnosticQuestionsDialog'; // Importar o novo componente
+import { Label } from '@/components/ui/label'; // Importar o componente Label
 
 // Removido formSchema e o formulário de pergunta única, pois serão substituídos pelo novo diálogo.
 
@@ -289,41 +290,41 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <FormItem>
-              <FormLabel className="text-foreground">Selecionar Diagnóstico</FormLabel>
-              <Select
-                onValueChange={setSelectedDiagnosticToAnswer}
-                value={selectedDiagnosticToAnswer}
-                disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
-              >
-                <FormControl>
-                  <SelectTrigger className="rounded-lg">
-                    <SelectValue placeholder="Selecione um diagnóstico para responder" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {isLoadingDiagnostics ? (
-                    <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
-                  ) : (diagnostics?.length || 0) === 0 ? (
-                    <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para esta empresa.</SelectItem>
-                  ) : (
-                    diagnostics?.map((diagnostic) => (
+            <Label className="text-foreground">Selecionar Diagnóstico</Label> {/* Substituído FormLabel por Label */}
+            <Select
+              onValueChange={setSelectedDiagnosticToAnswer}
+              value={selectedDiagnosticToAnswer}
+              disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
+            >
+              <FormControl>
+                <SelectTrigger className="rounded-lg">
+                  <SelectValue placeholder="Selecione um diagnóstico para responder" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {isLoadingDiagnostics ? (
+                  <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
+                ) : (diagnostics?.length || 0) === 0 ? (
+                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para esta empresa.</SelectItem>
+                ) : (
+                  diagnostics?.map((diagnostic) => (
+                    diagnostic.id && diagnostic.id !== '' ? (
                       <SelectItem key={diagnostic.id} value={diagnostic.id}>
                         {diagnostic.id.substring(0, 8)}... ({diagnostic.pillars?.description || 'N/A'} / {diagnostic.pillar_blocks?.name || 'N/A'})
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
-                <FormMessage>Por favor, selecione um diagnóstico para adicionar perguntas.</FormMessage>
-              )}
-              {(diagnostics?.length || 0) === 0 && (
-                <FormDescription className="text-destructive">
-                  Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" primeiro.
-                </FormDescription>
-              )}
-            </FormItem>
+                    ) : null
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para adicionar perguntas.</p> {/* Substituído FormMessage por p */}
+            )}
+            {(diagnostics?.length || 0) === 0 && (
+              <p className="text-sm text-destructive mt-2"> {/* Substituído FormDescription por p */}
+                Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" primeiro.
+              </p>
+            )}
           </div>
 
           <Table>
