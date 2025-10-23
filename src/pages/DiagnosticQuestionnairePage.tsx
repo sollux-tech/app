@@ -33,6 +33,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false); // Novo estado para o diálogo de múltiplas perguntas
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // Estado para o diálogo de edição de UMA pergunta
   const [editingQuestionnaire, setEditingQuestionnaire] = useState<DiagnosticQuestionnaire | null>(null);
+  const [selectedDiagnosticToAnswer, setSelectedDiagnosticToAnswer] = useState<string | undefined>(undefined); // Novo estado para o diagnóstico selecionado para responder
 
   // Formulário para edição de UMA pergunta (o mesmo que antes, mas agora para edição)
   const editForm = useForm<DiagnosticQuestionnaireFormData>({
@@ -112,6 +113,15 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });
+
+  // Set the first diagnostic as selected by default if none is selected
+  useEffect(() => {
+    if (diagnostics && diagnostics.length > 0 && !selectedDiagnosticToAnswer) {
+      setSelectedDiagnosticToAnswer(diagnostics[0].id);
+    } else if (diagnostics && diagnostics.length === 0 && selectedDiagnosticToAnswer) {
+      setSelectedDiagnosticToAnswer(undefined);
+    }
+  }, [diagnostics, selectedDiagnosticToAnswer]);
 
   const { data: kpis, isLoading: isLoadingKpis } = useQuery<Kpi[], Error>({
     queryKey: ['kpisListForQuestionnaire', user?.id],
@@ -218,6 +228,10 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const handleAddQuestionsClick = () => {
+    if (!selectedDiagnosticToAnswer) {
+      showError("Por favor, selecione um diagnóstico para adicionar perguntas.");
+      return;
+    }
     setIsAddQuestionsDialogOpen(true);
   };
 
@@ -261,11 +275,49 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               Respostas do questionário para a empresa: <span className="font-semibold">{selectedCompany.name}</span>
             </CardDescription>
           </div>
-          <Button onClick={handleAddQuestionsClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+          <Button onClick={handleAddQuestionsClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg" disabled={!selectedDiagnosticToAnswer}>
             <Plus className="mr-2 h-4 w-4" /> Adicionar Perguntas
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <FormItem>
+              <FormLabel className="text-foreground">Selecionar Diagnóstico</FormLabel>
+              <Select
+                onValueChange={setSelectedDiagnosticToAnswer}
+                value={selectedDiagnosticToAnswer}
+                disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
+              >
+                <FormControl>
+                  <SelectTrigger className="rounded-lg">
+                    <SelectValue placeholder="Selecione um diagnóstico para responder" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {isLoadingDiagnostics ? (
+                    <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
+                  ) : (diagnostics?.length || 0) === 0 ? (
+                    <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para esta empresa.</SelectItem>
+                  ) : (
+                    diagnostics?.map((diagnostic) => (
+                      <SelectItem key={diagnostic.id} value={diagnostic.id}>
+                        {diagnostic.id.substring(0, 8)}... ({diagnostic.pillars?.description || 'N/A'} / {diagnostic.pillar_blocks?.name || 'N/A'})
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
+                <FormMessage>Por favor, selecione um diagnóstico para adicionar perguntas.</FormMessage>
+              )}
+              {(diagnostics?.length || 0) === 0 && (
+                <FormDescription className="text-destructive">
+                  Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" primeiro.
+                </FormDescription>
+              )}
+            </FormItem>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -334,7 +386,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       <AddMultipleDiagnosticQuestionsDialog
         open={isAddQuestionsDialogOpen}
         onOpenChange={setIsAddQuestionsDialogOpen}
-        diagnosticId={selectedCompany ? diagnostics?.find(d => d.company_id === selectedCompany.id)?.id : undefined}
+        diagnosticId={selectedDiagnosticToAnswer}
       />
 
       {/* Diálogo para Editar UMA Pergunta (o antigo diálogo de adição, agora para edição) */}
