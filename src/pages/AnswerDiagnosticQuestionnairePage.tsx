@@ -131,10 +131,11 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   // Update form fields when currentQuestionnaire changes
   useEffect(() => {
     if (currentQuestionnaire) {
-      // Usar setValue para atualizar os campos explicitamente
-      form.setValue('score_id', currentQuestionnaire.score_id || '', { shouldValidate: false });
-      form.setValue('evidence', currentQuestionnaire.evidence || '', { shouldValidate: false });
-      form.clearErrors(); // Limpar quaisquer erros de validação anteriores
+      // Usar form.reset para garantir que o formulário seja completamente reinicializado
+      form.reset({
+        score_id: currentQuestionnaire.score_id || '',
+        evidence: currentQuestionnaire.evidence || '',
+      });
     } else {
       // Resetar para valores vazios se nenhuma pergunta estiver selecionada
       form.reset({
@@ -159,7 +160,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('company_id', selectedCompany.id);
       if (error) throw error;
     },
-    // Removido onSuccess aqui para controlar o refetch manualmente
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
     },
@@ -257,16 +257,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             <Label className="text-foreground">Selecionar Diagnóstico</Label>
             <Select
               onValueChange={(value) => {
-                setSelectedDiagnosticId(value);
+                setSelectedDiagnosticId(value === 'placeholder' ? undefined : value);
                 setCurrentQuestionIndex(0); // Reset index when diagnostic changes
               }}
-              value={selectedDiagnosticId}
+              value={selectedDiagnosticId || 'placeholder'} // Use 'placeholder' como valor quando nada está selecionado
               disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Selecione um diagnóstico para responder" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="placeholder" disabled>Selecione um Diagnóstico</SelectItem> {/* Nova opção de placeholder */}
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
                 ) : (diagnostics?.length || 0) === 0 ? (
@@ -283,7 +284,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               </SelectContent>
             </Select>
             {!selectedDiagnosticId && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para responder.</p>
+              <p className="text-sm font-medium text-muted-foreground mt-2">Selecione um diagnóstico acima para começar a responder.</p>
             )}
             {(diagnostics?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
@@ -431,7 +432,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             </Card>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em "Gerenciar Perguntas do Diagnóstico".
+              {selectedDiagnosticId ? "Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em 'Gerenciar Perguntas do Diagnóstico'." : "Selecione um diagnóstico acima para começar a responder."}
             </p>
           )}
         </CardContent>
