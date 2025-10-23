@@ -4,7 +4,7 @@ export interface DiagnosticQuestionnaire {
   company_id: string;
   diagnostic_id: string;
   kpi_id: string;
-  score_id: string;
+  score_id: string | null; // Alterado para permitir null
   evidence: string | null;
   created_at: string;
   updated_at: string;
