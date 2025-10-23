@@ -12,9 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Search } from 'lucide-react'; // Importar Search icon
+import { Loader2, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -22,11 +20,10 @@ import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
 import { Diagnostic } from '@/types/diagnostic';
 import { Kpi } from '@/types/kpi';
-import { ScoringScale } from '@/types/scoringScale';
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input'; // Importar Input
+import { Input } from '@/components/ui/input';
 
 interface AddMultipleDiagnosticQuestionsDialogProps {
   open: boolean;
@@ -34,17 +31,17 @@ interface AddMultipleDiagnosticQuestionsDialogProps {
   diagnosticId: string | undefined;
 }
 
+// Tipo para o estado interno de cada KPI no formulário (sem score_id e evidence)
 interface KpiResponseFormItem {
   kpi_id: string;
-  question: string;
-  pillar_id: string;
-  pillar_block_id: string;
+  question: string; // Para exibição
+  pillar_id: string; // Para filtragem
+  pillar_block_id: string; // Para filtragem
   isSelected: boolean;
-  score_id: string;
-  evidence: string;
-  existingQuestionnaireId?: string;
+  existingQuestionnaireId?: string; // ID da resposta existente, se houver
 }
 
+// Schema para o formulário completo (um array de KpiResponseFormItem)
 const formSchema = z.object({
   kpiResponses: z.array(z.object({
     kpi_id: z.string(),
@@ -52,15 +49,8 @@ const formSchema = z.object({
     pillar_id: z.string(),
     pillar_block_id: z.string(),
     isSelected: z.boolean(),
-    score_id: z.string().optional(),
-    evidence: z.string().optional(),
     existingQuestionnaireId: z.string().optional(),
-  })).refine(data => {
-    return data.every(item => !item.isSelected || (item.isSelected && item.score_id && item.score_id !== ''));
-  }, {
-    message: "Todos os KPIs selecionados devem ter uma nota.",
-    path: ["kpiResponses"],
-  }),
+  })),
 });
 
 const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuestionsDialogProps> = ({
@@ -80,6 +70,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     },
   });
 
+  // Fetch diagnostic details to get pillar and pillar block IDs
   const { data: selectedDiagnostic, isLoading: isLoadingDiagnostic } = useQuery<Diagnostic, Error>({
     queryKey: ['diagnosticDetails', diagnosticId],
     queryFn: async () => {
@@ -95,6 +86,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!diagnosticId && open,
   });
 
+  // Fetch KPIs based on selected diagnostic's pillar and pillar block
   const { data: kpis, isLoading: isLoadingKpis } = useQuery<Kpi[], Error>({
     queryKey: ['kpisForDiagnostic', selectedDiagnostic?.pillar_id, selectedDiagnostic?.pillar_block_id],
     queryFn: async () => {
@@ -112,21 +104,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!user?.id && !!selectedDiagnostic?.pillar_id && !!selectedDiagnostic?.pillar_block_id && open,
   });
 
-  const { data: scoringScales, isLoading: isLoadingScoringScales } = useQuery<ScoringScale[], Error>({
-    queryKey: ['scoringScalesListForQuestionnaire', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('scoring_scales')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('score', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id && open,
-  });
-
+  // Fetch existing questionnaire responses for the current diagnostic
   const { data: existingQuestionnaires, isLoading: isLoadingExistingQuestionnaires } = useQuery<DiagnosticQuestionnaire[], Error>({
     queryKey: ['existingQuestionnairesForDiagnostic', diagnosticId],
     queryFn: async () => {
@@ -143,6 +121,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     enabled: !!diagnosticId && !!user?.id && !!selectedCompany?.id && open,
   });
 
+  // Initialize form with KPIs and existing responses
   useEffect(() => {
     if (open && kpis && existingQuestionnaires && !isLoadingDiagnostic && !isLoadingKpis && !isLoadingExistingQuestionnaires) {
       const initialKpiResponses: KpiResponseFormItem[] = kpis.map(kpi => {
@@ -153,15 +132,13 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
           pillar_id: kpi.pillar_id || '',
           pillar_block_id: kpi.pillar_block_id || '',
           isSelected: !!existingResponse,
-          score_id: existingResponse?.score_id || '',
-          evidence: existingResponse?.evidence || '',
           existingQuestionnaireId: existingResponse?.id,
         };
       });
       form.reset({ kpiResponses: initialKpiResponses });
       setSearchTerm(''); // Reset search term when dialog opens
     } else if (!open) {
-      form.reset({ kpiResponses: [] });
+      form.reset({ kpiResponses: [] }); // Limpar o formulário ao fechar
       setSearchTerm(''); // Reset search term when dialog closes
     }
   }, [open, kpis, existingQuestionnaires, isLoadingDiagnostic, isLoadingKpis, isLoadingExistingQuestionnaires, form]);
@@ -176,35 +153,32 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
       const existingResponsesMap = new Map(existingQuestionnaires?.map(eq => [eq.kpi_id, eq]) || []);
 
       const inserts = [];
-      const updates = [];
       const deletes = [];
 
       for (const item of currentResponses) {
         const existing = existingResponsesMap.get(item.kpi_id);
 
         if (item.isSelected) {
-          if (existing) {
-            if (existing.score_id !== item.score_id || existing.evidence !== item.evidence) {
-              updates.push({
-                id: existing.id,
-                score_id: item.score_id,
-                evidence: item.evidence || null,
-              });
-            }
-          } else {
+          // Usuário quer este KPI vinculado
+          if (!existing) {
+            // Não está vinculado ainda, então insere
             inserts.push({
               user_id: user.id,
               company_id: selectedCompany.id,
               diagnostic_id: diagnosticId,
               kpi_id: item.kpi_id,
-              score_id: item.score_id,
-              evidence: item.evidence || null,
+              score_id: null, // Explicitamente null, pois não estamos respondendo aqui
+              evidence: null, // Explicitamente null, pois não estamos respondendo aqui
             });
           }
+          // Se já existe, não faz nada (já está vinculado, e não há campos para atualizar aqui)
         } else {
+          // Usuário NÃO quer este KPI vinculado
           if (existing) {
+            // Está vinculado atualmente, então exclui
             deletes.push(existing.id);
           }
+          // Se não existe, não faz nada (já está desvinculado)
         }
       }
 
@@ -212,14 +186,6 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
 
       if (inserts.length > 0) {
         promises.push(supabase.from('diagnostic_questionnaires').insert(inserts));
-      }
-      if (updates.length > 0) {
-        for (const updateItem of updates) {
-          promises.push(supabase.from('diagnostic_questionnaires').update({
-            score_id: updateItem.score_id,
-            evidence: updateItem.evidence,
-          }).eq('id', updateItem.id));
-        }
       }
       if (deletes.length > 0) {
         promises.push(supabase.from('diagnostic_questionnaires').delete().in('id', deletes));
@@ -244,7 +210,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     createUpdateDeleteQuestionnairesMutation.mutate(data);
   };
 
-  const isLoadingPage = isLoadingDiagnostic || isLoadingKpis || isLoadingScoringScales || isLoadingExistingQuestionnaires;
+  const isLoadingPage = isLoadingDiagnostic || isLoadingKpis || isLoadingExistingQuestionnaires;
   const isSubmitting = createUpdateDeleteQuestionnairesMutation.isPending;
 
   const allKpiResponses = form.watch('kpiResponses');
@@ -273,7 +239,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
         <DialogHeader>
           <DialogTitle className="text-foreground">Adicionar/Editar Perguntas do Diagnóstico</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Selecione as perguntas pertinentes e preencha as notas e evidências.
+            Selecione as perguntas pertinentes para este diagnóstico. As notas e evidências serão preenchidas posteriormente.
           </DialogDescription>
         </DialogHeader>
         {isLoadingPage ? (
@@ -308,7 +274,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
 
                       return (
                         <Card key={item.kpi_id} className="p-4 border border-border rounded-lg">
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
                               <FormField
                                 control={form.control}
@@ -322,60 +288,13 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
                                       />
                                     </FormControl>
                                     <FormLabel className="font-semibold text-foreground cursor-pointer">
-                                      {item.question}
+                                      {index + 1}. {item.question}
                                     </FormLabel>
                                   </FormItem>
                                 )}
                               />
                             </div>
                           </div>
-                          {item.isSelected && (
-                            <div className="space-y-3 mt-3">
-                              <FormField
-                                control={form.control}
-                                name={`kpiResponses.${formItemIndex}.score_id`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground">Nota</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingScoringScales}>
-                                      <FormControl>
-                                        <SelectTrigger className="rounded-lg">
-                                          <SelectValue placeholder="Selecione uma nota" />
-                                        </SelectTrigger>
-                                      </FormControl>
-                                      <SelectContent>
-                                        {scoringScales?.length === 0 ? (
-                                          <SelectItem value="no-scores" disabled>Nenhuma régua de pontuação cadastrada</SelectItem>
-                                        ) : (
-                                          scoringScales?.map((score) => (
-                                            score.id && score.id !== '' ? (
-                                              <SelectItem key={score.id} value={score.id}>
-                                                {score.score} - {score.description}
-                                              </SelectItem>
-                                            ) : null
-                                          ))
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <FormField
-                                control={form.control}
-                                name={`kpiResponses.${formItemIndex}.evidence`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
-                                    <FormControl>
-                                      <Textarea placeholder="Descreva as evidências para esta resposta." {...field} className="rounded-lg" rows={2} />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          )}
                         </Card>
                       );
                     })}
@@ -387,7 +306,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="rounded-lg">
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSubmitting || form.formState.errors.kpiResponses?.length > 0} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
+                <Button type="submit" disabled={isSubmitting} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
