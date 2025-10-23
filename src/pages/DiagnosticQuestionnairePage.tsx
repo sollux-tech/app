@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -267,7 +267,9 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   }
 
   if (isLoadingPage) {
-    return <div className="text-center text-muted-foreground">Carregando questionários...</div>;
+    return (
+      <div className="text-center text-muted-foreground">Carregando questionários...</div>
+    );
   }
 
   if (errorQuestionnaires) {
@@ -296,11 +298,10 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               value={selectedDiagnosticToAnswer}
               disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
-              <FormControl>
-                <SelectTrigger className="rounded-lg">
-                  <SelectValue placeholder="Selecione um diagnóstico para responder" />
-                </SelectTrigger>
-              </FormControl>
+              {/* Removido FormControl daqui */}
+              <SelectTrigger className="rounded-lg">
+                <SelectValue placeholder="Selecione um diagnóstico para responder" />
+              </SelectTrigger>
               <SelectContent>
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
