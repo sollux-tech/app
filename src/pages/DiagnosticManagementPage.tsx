@@ -142,7 +142,7 @@ const DiagnosticManagementPage: React.FC = () => {
   const createDiagnosticMutation = useMutation({
     mutationFn: async (data: DiagnosticFormData) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
-      const { data: newDiagnostic, error } = await supabase
+      const { error } = await supabase
         .from('diagnostics')
         .insert({
           user_id: user.id,
@@ -150,11 +150,8 @@ const DiagnosticManagementPage: React.FC = () => {
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           diagnostic_status_id: data.diagnostic_status_id,
-        })
-        .select()
-        .single();
+        });
       if (error) throw error;
-      return newDiagnostic;
     },
     ...mutationOptions,
     onSuccess: () => {
@@ -167,7 +164,7 @@ const DiagnosticManagementPage: React.FC = () => {
     mutationFn: async (data: DiagnosticFormData) => {
       if (!editingDiagnostic?.id) throw new Error("ID do diagnóstico está faltando.");
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
-      const { data: updatedDiagnostic, error } = await supabase
+      const { error } = await supabase
         .from('diagnostics')
         .update({
           pillar_id: data.pillar_id,
@@ -176,11 +173,8 @@ const DiagnosticManagementPage: React.FC = () => {
         })
         .eq('id', editingDiagnostic.id)
         .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
-        .select()
-        .single();
+        .eq('company_id', selectedCompany.id);
       if (error) throw error;
-      return updatedDiagnostic;
     },
     ...mutationOptions,
     onSuccess: () => {
