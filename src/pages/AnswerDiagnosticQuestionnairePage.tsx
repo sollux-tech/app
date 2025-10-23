@@ -60,11 +60,8 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     enabled: !!user?.id && !!selectedCompany?.id,
   });
 
-  // Removido o useEffect que auto-selecionava o primeiro diagnóstico.
-  // Agora, o usuário precisará fazer uma seleção explícita.
-
   // 2. Fetch all questionnaire entries for the selected diagnostic
-  const { data: questionnaireEntries, isLoading: isLoadingQuestionnaireEntries, error: errorQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
+  const { data: questionnaireEntries, isLoading: isLoadingQuestionnaireEntries, error: errorQuestionnaireEntries, refetch: refetchQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
     queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id || !selectedDiagnosticId) return [];
@@ -162,10 +159,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('company_id', selectedCompany.id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId] });
-      showSuccess('Resposta salva com sucesso!');
-    },
+    // Removido onSuccess aqui para controlar o refetch manualmente
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
     },
@@ -179,11 +173,12 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       score_id: data.score_id,
       evidence: data.evidence || null,
     });
+    showSuccess('Resposta salva com sucesso!');
+    await refetchQuestionnaireEntries(); // Refetch explícito após o salvamento
   };
 
   const handleNextQuestion = async () => {
-    // Save current question's response before moving
-    await form.handleSubmit(onSubmit)();
+    await form.handleSubmit(onSubmit)(); // Salva a resposta atual
     if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
@@ -193,8 +188,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const handlePreviousQuestion = async () => {
-    // Save current question's response before moving
-    await form.handleSubmit(onSubmit)();
+    await form.handleSubmit(onSubmit)(); // Salva a resposta atual
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
@@ -263,17 +257,16 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             <Label className="text-foreground">Selecionar Diagnóstico</Label>
             <Select
               onValueChange={(value) => {
-                setSelectedDiagnosticId(value === 'placeholder' ? undefined : value);
+                setSelectedDiagnosticId(value);
                 setCurrentQuestionIndex(0); // Reset index when diagnostic changes
               }}
-              value={selectedDiagnosticId || 'placeholder'} // Use 'placeholder' como valor quando nada está selecionado
+              value={selectedDiagnosticId}
               disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Selecione um diagnóstico para responder" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="placeholder" disabled>Selecione um Diagnóstico</SelectItem> {/* Nova opção de placeholder */}
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
                 ) : (diagnostics?.length || 0) === 0 ? (
@@ -290,7 +283,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               </SelectContent>
             </Select>
             {!selectedDiagnosticId && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-muted-foreground mt-2">Selecione um diagnóstico acima para começar a responder.</p>
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para responder.</p>
             )}
             {(diagnostics?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
@@ -438,7 +431,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             </Card>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              {selectedDiagnosticId ? "Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em 'Gerenciar Perguntas do Diagnóstico'." : "Selecione um diagnóstico acima para começar a responder."}
+              Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em "Gerenciar Perguntas do Diagnóstico".
             </p>
           )}
         </CardContent>
