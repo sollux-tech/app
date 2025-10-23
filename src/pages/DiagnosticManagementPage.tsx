@@ -15,7 +15,7 @@ import { Diagnostic, DiagnosticFormData } from '@/types/diagnostic';
 import { Pillar } from '@/types/pillar';
 import { PillarBlock } from '@/types/pillarBlock';
 import { DiagnosticStatus } from '@/types/diagnosticStatus';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } => '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,9 +38,9 @@ const DiagnosticManagementPage: React.FC = () => {
   const form = useForm<DiagnosticFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      pillar_id: '',
-      pillar_block_id: '',
-      diagnostic_status_id: '',
+      pillar_id: undefined, // Alterado para undefined
+      pillar_block_id: undefined, // Alterado para undefined
+      diagnostic_status_id: undefined, // Alterado para undefined
     },
   });
 
@@ -49,15 +49,15 @@ const DiagnosticManagementPage: React.FC = () => {
   useEffect(() => {
     if (editingDiagnostic) {
       form.reset({
-        pillar_id: editingDiagnostic.pillar_id || '',
-        pillar_block_id: editingDiagnostic.pillar_block_id || '',
-        diagnostic_status_id: editingDiagnostic.diagnostic_status_id || '',
+        pillar_id: editingDiagnostic.pillar_id || undefined,
+        pillar_block_id: editingDiagnostic.pillar_block_id || undefined,
+        diagnostic_status_id: editingDiagnostic.diagnostic_status_id || undefined,
       });
     } else {
       form.reset({
-        pillar_id: '',
-        pillar_block_id: '',
-        diagnostic_status_id: '',
+        pillar_id: undefined,
+        pillar_block_id: undefined,
+        diagnostic_status_id: undefined,
       });
     }
   }, [editingDiagnostic, form, isDialogOpen]);
@@ -343,7 +343,7 @@ const DiagnosticManagementPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      form.setValue('pillar_block_id', ''); // Reset pillar block when pillar changes
+                      form.setValue('pillar_block_id', undefined); // Reset pillar block when pillar changes
                     }} value={field.value} disabled={isLoadingPillars}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -351,7 +351,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Selecione um pilar</SelectItem> {/* Removido disabled */}
+                        {/* Removido SelectItem value="" */}
                         {pillars?.length === 0 ? (
                           <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
                         ) : (
@@ -382,7 +382,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Selecione um bloco</SelectItem> {/* Removido disabled */}
+                        {/* Removido SelectItem value="" */}
                         {filteredPillarBlocks.length === 0 ? (
                           <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
                         ) : (
@@ -413,7 +413,7 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Selecione um status</SelectItem> {/* Removido disabled */}
+                        {/* Removido SelectItem value="" */}
                         {diagnosticStatuses?.length === 0 ? (
                           <SelectItem value="no-statuses" disabled>Nenhum status cadastrado</SelectItem>
                         ) : (
