@@ -24,6 +24,7 @@ import { Diagnostic } from '@/types/diagnostic';
 import { Kpi } from '@/types/kpi';
 import { ScoringScale } from '@/types/scoringScale';
 import { DiagnosticQuestionnaireFormData } from '@/types/diagnosticQuestionnaire';
+import { Card } from '@/components/ui/card'; // Importação adicionada
 
 interface AddMultipleDiagnosticQuestionsDialogProps {
   open: boolean;
@@ -71,7 +72,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
       if (!diagnosticId) throw new Error("ID do diagnóstico está faltando.");
       const { data, error } = await supabase
         .from('diagnostics')
-        .select('pillar_id, pillar_block_id')
+        .select('*') // Alterado para selecionar todos os campos para corresponder à interface Diagnostic
         .eq('id', diagnosticId)
         .single();
       if (error) throw error;
