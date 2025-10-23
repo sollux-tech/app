@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -228,6 +228,14 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const handleAddQuestionsClick = () => {
+    if (!selectedCompany) {
+      showError("Por favor, selecione uma empresa na barra lateral para adicionar perguntas.");
+      return;
+    }
+    if (!diagnostics || diagnostics.length === 0) {
+      showError("Nenhum diagnóstico encontrado para esta empresa. Crie um em 'OPS | Diagnósticos' primeiro.");
+      return;
+    }
     if (!selectedDiagnosticToAnswer) {
       showError("Por favor, selecione um diagnóstico para adicionar perguntas.");
       return;
