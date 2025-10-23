@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { ClipboardCheck, ClipboardList } from 'lucide-react'; // Importar ClipboardList
+import { Brain, Target, ClipboardCheck, ClipboardList, MessageSquareText } from 'lucide-react'; // Importar MessageSquareText para o novo card
 
 const InsightPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +12,11 @@ const InsightPage: React.FC = () => {
   };
 
   const handleDiagnosticQuestionnaireClick = () => {
-    navigate('/ops/insight/questionnaires'); // Nova rota para o questionário
+    navigate('/ops/insight/questionnaires'); // Rota para gerenciar quais perguntas fazem parte do diagnóstico
+  };
+
+  const handleAnswerQuestionnaireClick = () => {
+    navigate('/ops/insight/answer-questionnaire'); // Nova rota para responder o questionário
   };
 
   return (
@@ -27,18 +31,23 @@ const InsightPage: React.FC = () => {
         <CardContent className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
-              title="Diagnósticos"
-              description="Gerencie os diagnósticos da sua empresa."
+              title="Gerenciar Diagnósticos"
+              description="Crie e gerencie os diagnósticos da sua empresa."
               icon={ClipboardCheck}
               onClick={handleDiagnosticClick}
             />
             <FeatureCard
-              title="Questionário do Diagnóstico"
-              description="Responda e gerencie as perguntas do diagnóstico."
-              icon={ClipboardList} // Novo ícone
+              title="Gerenciar Perguntas do Diagnóstico"
+              description="Selecione as perguntas que farão parte de cada diagnóstico."
+              icon={ClipboardList}
               onClick={handleDiagnosticQuestionnaireClick}
             />
-            {/* Outros cards do Insight podem ser adicionados aqui no futuro */}
+            <FeatureCard
+              title="Responder Questionário"
+              description="Responda as perguntas de um diagnóstico selecionado."
+              icon={MessageSquareText} // Ícone para o novo card
+              onClick={handleAnswerQuestionnaireClick}
+            />
           </div>
         </CardContent>
       </Card>

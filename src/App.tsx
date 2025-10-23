@@ -54,7 +54,8 @@ import TagManagementPage from './pages/TagManagementPage';
 import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPage';
 import DiagnosticManagementPage from './pages/DiagnosticManagementPage';
 import InsightPage from './pages/InsightPage';
-import DiagnosticQuestionnairePage from './pages/DiagnosticQuestionnairePage'; // Importar a nova página
+import DiagnosticQuestionnairePage from './pages/DiagnosticQuestionnairePage';
+import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -122,7 +123,8 @@ function App() {
                             <Route path="/ops" element={<OpsPage />} />
                             <Route path="/ops/insight" element={<InsightPage />} />
                             <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
-                            <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} /> {/* Nova rota */}
+                            <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
+                            <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> {/* Nova rota */}
                             <Route path="/core" element={<CorePage />} /> 
                             <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
