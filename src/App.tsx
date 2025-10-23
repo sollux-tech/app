@@ -52,7 +52,8 @@ import DocumentManagementPage from './pages/DocumentManagementPage';
 import AllDocumentsPage from './pages/AllDocumentsPage';
 import TagManagementPage from './pages/TagManagementPage';
 import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPage';
-import DiagnosticManagementPage from './pages/DiagnosticManagementPage'; // Importar a nova página
+import DiagnosticManagementPage from './pages/DiagnosticManagementPage';
+import InsightPage from './pages/InsightPage'; // Importar a nova página InsightPage
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -118,7 +119,8 @@ function App() {
                             <Route path="/connect/jobs/:id" element={<JobFormPage />} />
                             <Route path="/connect/calc" element={<SolluxCalcPage />} />
                             <Route path="/ops" element={<OpsPage />} />
-                            <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} /> {/* Nova rota */}
+                            <Route path="/ops/insight" element={<InsightPage />} /> {/* Nova rota para InsightPage */}
+                            <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
                             <Route path="/core" element={<CorePage />} /> 
                             <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />

@@ -2,13 +2,21 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Brain, Target, TrendingUp, ClipboardCheck } from 'lucide-react'; // Importar ClipboardCheck para Diagnósticos
+import { Brain, Target, TrendingUp } from 'lucide-react'; // Removido ClipboardCheck
 
 const OpsPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleDiagnosticClick = () => {
-    navigate('/ops/diagnostics');
+  const handleInsightClick = () => {
+    navigate('/ops/insight');
+  };
+
+  const handleShiftClick = () => {
+    // navigate('/ops/shift'); // Rota futura
+  };
+
+  const handleFlowClick = () => {
+    // navigate('/ops/flow'); // Rota futura
   };
 
   return (
@@ -26,25 +34,19 @@ const OpsPage: React.FC = () => {
               title="SOLLUX INSIGHT™"
               description="Avaliação do momento atual."
               icon={Brain}
-              onClick={() => {}}
+              onClick={handleInsightClick}
             />
             <FeatureCard
               title="SOLLUX SHIFT™"
               description="Definição de metas e construção de um plano de ação."
               icon={Target}
-              onClick={() => {}}
+              onClick={handleShiftClick}
             />
             <FeatureCard
               title="SOLLUX FLOW™"
               description="Acompanhamento contínuo da evolução dos indicadores."
               icon={TrendingUp}
-              onClick={() => {}}
-            />
-            <FeatureCard
-              title="Diagnósticos"
-              description="Gerencie os diagnósticos da sua empresa."
-              icon={ClipboardCheck} // Usando o ícone ClipboardCheck
-              onClick={handleDiagnosticClick}
+              onClick={handleFlowClick}
             />
           </div>
         </CardContent>
