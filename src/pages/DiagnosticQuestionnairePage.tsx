@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -290,7 +290,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Label className="text-foreground">Selecionar Diagnóstico</Label> {/* Substituído FormLabel por Label */}
+            <Label className="text-foreground">Selecionar Diagnóstico</Label>
             <Select
               onValueChange={setSelectedDiagnosticToAnswer}
               value={selectedDiagnosticToAnswer}
@@ -318,10 +318,10 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               </SelectContent>
             </Select>
             {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para adicionar perguntas.</p> {/* Substituído FormMessage por p */}
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para adicionar perguntas.</p>
             )}
             {(diagnostics?.length || 0) === 0 && (
-              <p className="text-sm text-destructive mt-2"> {/* Substituído FormDescription por p */}
+              <p className="text-sm text-destructive mt-2">
                 Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" primeiro.
               </p>
             )}
