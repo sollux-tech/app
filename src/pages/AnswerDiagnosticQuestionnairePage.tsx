@@ -174,11 +174,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       evidence: data.evidence || null,
     });
     showSuccess('Resposta salva com sucesso!');
-    await refetchQuestionnaireEntries(); // Refetch explícito após o salvamento
+    // Não refetch aqui, pois o refetch será feito na navegação para garantir a ordem
   };
 
   const handleNextQuestion = async () => {
-    await form.handleSubmit(onSubmit)(); // Salva a resposta atual
+    // 1. Salvar a resposta atual
+    await form.handleSubmit(onSubmit)(); 
+    
+    // 2. Recarregar os dados do questionário para garantir que o estado mais recente esteja disponível
+    await refetchQuestionnaireEntries();
+
+    // 3. Atualizar o índice da pergunta SOMENTE APÓS o salvamento e refetch
     if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
@@ -188,7 +194,13 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const handlePreviousQuestion = async () => {
-    await form.handleSubmit(onSubmit)(); // Salva a resposta atual
+    // 1. Salvar a resposta atual
+    await form.handleSubmit(onSubmit)();
+
+    // 2. Recarregar os dados do questionário para garantir que o estado mais recente esteja disponível
+    await refetchQuestionnaireEntries();
+
+    // 3. Atualizar o índice da pergunta SOMENTE APÓS o salvamento e refetch
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
@@ -284,7 +296,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               </SelectContent>
             </Select>
             {!selectedDiagnosticId && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-muted-foreground mt-2">Selecione um diagnóstico acima para começar a responder.</p>
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para responder.</p>
             )}
             {(diagnostics?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
@@ -306,7 +318,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               <CardContent>
                 <Form {...form}>
                   <form
-                    key={currentQuestionnaire?.id || 'no-diagnostic-question-selected'} // Chave no formulário principal
+                    key={currentQuestionnaire?.id || 'no-diagnostic-question-selected'} // Adicionado key aqui
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
@@ -432,7 +444,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             </Card>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              {selectedDiagnosticId ? "Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em 'Gerenciar Perguntas do Diagnóstico'." : "Selecione um diagnóstico acima para começar a responder."}
+              Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em "Gerenciar Perguntas do Diagnóstico".
             </p>
           )}
         </CardContent>
