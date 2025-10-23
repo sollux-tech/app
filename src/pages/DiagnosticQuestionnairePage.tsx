@@ -286,7 +286,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
             </CardDescription>
           </div>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
-            <Plus className="mr-2 h-4 w-4" /> Adicionar Resposta
+            <Plus className="mr-2 h-4 w-4" /> Adicionar Perguntas
           </Button>
         </CardHeader>
         <CardContent>
