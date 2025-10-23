@@ -22,23 +22,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagnosticQuestionsDialog'; // Importar o novo componente
 
-const formSchema = z.object({
-  diagnostic_id: z.string().min(1, { message: 'O diagnóstico é obrigatório.' }),
-  kpi_id: z.string().min(1, { message: 'A pergunta (KPI) é obrigatória.' }),
-  score_id: z.string().min(1, { message: 'A nota é obrigatória.' }),
-  evidence: z.string().optional(),
-});
+// Removido formSchema e o formulário de pergunta única, pois serão substituídos pelo novo diálogo.
 
 const DiagnosticQuestionnairePage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false); // Novo estado para o diálogo de múltiplas perguntas
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // Estado para o diálogo de edição de UMA pergunta
   const [editingQuestionnaire, setEditingQuestionnaire] = useState<DiagnosticQuestionnaire | null>(null);
 
-  const form = useForm<DiagnosticQuestionnaireFormData>({
-    resolver: zodResolver(formSchema),
+  // Formulário para edição de UMA pergunta (o mesmo que antes, mas agora para edição)
+  const editForm = useForm<DiagnosticQuestionnaireFormData>({
+    resolver: zodResolver(z.object({
+      diagnostic_id: z.string().min(1, { message: 'O diagnóstico é obrigatório.' }),
+      kpi_id: z.string().min(1, { message: 'A pergunta (KPI) é obrigatória.' }),
+      score_id: z.string().min(1, { message: 'A nota é obrigatória.' }),
+      evidence: z.string().optional(),
+    })),
     defaultValues: {
       diagnostic_id: undefined,
       kpi_id: undefined,
@@ -47,25 +50,25 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     },
   });
 
-  const selectedDiagnosticId = form.watch('diagnostic_id');
+  const selectedDiagnosticIdForEdit = editForm.watch('diagnostic_id');
 
   useEffect(() => {
     if (editingQuestionnaire) {
-      form.reset({
+      editForm.reset({
         diagnostic_id: editingQuestionnaire.diagnostic_id || undefined,
         kpi_id: editingQuestionnaire.kpi_id || undefined,
         score_id: editingQuestionnaire.score_id || undefined,
         evidence: editingQuestionnaire.evidence || '',
       });
     } else {
-      form.reset({
+      editForm.reset({
         diagnostic_id: undefined,
         kpi_id: undefined,
         score_id: undefined,
         evidence: '',
       });
     }
-  }, [editingQuestionnaire, form, isDialogOpen]);
+  }, [editingQuestionnaire, editForm, isEditDialogOpen]);
 
   const { data: questionnaires, isLoading: isLoadingQuestionnaires, error: errorQuestionnaires } = useQuery<DiagnosticQuestionnaire[], Error>({
     queryKey: ['diagnosticQuestionnaires', user?.id, selectedCompany?.id],
@@ -140,49 +143,27 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const filteredKpis = useMemo(() => {
-    if (!kpis || !selectedDiagnosticId || !diagnostics) return [];
-    const selectedDiagnostic = diagnostics.find(d => d.id === selectedDiagnosticId);
+  const filteredKpisForEdit = useMemo(() => {
+    if (!kpis || !selectedDiagnosticIdForEdit || !diagnostics) return [];
+    const selectedDiagnostic = diagnostics.find(d => d.id === selectedDiagnosticIdForEdit);
     if (!selectedDiagnostic || !selectedDiagnostic.pillar_id || !selectedDiagnostic.pillar_block_id) return [];
 
     return kpis.filter(kpi =>
       kpi.pillars?.id === selectedDiagnostic.pillar_id &&
       kpi.pillar_blocks?.id === selectedDiagnostic.pillar_block_id
     );
-  }, [kpis, selectedDiagnosticId, diagnostics]);
+  }, [kpis, selectedDiagnosticIdForEdit, diagnostics]);
 
   const mutationOptions = {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaires', user?.id, selectedCompany?.id] });
-      setIsDialogOpen(false);
+      setIsEditDialogOpen(false); // Fechar o diálogo de edição
       setEditingQuestionnaire(null);
     },
     onError: (error: Error) => {
       showError(`Erro: ${error.message}`);
     },
   };
-
-  const createQuestionnaireMutation = useMutation({
-    mutationFn: async (data: DiagnosticQuestionnaireFormData) => {
-      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
-      const { error } = await supabase
-        .from('diagnostic_questionnaires')
-        .insert({
-          user_id: user.id,
-          company_id: selectedCompany.id,
-          diagnostic_id: data.diagnostic_id,
-          kpi_id: data.kpi_id,
-          score_id: data.score_id,
-          evidence: data.evidence || null,
-        });
-      if (error) throw error;
-    },
-    ...mutationOptions,
-    onSuccess: () => {
-      mutationOptions.onSuccess();
-      showSuccess('Resposta do questionário criada com sucesso!');
-    },
-  });
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: DiagnosticQuestionnaireFormData) => {
@@ -232,22 +213,17 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: DiagnosticQuestionnaireFormData) => {
-    if (editingQuestionnaire) {
-      updateQuestionnaireMutation.mutate(data);
-    } else {
-      createQuestionnaireMutation.mutate(data);
-    }
+  const onEditSubmit = (data: DiagnosticQuestionnaireFormData) => {
+    updateQuestionnaireMutation.mutate(data);
   };
 
-  const handleAddClick = () => {
-    setEditingQuestionnaire(null);
-    setIsDialogOpen(true);
+  const handleAddQuestionsClick = () => {
+    setIsAddQuestionsDialogOpen(true);
   };
 
   const handleEditClick = (questionnaire: DiagnosticQuestionnaire) => {
     setEditingQuestionnaire(questionnaire);
-    setIsDialogOpen(true);
+    setIsEditDialogOpen(true);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -256,7 +232,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     }
   };
 
-  const isMutating = createQuestionnaireMutation.isPending || updateQuestionnaireMutation.isPending || deleteQuestionnaireMutation.isPending;
+  const isMutating = updateQuestionnaireMutation.isPending || deleteQuestionnaireMutation.isPending;
   const isLoadingPage = isLoadingQuestionnaires || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales;
 
   if (!selectedCompany) {
@@ -285,7 +261,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               Respostas do questionário para a empresa: <span className="font-semibold">{selectedCompany.name}</span>
             </CardDescription>
           </div>
-          <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+          <Button onClick={handleAddQuestionsClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Perguntas
           </Button>
         </CardHeader>
@@ -354,18 +330,26 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Novo Diálogo para Adicionar Múltiplas Perguntas */}
+      <AddMultipleDiagnosticQuestionsDialog
+        open={isAddQuestionsDialogOpen}
+        onOpenChange={setIsAddQuestionsDialogOpen}
+        diagnosticId={selectedCompany ? diagnostics?.find(d => d.company_id === selectedCompany.id)?.id : undefined}
+      />
+
+      {/* Diálogo para Editar UMA Pergunta (o antigo diálogo de adição, agora para edição) */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-foreground">{editingQuestionnaire ? 'Editar Resposta do Questionário' : 'Adicionar Nova Resposta do Questionário'}</DialogTitle>
+            <DialogTitle className="text-foreground">Editar Resposta do Questionário</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              {editingQuestionnaire ? 'Atualize os detalhes da resposta.' : 'Crie uma nova resposta para o questionário de diagnóstico.'}
+              Atualize os detalhes da resposta.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="diagnostic_id"
                 render={({ field }) => (
                   <FormItem>
@@ -395,22 +379,22 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               />
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="kpi_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Pergunta (KPI)</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDiagnosticId || isLoadingKpis || filteredKpis.length === 0}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedDiagnosticIdForEdit || isLoadingKpis || filteredKpisForEdit.length === 0}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione uma pergunta" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredKpis.length === 0 ? (
+                        {filteredKpisForEdit.length === 0 ? (
                           <SelectItem value="no-kpis" disabled>Nenhuma pergunta para este diagnóstico</SelectItem>
                         ) : (
-                          filteredKpis.map((kpi) => (
+                          filteredKpisForEdit.map((kpi) => (
                             kpi.id && kpi.id !== '' ? (
                               <SelectItem key={kpi.id} value={kpi.id}>
                                 {kpi.question}
@@ -425,7 +409,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               />
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="score_id"
                 render={({ field }) => (
                   <FormItem>
@@ -455,7 +439,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               />
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="evidence"
                 render={({ field }) => (
                   <FormItem>
@@ -468,11 +452,11 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               />
               <DialogFooter className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isMutating} className="rounded-lg">
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isMutating} className="rounded-lg">
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {editingQuestionnaire ? 'Salvar Alterações' : 'Adicionar Resposta'}
+                  Salvar Alterações
                 </Button>
               </DialogFooter>
             </form>
