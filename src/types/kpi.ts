@@ -6,6 +6,10 @@ export interface Kpi {
   question: string;
   tags: string[] | null; // Novo campo para tags
   created_at: string;
+
+  // Propriedades para exibição com joins
+  pillars?: { id: string; description: string } | null; // Adicionado para o join
+  pillar_blocks?: { id: string; name: string } | null; // Adicionado para o join
 }
 
 export interface KpiFormData {
