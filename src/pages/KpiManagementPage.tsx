@@ -14,15 +14,18 @@ import { showSuccess, showError } from '@/utils/toast';
 import { Kpi, KpiFormData } from '@/types/kpi';
 import { Pillar } from '@/types/pillar';
 import { PillarBlock } from '@/types/pillarBlock';
+import { Tag } from '@/types/tag'; // Importar o tipo Tag
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect'; // Importar MultiSelect
 
 const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
   pillar_block_id: z.string().min(1, { message: 'O bloco é obrigatório.' }),
   question: z.string().min(1, { message: 'A pergunta é obrigatória.' }),
+  tags: z.array(z.string()).optional(), // Alterado para array de strings para o MultiSelect
 });
 
 const KpiManagementPage: React.FC = () => {
@@ -31,12 +34,13 @@ const KpiManagementPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpi, setEditingKpi] = useState<Kpi | null>(null);
 
-  const form = useForm<KpiFormData>({
+  const form = useForm<z.infer<typeof formSchema>>({ // Usar z.infer<typeof formSchema> para o tipo do form
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '',
       pillar_block_id: '',
       question: '',
+      tags: [], // Inicializar como array vazio
     },
   });
 
@@ -48,12 +52,14 @@ const KpiManagementPage: React.FC = () => {
         pillar_id: editingKpi.pillar_id || '',
         pillar_block_id: editingKpi.pillar_block_id || '',
         question: editingKpi.question,
+        tags: editingKpi.tags || [], // Carregar tags existentes
       });
     } else {
       form.reset({
         pillar_id: '',
         pillar_block_id: '',
         question: '',
+        tags: [],
       });
     }
   }, [editingKpi, form, isDialogOpen]);
@@ -103,6 +109,25 @@ const KpiManagementPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
+  const { data: tags, isLoading: isLoadingTags } = useQuery<Tag[], Error>({
+    queryKey: ['tagsForKpi', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const tagOptions: MultiSelectOption[] = useMemo(() => {
+    return tags?.map(tag => ({ value: tag.name, label: tag.name })) || [];
+  }, [tags]);
+
   const filteredPillarBlocks = useMemo(() => {
     if (!pillarBlocks || !selectedPillarId) return [];
     return pillarBlocks.filter(block => block.pillar_id === selectedPillarId);
@@ -123,7 +148,7 @@ const KpiManagementPage: React.FC = () => {
   };
 
   const createKpiMutation = useMutation({
-    mutationFn: async (data: KpiFormData) => {
+    mutationFn: async (data: z.infer<typeof formSchema>) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
       const { data: newKpi, error } = await supabase
         .from('kpis')
@@ -131,6 +156,7 @@ const KpiManagementPage: React.FC = () => {
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
+          tags: data.tags && data.tags.length > 0 ? data.tags : null, // Salvar tags
           user_id: user.id,
         })
         .select()
@@ -146,7 +172,7 @@ const KpiManagementPage: React.FC = () => {
   });
 
   const updateKpiMutation = useMutation({
-    mutationFn: async (data: KpiFormData) => {
+    mutationFn: async (data: z.infer<typeof formSchema>) => {
       if (!editingKpi?.id) throw new Error("ID do KPI está faltando.");
       const { data: updatedKpi, error } = await supabase
         .from('kpis')
@@ -154,6 +180,7 @@ const KpiManagementPage: React.FC = () => {
           pillar_id: data.pillar_id,
           pillar_block_id: data.pillar_block_id,
           question: data.question,
+          tags: data.tags && data.tags.length > 0 ? data.tags : null, // Atualizar tags
         })
         .eq('id', editingKpi.id)
         .eq('user_id', user?.id)
@@ -192,7 +219,7 @@ const KpiManagementPage: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: KpiFormData) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingKpi) {
       updateKpiMutation.mutate(data);
     } else {
@@ -217,7 +244,7 @@ const KpiManagementPage: React.FC = () => {
   };
 
   const isMutating = createKpiMutation.isPending || updateKpiMutation.isPending || deleteKpiMutation.isPending;
-  const isLoadingPage = isLoadingKpis || isLoadingPillars || isLoadingPillarBlocks;
+  const isLoadingPage = isLoadingKpis || isLoadingPillars || isLoadingPillarBlocks || isLoadingTags;
 
   if (isLoadingPage) {
     return <div className="text-center text-gray-600">Carregando KPIs...</div>;
@@ -243,13 +270,14 @@ const KpiManagementPage: React.FC = () => {
                 <TableHead className="text-sollux-black">Pilar</TableHead>
                 <TableHead className="text-sollux-black">Bloco</TableHead>
                 <TableHead className="text-sollux-black">Pergunta</TableHead>
+                <TableHead className="text-sollux-black">Tags</TableHead> {/* Nova coluna para Tags */}
                 <TableHead className="text-right text-sollux-black">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {kpis?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-gray-500">
+                  <TableCell colSpan={5} className="text-center text-gray-500"> {/* Colspan ajustado */}
                     Nenhuma pergunta de KPI encontrada.
                   </TableCell>
                 </TableRow>
@@ -263,7 +291,10 @@ const KpiManagementPage: React.FC = () => {
                       {(kpi as any).pillar_blocks?.name || 'N/A'}
                     </TableCell>
                     <TableCell className="font-medium text-sollux-black">{kpi.question}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-gray-700"> {/* Exibir Tags */}
+                      {kpi.tags && kpi.tags.length > 0 ? kpi.tags.join(', ') : 'N/A'}
+                    </TableCell>
+                    <TableCell className="text-right flex justify-end items-center gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -373,6 +404,25 @@ const KpiManagementPage: React.FC = () => {
                     <FormLabel className="text-sollux-black">Pergunta</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Quão satisfeito você está com o produto?" {...field} className="rounded-lg" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tags"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sollux-black">Tags (Opcional)</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={tagOptions}
+                        selected={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Selecione as tags..."
+                        className="rounded-lg"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
