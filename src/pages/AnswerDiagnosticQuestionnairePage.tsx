@@ -78,10 +78,14 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .from('diagnostic_questionnaires')
         .select(`
           id,
+          user_id,
+          company_id,
           diagnostic_id,
           kpi_id,
           score_id,
           evidence,
+          created_at,
+          updated_at,
           kpis(question),
           scoring_scales(score, description)
         `)
@@ -169,7 +173,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   const handleNextQuestion = async () => {
     // Save current question's response before moving
     await form.handleSubmit(onSubmit)();
-    if (currentQuestionIndex < (questionnaireEntries?.length || 0) - 1) {
+    if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       showSuccess("Você chegou ao final do questionário!");
@@ -381,14 +385,14 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                         <Button
                           type="button"
                           onClick={handleNextQuestion}
-                          disabled={currentQuestionIndex === (questionnaireEntries.length || 0) - 1 || isSaving}
+                          disabled={!questionnaireEntries || currentQuestionIndex === questionnaireEntries.length - 1 || isSaving}
                           className="rounded-lg bg-sollux-red hover:bg-sollux-orange"
                         >
                           Próximo <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
-                    {currentQuestionIndex === (questionnaireEntries.length || 0) - 1 && (
+                    {questionnaireEntries && currentQuestionIndex === questionnaireEntries.length - 1 && (
                       <div className="text-center mt-4">
                         <Button
                           type="button"
