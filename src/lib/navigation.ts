@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText } from 'lucide-react'; // Importar FileText para Documentos
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag } from 'lucide-react'; // Importar Tag para Tags
 
 interface RouteInfo {
   name: string;
@@ -15,7 +15,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/id/companies/:id': { name: 'Editar Empresa', parent: '/id/companies' },
   '/id/users': { name: 'Gerenciar Perfil', parent: '/id' },
   '/id/sharing': { name: 'Compartilhamento', parent: '/id' },
-  '/id/documents': { name: 'Documentos', parent: '/id', icon: FileText }, // Nova rota para documentos
+  '/id/documents': { name: 'Documentos', parent: '/id', icon: FileText },
   '/connect': { name: 'Connect' },
   '/connect/jobs': { name: 'Gerenciar Vagas', parent: '/connect' },
   '/connect/jobs/new': { name: 'Nova Vaga', parent: '/connect/jobs' },
@@ -39,6 +39,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/pillar-blocks': { name: 'OPS - Blocos dos Pilares', parent: '/core/global-settings/ops', icon: Blocks },
   '/core/global-settings/ops/scoring-scale': { name: 'OPS - Régua de Pontuação', parent: '/core/global-settings/ops', icon: Scale },
   '/core/global-settings/ops/kpis': { name: 'OPS - KPIs de Diagnóstico', parent: '/core/global-settings/ops', icon: Target },
+  '/core/global-settings/ops/tags': { name: 'OPS - Tags', parent: '/core/global-settings/ops', icon: Tag }, // Nova rota para Tags
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

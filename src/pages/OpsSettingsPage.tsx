@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +25,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleKpiManagementClick = () => {
     navigate('/core/global-settings/ops/kpis'); // Nova rota para KPIs de Diagnóstico
+  };
+
+  const handleTagManagementClick = () => {
+    navigate('/core/global-settings/ops/tags'); // Nova rota para Tags
   };
 
   return (
@@ -70,6 +74,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie as perguntas para o questionário de diagnóstico."
               icon={Target} 
               onClick={handleKpiManagementClick}
+            />
+            <FeatureCard
+              title="Tags"
+              description="Cadastre e gerencie tags para identificação de perguntas."
+              icon={Tag} 
+              onClick={handleTagManagementClick}
             />
           </div>
         </CardContent>
