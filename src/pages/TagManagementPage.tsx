@@ -240,7 +240,7 @@ const TagManagementPage: React.FC = () => {
                   <FormItem>
                     <FormLabel className="text-foreground">Nome da Tag</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Inovação, Liderança" {...field} className="rounded-lg" />
+                      <Input placeholder="Ex: Inovação, Liderança" {...field} className="rounded-lg text-foreground" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
