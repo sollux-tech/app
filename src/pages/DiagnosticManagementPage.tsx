@@ -5,7 +5,7 @@ import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -329,6 +329,9 @@ const DiagnosticManagementPage: React.FC = () => {
         <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">{editingDiagnostic ? 'Editar Diagnóstico' : 'Adicionar Novo Diagnóstico'}</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {editingDiagnostic ? 'Atualize os detalhes do diagnóstico.' : 'Crie um novo diagnóstico para a empresa selecionada.'}
+            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -348,13 +351,16 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="" disabled>Selecione um pilar</SelectItem> {/* Adicionado SelectItem vazio */}
                         {pillars?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
+                          <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
-                            <SelectItem key={pillar.id} value={pillar.id}>
-                              {pillar.description}
-                            </SelectItem>
+                            pillar.id && pillar.id !== '' ? (
+                              <SelectItem key={pillar.id} value={pillar.id}>
+                                {pillar.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
@@ -376,13 +382,16 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="" disabled>Selecione um bloco</SelectItem> {/* Adicionado SelectItem vazio */}
                         {filteredPillarBlocks.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum bloco para este pilar</SelectItem>
+                          <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
                         ) : (
                           filteredPillarBlocks.map((block) => (
-                            <SelectItem key={block.id} value={block.id}>
-                              {block.name}
-                            </SelectItem>
+                            block.id && block.id !== '' ? (
+                              <SelectItem key={block.id} value={block.id}>
+                                {block.name}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
@@ -404,13 +413,16 @@ const DiagnosticManagementPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="" disabled>Selecione um status</SelectItem> {/* Adicionado SelectItem vazio */}
                         {diagnosticStatuses?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum status cadastrado</SelectItem>
+                          <SelectItem value="no-statuses" disabled>Nenhum status cadastrado</SelectItem>
                         ) : (
                           diagnosticStatuses?.map((status) => (
-                            <SelectItem key={status.id} value={status.id}>
-                              {status.description}
-                            </SelectItem>
+                            status.id && status.id !== '' ? (
+                              <SelectItem key={status.id} value={status.id}>
+                                {status.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>

@@ -23,16 +23,28 @@ const PulsePage: React.FC = () => {
   const { data: informativeToday, isLoading: isLoadingInformative, error: errorInformative } = useQuery<PulseInformative | null, Error>({
     queryKey: ['pulseInformativeToday', today],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('pulse_informatives')
-        .select('*')
-        .eq('publication_date', today)
-        .single(); 
-      
-      if (error && error.code !== 'PGRST116') { 
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('pulse_informatives')
+          .select('*')
+          .eq('publication_date', today)
+          .single(); 
+        
+        if (error) {
+          // Se for um erro de "no rows found" (PGRST116) ou status 406, retorna null
+          if (error.code === 'PGRST116' || (error as any).status === 406) {
+            return null;
+          }
+          throw error; // Re-lança outros erros
+        }
+        return data;
+      } catch (e: any) {
+        // Captura erros que podem não ter o 'code' mas têm o 'status'
+        if (e.code === 'PGRST116' || e.status === 406) {
+          return null;
+        }
+        throw e;
       }
-      return data || null;
     },
   });
 
