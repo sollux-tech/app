@@ -315,7 +315,11 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form
+                    key={currentQuestionnaire?.id || 'new-question'} // Adiciona a key aqui
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                     <div className="space-y-2">
                       <Label className="text-lg font-semibold text-foreground">
                         {currentQuestionnaire?.kpis?.question || (isLoadingQuestionnaireEntries ? 'Carregando pergunta...' : 'Pergunta não disponível.')}
