@@ -2,13 +2,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck, ClipboardList } from 'lucide-react'; // Importar ClipboardList
 
 const InsightPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleDiagnosticClick = () => {
     navigate('/ops/diagnostics');
+  };
+
+  const handleDiagnosticQuestionnaireClick = () => {
+    navigate('/ops/insight/questionnaires'); // Nova rota para o questionário
   };
 
   return (
@@ -27,6 +31,12 @@ const InsightPage: React.FC = () => {
               description="Gerencie os diagnósticos da sua empresa."
               icon={ClipboardCheck}
               onClick={handleDiagnosticClick}
+            />
+            <FeatureCard
+              title="Questionário do Diagnóstico"
+              description="Responda e gerencie as perguntas do diagnóstico."
+              icon={ClipboardList} // Novo ícone
+              onClick={handleDiagnosticQuestionnaireClick}
             />
             {/* Outros cards do Insight podem ser adicionados aqui no futuro */}
           </div>

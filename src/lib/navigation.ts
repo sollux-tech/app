@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain } from 'lucide-react'; // Importar Brain
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList } from 'lucide-react'; // Importar ClipboardList
 
 interface RouteInfo {
   name: string;
@@ -23,8 +23,9 @@ export const routeMap: Record<string, RouteInfo> = {
   '/connect/forms/new': { name: 'Novo Formulário', parent: '/connect/forms' },
   '/connect/calc': { name: 'SOLLUX CALC™', parent: '/connect' },
   '/ops': { name: 'OPS' },
-  '/ops/insight': { name: 'SOLLUX INSIGHT™', parent: '/ops', icon: Brain }, // Nova rota para InsightPage
-  '/ops/diagnostics': { name: 'Diagnósticos', parent: '/ops/insight', icon: ClipboardCheck }, // Mover para dentro de Insight
+  '/ops/insight': { name: 'SOLLUX INSIGHT™', parent: '/ops', icon: Brain },
+  '/ops/diagnostics': { name: 'Diagnósticos', parent: '/ops/insight', icon: ClipboardCheck },
+  '/ops/insight/questionnaires': { name: 'Questionário do Diagnóstico', parent: '/ops/insight', icon: ClipboardList }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
