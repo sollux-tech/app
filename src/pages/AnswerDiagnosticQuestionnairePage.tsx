@@ -140,17 +140,18 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   // Update form fields when currentQuestionnaire changes
   useEffect(() => {
     if (currentQuestionnaire) {
-      form.reset({
-        score_id: currentQuestionnaire.score_id || '',
-        evidence: currentQuestionnaire.evidence || '',
-      });
+      // Usar setValue para atualizar os campos explicitamente
+      form.setValue('score_id', currentQuestionnaire.score_id || '', { shouldValidate: false });
+      form.setValue('evidence', currentQuestionnaire.evidence || '', { shouldValidate: false });
+      form.clearErrors(); // Limpar quaisquer erros de validação anteriores
     } else {
+      // Resetar para valores vazios se nenhuma pergunta estiver selecionada
       form.reset({
         score_id: '',
         evidence: '',
       });
     }
-  }, [currentQuestionnaire, form]);
+  }, [currentQuestionnaire, form]); // Dependências estão corretas
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -316,7 +317,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               <CardContent>
                 <Form {...form}>
                   <form
-                    key={currentQuestionnaire?.id || 'new-question'} // Adiciona a key aqui
+                    key={currentQuestionnaire?.id || 'no-diagnostic-question-selected'} // Chave no formulário principal
                     onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                   >
@@ -335,7 +336,12 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">Nota</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingScoringScales || isSaving}>
+                          <Select
+                            key={`select-score-${currentQuestionnaire?.id || 'new'}`} // Chave no Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            disabled={isLoadingScoringScales || isSaving}
+                          >
                             <FormControl>
                               <SelectTrigger className="rounded-lg">
                                 <SelectValue placeholder="Selecione uma nota" />
@@ -368,7 +374,14 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                         <FormItem>
                           <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Descreva as evidências para esta resposta." {...field} className="rounded-lg" rows={4} disabled={isSaving} />
+                            <Textarea
+                              key={`textarea-evidence-${currentQuestionnaire?.id || 'new'}`} // Chave no Textarea
+                              placeholder="Descreva as evidências para esta resposta."
+                              {...field}
+                              className="rounded-lg"
+                              rows={4}
+                              disabled={isSaving}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
