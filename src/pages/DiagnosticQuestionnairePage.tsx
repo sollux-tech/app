@@ -22,8 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagnosticQuestionsDialog'; // Importar o novo componente
-import { Label } from '@/components/ui/label'; // Importar o componente Label
+import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagnosticQuestionsDialog';
+import { Label } from '@/components/ui/label';
 
 // Removido formSchema e o formulário de pergunta única, pois serão substituídos pelo novo diálogo.
 
@@ -31,10 +31,10 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
-  const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false); // Novo estado para o diálogo de múltiplas perguntas
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false); // Estado para o diálogo de edição de UMA pergunta
+  const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingQuestionnaire, setEditingQuestionnaire] = useState<DiagnosticQuestionnaire | null>(null);
-  const [selectedDiagnosticToAnswer, setSelectedDiagnosticToAnswer] = useState<string | undefined>(undefined); // Novo estado para o diagnóstico selecionado para responder
+  const [selectedDiagnosticToAnswer, setSelectedDiagnosticToAnswer] = useState<string | undefined>(undefined);
 
   // Formulário para edição de UMA pergunta (o mesmo que antes, mas agora para edição)
   const editForm = useForm<DiagnosticQuestionnaireFormData>({
@@ -298,7 +298,6 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               value={selectedDiagnosticToAnswer}
               disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
-              {/* Removido FormControl daqui */}
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Selecione um diagnóstico para responder" />
               </SelectTrigger>
@@ -333,16 +332,16 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               <TableRow>
                 <TableHead className="text-foreground">Diagnóstico</TableHead>
                 <TableHead className="text-foreground">Pergunta (KPI)</TableHead>
-                <TableHead className="text-foreground">Nota</TableHead>
-                <TableHead className="text-foreground">Respondido por</TableHead>
-                <TableHead className="text-foreground">Criado em</TableHead>
+                {/* Removido: <TableHead className="text-foreground">Nota</TableHead> */}
+                {/* Removido: <TableHead className="text-foreground">Respondido por</TableHead> */}
+                {/* Removido: <TableHead className="text-foreground">Criado em</TableHead> */}
                 <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {questionnaires?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={3} className="text-center text-muted-foreground"> {/* Colspan ajustado */}
                     Nenhuma resposta de questionário encontrada para esta empresa.
                   </TableCell>
                 </TableRow>
@@ -355,6 +354,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                     <TableCell className="text-muted-foreground">
                       {q.kpis?.question || 'N/A'}
                     </TableCell>
+                    {/* Removido:
                     <TableCell className="text-muted-foreground">
                       {q.scoring_scales?.score !== undefined ? `${q.scoring_scales.score} - ${q.scoring_scales.description}` : 'N/A'}
                     </TableCell>
@@ -364,6 +364,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                     <TableCell className="text-muted-foreground">
                       {format(new Date(q.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
+                    */}
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
