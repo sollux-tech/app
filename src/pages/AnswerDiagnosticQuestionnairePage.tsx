@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod'; // Corrigido: de '*s z' para '* as z'
+import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -263,16 +263,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             <Label className="text-foreground">Selecionar Diagnóstico</Label>
             <Select
               onValueChange={(value) => {
-                setSelectedDiagnosticId(value);
+                setSelectedDiagnosticId(value === 'placeholder' ? undefined : value);
                 setCurrentQuestionIndex(0); // Reset index when diagnostic changes
               }}
-              value={selectedDiagnosticId}
+              value={selectedDiagnosticId || 'placeholder'} // Use 'placeholder' como valor quando nada está selecionado
               disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Selecione um diagnóstico para responder" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="placeholder" disabled>Selecione um Diagnóstico</SelectItem> {/* Nova opção de placeholder */}
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
                 ) : (diagnostics?.length || 0) === 0 ? (
@@ -289,7 +290,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               </SelectContent>
             </Select>
             {!selectedDiagnosticId && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para responder.</p>
+              <p className="text-sm font-medium text-muted-foreground mt-2">Selecione um diagnóstico acima para começar a responder.</p>
             )}
             {(diagnostics?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
@@ -325,13 +326,13 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                     </div>
 
                     <FormField
+                      key={`form-field-score-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="score_id"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">Nota</FormLabel>
                           <Select
-                            key={`select-score-${currentQuestionnaire?.id || 'new'}`} // Chave no Select
                             onValueChange={field.onChange}
                             value={field.value}
                             disabled={isLoadingScoringScales || isSaving}
@@ -362,6 +363,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       )}
                     />
                     <FormField
+                      key={`form-field-evidence-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="evidence"
                       render={({ field }) => (
@@ -369,7 +371,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                           <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
                           <FormControl>
                             <Textarea
-                              key={`textarea-evidence-${currentQuestionnaire?.id || 'new'}`} // Chave no Textarea
                               placeholder="Descreva as evidências para esta resposta."
                               {...field}
                               className="rounded-lg"
@@ -437,7 +438,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
             </Card>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em "Gerenciar Perguntas do Diagnóstico".
+              {selectedDiagnosticId ? "Nenhuma pergunta encontrada para este diagnóstico. Adicione perguntas em 'Gerenciar Perguntas do Diagnóstico'." : "Selecione um diagnóstico acima para começar a responder."}
             </p>
           )}
         </CardContent>
