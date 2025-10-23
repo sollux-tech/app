@@ -23,6 +23,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/connect/forms/new': { name: 'Novo Formulário', parent: '/connect/forms' },
   '/connect/calc': { name: 'SOLLUX CALC™', parent: '/connect' },
   '/ops': { name: 'OPS' },
+  '/ops/diagnostics': { name: 'Diagnósticos', parent: '/ops', icon: ClipboardCheck }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
@@ -40,7 +41,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/scoring-scale': { name: 'OPS - Régua de Pontuação', parent: '/core/global-settings/ops', icon: Scale },
   '/core/global-settings/ops/kpis': { name: 'OPS - KPIs de Diagnóstico', parent: '/core/global-settings/ops', icon: Target },
   '/core/global-settings/ops/tags': { name: 'OPS - Tags', parent: '/core/global-settings/ops', icon: Tag },
-  '/core/global-settings/ops/diagnostic-statuses': { name: 'OPS - Status do Diagnósticos', parent: '/core/global-settings/ops', icon: ClipboardCheck }, // Nova rota
+  '/core/global-settings/ops/diagnostic-statuses': { name: 'OPS - Status do Diagnósticos', parent: '/core/global-settings/ops', icon: ClipboardCheck },
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

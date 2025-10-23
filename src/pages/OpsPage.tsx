@@ -2,10 +2,14 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Brain, Target, TrendingUp } from 'lucide-react';
+import { Brain, Target, TrendingUp, ClipboardCheck } from 'lucide-react'; // Importar ClipboardCheck para Diagnósticos
 
 const OpsPage: React.FC = () => {
   const navigate = useNavigate();
+
+  const handleDiagnosticClick = () => {
+    navigate('/ops/diagnostics');
+  };
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -35,6 +39,12 @@ const OpsPage: React.FC = () => {
               description="Acompanhamento contínuo da evolução dos indicadores."
               icon={TrendingUp}
               onClick={() => {}}
+            />
+            <FeatureCard
+              title="Diagnósticos"
+              description="Gerencie os diagnósticos da sua empresa."
+              icon={ClipboardCheck} // Usando o ícone ClipboardCheck
+              onClick={handleDiagnosticClick}
             />
           </div>
         </CardContent>

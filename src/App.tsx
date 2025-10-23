@@ -51,7 +51,8 @@ import { ThemeProvider } from './components/ThemeProvider';
 import DocumentManagementPage from './pages/DocumentManagementPage';
 import AllDocumentsPage from './pages/AllDocumentsPage';
 import TagManagementPage from './pages/TagManagementPage';
-import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPage'; // Importar a nova página
+import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPage';
+import DiagnosticManagementPage from './pages/DiagnosticManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -117,6 +118,7 @@ function App() {
                             <Route path="/connect/jobs/:id" element={<JobFormPage />} />
                             <Route path="/connect/calc" element={<SolluxCalcPage />} />
                             <Route path="/ops" element={<OpsPage />} />
+                            <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} /> {/* Nova rota */}
                             <Route path="/core" element={<CorePage />} /> 
                             <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
@@ -136,7 +138,7 @@ function App() {
                             <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
                             <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
                             <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
-                            <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} /> {/* Nova rota */}
+                            <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
                             <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                             <Route path="/core/notifications" element={<NotificationManagementPage />} />
                             <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
