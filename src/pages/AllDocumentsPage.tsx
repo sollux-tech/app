@@ -49,7 +49,7 @@ const AllDocumentsPage: React.FC = () => {
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
           .select('id, first_name, last_name')
-          .in('id', uniqueUserIds);
+          .in('id', uniqueCreatorIds); // Corrigido: Usar uniqueCreatorIds aqui
 
         if (profilesError) {
           console.error("Error fetching creator profiles for documents:", profilesError);
