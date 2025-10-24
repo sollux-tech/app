@@ -1,15 +1,15 @@
 import React from 'react';
-import { UseFormReturn } from 'react-hook-form'; // Importar UseFormReturn
+import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
-import { Label } from '@/components/ui/label'; // Importação adicionada
-import { QuestionResponseFormData } from '@/types/questionResponse'; // Importação da definição correta
+import { Label } from '@/components/ui/label';
+import { QuestionResponseFormData } from '@/types/questionResponse';
 
 interface DiagnosticQuestionFormProps {
-  form: UseFormReturn<QuestionResponseFormData>; // Recebe o objeto form como prop
+  form: UseFormReturn<QuestionResponseFormData>;
   currentQuestionnaire: DiagnosticQuestionnaire | null;
   scoringScales: ScoringScale[] | undefined;
   isLoadingScoringScales: boolean;
@@ -17,7 +17,7 @@ interface DiagnosticQuestionFormProps {
 }
 
 const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
-  form, // Recebe o objeto form aqui
+  form,
   currentQuestionnaire,
   scoringScales,
   isLoadingScoringScales,
@@ -46,7 +46,7 @@ const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
             <FormLabel className="text-foreground">Nota</FormLabel>
             <Select
               onValueChange={field.onChange}
-              value={field.value}
+              value={field.value || ''} {/* Alterado aqui: Garante que o valor é sempre uma string */}
               disabled={isLoadingScoringScales || isSaving}
             >
               <FormControl>
