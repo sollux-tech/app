@@ -182,6 +182,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
         .eq('diagnostic_id', selectedDiagnosticToAnswer) // Filter by selected diagnostic
+        .order('question', { foreignTable: 'kpis', ascending: true })
         .order('created_at', { ascending: false });
       if (error) throw error;
 

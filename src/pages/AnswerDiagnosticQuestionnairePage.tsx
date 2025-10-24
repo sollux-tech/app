@@ -75,6 +75,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
         .eq('diagnostic_id', selectedDiagnosticId)
+        .order('question', { foreignTable: 'kpis', ascending: true })
         .order('created_at', { ascending: true });
       if (error) throw error;
 
