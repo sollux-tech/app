@@ -34,12 +34,14 @@ const PulsePage: React.FC = () => {
         
         if (error) {
           console.error("PulsePage: Erro na consulta de informativo:", error); // Log de erro
+          console.error("PulsePage: Detalhes do erro:", JSON.stringify(error, null, 2)); // Log detalhado do erro
           throw error; // Re-lança quaisquer erros reais
         }
         console.log("PulsePage: Dados brutos do informativo:", data); // Log dos dados brutos
         return data.length > 0 ? data[0] : null; // Retorna o primeiro item do array ou null
       } catch (e: any) {
         console.error("PulsePage: Erro inesperado ao buscar informativo:", e); // Log de erro inesperado
+        console.error("PulsePage: Detalhes do erro inesperado:", JSON.stringify(e, null, 2)); // Log detalhado do erro inesperado
         throw e;
       }
     },
