@@ -15,6 +15,7 @@ import { DiagnosticQuestionnaire, DiagnosticQuestionnaireFormData } from '@/type
 import { Diagnostic } from '@/types/diagnostic';
 import { Kpi } from '@/types/kpi';
 import { ScoringScale } from '@/types/scoringScale';
+import { Pillar } from '@/types/pillar'; // Importar Pillar
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -34,6 +35,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingQuestionnaire, setEditingQuestionnaire] = useState<DiagnosticQuestionnaire | null>(null);
+  const [selectedPillarId, setSelectedPillarId] = useState<string | undefined>(undefined); // Novo estado para o pilar selecionado
   const [selectedDiagnosticToAnswer, setSelectedDiagnosticToAnswer] = useState<string | undefined>(undefined);
 
   // Formulário para edição de UMA pergunta (o mesmo que antes, mas agora para edição)
@@ -132,26 +134,44 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     enabled: !!user?.id && !!selectedCompany?.id,
   });
 
-  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id],
+  // Nova query para buscar todos os pilares
+  const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['pillarsListForQuestionnaireFilter', user?.id],
     queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('pillars')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
+    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarId], // Adicionado selectedPillarId
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return []; // Depende de selectedPillarId
       const { data, error } = await supabase
         .from('diagnostics')
         .select('*, companies(name), pillars(description), pillar_blocks(name)')
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
+        .eq('pillar_id', selectedPillarId) // Filtra por pillar_id
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !!selectedCompany?.id,
+    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId, // Habilitado apenas se um pilar for selecionado
   });
 
   // Set the first diagnostic as selected by default if none is selected
   useEffect(() => {
+    // Não seleciona automaticamente, força o usuário a escolher
     if (diagnostics && diagnostics.length > 0 && !selectedDiagnosticToAnswer) {
-      setSelectedDiagnosticToAnswer(diagnostics[0].id);
+      // setSelectedDiagnosticToAnswer(diagnostics[0].id); // Removido para forçar seleção manual
     } else if (diagnostics && diagnostics.length === 0 && selectedDiagnosticToAnswer) {
       setSelectedDiagnosticToAnswer(undefined);
     }
@@ -266,8 +286,12 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       showError("Por favor, selecione uma empresa na barra lateral para adicionar perguntas.");
       return;
     }
+    if (!selectedPillarId) {
+      showError("Por favor, selecione um pilar para adicionar perguntas.");
+      return;
+    }
     if (!diagnostics || diagnostics.length === 0) {
-      showError("Nenhum diagnóstico encontrado para esta empresa. Crie um em 'OPS | Diagnósticos' primeiro.");
+      showError("Nenhum diagnóstico encontrado para o pilar selecionado. Crie um em 'OPS | Diagnósticos' primeiro.");
       return;
     }
     if (!selectedDiagnosticToAnswer) {
@@ -289,7 +313,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const isMutating = updateQuestionnaireMutation.isPending || deleteQuestionnaireMutation.isPending;
-  const isLoadingPage = isLoadingQuestionnaires || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales;
+  const isLoadingPage = isLoadingQuestionnaires || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales || isLoadingPillars;
 
   if (!selectedCompany) {
     return (
@@ -324,21 +348,63 @@ const DiagnosticQuestionnairePage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
+          {/* Novo seletor de Pilar */}
+          <div className="mb-4">
+            <Label className="text-foreground">Filtrar por Pilar</Label>
+            <Select
+              onValueChange={(value) => {
+                setSelectedPillarId(value === 'placeholder' ? undefined : value);
+                setSelectedDiagnosticToAnswer(undefined); // Resetar diagnóstico selecionado ao mudar o pilar
+              }}
+              value={selectedPillarId || 'placeholder'}
+              disabled={isLoadingPillars || (pillars?.length || 0) === 0}
+            >
+              <SelectTrigger className="rounded-lg">
+                <SelectValue placeholder="Selecione um Pilar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="placeholder" disabled>Selecione um Pilar</SelectItem>
+                {isLoadingPillars ? (
+                  <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
+                ) : (pillars?.length || 0) === 0 ? (
+                  <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado.</SelectItem>
+                ) : (
+                  pillars?.map((pillar) => (
+                    pillar.id && pillar.id !== '' ? (
+                      <SelectItem key={pillar.id} value={pillar.id}>
+                        {pillar.description}
+                      </SelectItem>
+                    ) : null
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {!selectedPillarId && (pillars?.length || 0) > 0 && (
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um pilar para filtrar os diagnósticos.</p>
+            )}
+            {(pillars?.length || 0) === 0 && (
+              <p className="text-sm text-destructive mt-2">
+                Nenhum pilar encontrado para esta empresa. Crie um em "OPS | Pilares" primeiro.
+              </p>
+            )}
+          </div>
+
           <div className="mb-6">
             <Label className="text-foreground">Selecionar Diagnóstico</Label>
             <Select
               onValueChange={setSelectedDiagnosticToAnswer}
-              value={selectedDiagnosticToAnswer}
-              disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
+              value={selectedDiagnosticToAnswer || 'placeholder'}
+              disabled={!selectedPillarId || isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
-                <SelectValue placeholder="Selecione um diagnóstico para responder" />
+                <SelectValue placeholder={selectedPillarId ? "Selecione um diagnóstico para responder" : "Selecione um Pilar primeiro"} />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="placeholder" disabled>{selectedPillarId ? "Selecione um Diagnóstico" : "Selecione um Pilar primeiro"}</SelectItem>
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
                 ) : (diagnostics?.length || 0) === 0 ? (
-                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para esta empresa.</SelectItem>
+                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para este pilar.</SelectItem>
                 ) : (
                   diagnostics?.map((diagnostic) => (
                     diagnostic.id && diagnostic.id !== '' ? (
@@ -350,12 +416,17 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               </SelectContent>
             </Select>
-            {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
+            {!selectedDiagnosticToAnswer && selectedPillarId && (diagnostics?.length || 0) > 0 && (
               <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para adicionar perguntas.</p>
             )}
-            {(diagnostics?.length || 0) === 0 && (
+            {!selectedPillarId && (
               <p className="text-sm text-destructive mt-2">
-                Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" primeiro.
+                Selecione um pilar acima para ver os diagnósticos disponíveis.
+              </p>
+            )}
+            {selectedPillarId && (diagnostics?.length || 0) === 0 && (
+              <p className="text-sm text-destructive mt-2">
+                Nenhum diagnóstico encontrado para o pilar selecionado. Crie um em "OPS | Diagnósticos" primeiro.
               </p>
             )}
           </div>
