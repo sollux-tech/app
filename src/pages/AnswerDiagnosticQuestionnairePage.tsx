@@ -90,6 +90,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
           : null,
       }));
 
+      console.log("Questionnaire Entries fetched (AnswerDiagnosticQuestionnairePage):", processedData); // Log para depuração
       return processedData;
     },
     enabled: !!user?.id && !!selectedCompany?.id && !!selectedDiagnosticId,

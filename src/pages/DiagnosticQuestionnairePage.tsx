@@ -215,6 +215,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
           : null,
       }));
 
+      console.log("Questionnaires fetched (DiagnosticQuestionnairePage):", processedData); // Log para depuração
       return processedData;
     },
     enabled: !!user?.id && !!selectedCompany?.id && !!selectedDiagnosticToAnswer, // Enable only when diagnostic is selected
@@ -476,7 +477,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-foreground">Ordem</TableHead> {/* Nova coluna */}
+                  <TableHead className="text-foreground w-[80px]">Ordem</TableHead> {/* Nova coluna com largura definida */}
                   <TableHead className="text-foreground">Diagnóstico</TableHead>
                   <TableHead className="text-foreground">Pergunta (KPI)</TableHead>
                   <TableHead className="text-right text-foreground">Ações</TableHead>
@@ -492,7 +493,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 ) : (
                   questionnaires?.map((q) => (
                     <TableRow key={q.id}>
-                      <TableCell className="font-medium text-foreground">{q.order_number || 'N/A'}</TableCell> {/* Exibir order_number */}
+                      <TableCell className="font-bold text-sollux-red">{q.order_number || 'N/A'}</TableCell> {/* Exibir order_number com destaque */}
                       <TableCell className="font-medium text-foreground">
                         {q.diagnostics?.id.substring(0, 8)}... ({q.diagnostics?.pillars?.description || 'N/A'} / {q.diagnostics?.pillar_blocks?.name || 'N/A'})
                       </TableCell>
