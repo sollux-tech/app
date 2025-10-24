@@ -62,7 +62,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
           kpi_id,
           score_id,
           evidence,
-          order_number, -- Adicionado
+          order_number,
           created_at,
           updated_at,
           kpis(question),
