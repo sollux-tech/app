@@ -1,10 +1,18 @@
 import { z } from 'zod';
 
-export const questionResponseSchema = z.object({
-  score_id: z.string().optional(), // Torna score_id opcional no nível do esquema
+// Definir explicitamente a interface para garantir que score_id seja opcional
+export interface QuestionResponseFormData {
+  score_id?: string; // Torna score_id explicitamente opcional para o TypeScript
+  evidence?: string;
+}
+
+// Definir o esquema Zod, garantindo que ele seja compatível com a interface acima.
+// Usamos z.string().optional() para a inferência de tipo e superRefine para a validação em tempo de execução.
+export const questionResponseSchema: z.ZodType<QuestionResponseFormData> = z.object({
+  score_id: z.string().optional(), // Permite que o campo seja undefined ou string vazia no tipo
   evidence: z.string().optional(),
 }).superRefine((data, ctx) => {
-  // Adiciona validação para garantir que score_id não seja vazio ou undefined na submissão
+  // Esta é a validação em tempo de execução que o torna efetivamente obrigatório
   if (data.score_id === undefined || data.score_id.trim() === '') {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -13,5 +21,3 @@ export const questionResponseSchema = z.object({
     });
   }
 });
-
-export type QuestionResponseFormData = z.infer<typeof questionResponseSchema>;
