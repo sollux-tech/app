@@ -29,13 +29,12 @@ const PulsePage: React.FC = () => {
           .select('*')
           .eq('publication_date', today)
           .order('created_at', { ascending: false }) // Ordenar por data de criação para pegar o mais recente
-          .limit(1) // Limitar a um resultado
-          .maybeSingle(); // Usar maybeSingle para lidar com 0 ou 1 resultado graciosamente
+          .limit(1); // Limitar a um resultado
         
         if (error) {
           throw error; // Re-lança quaisquer erros reais
         }
-        return data; // data será null se nenhum informativo for encontrado, ou o informativo único
+        return data.length > 0 ? data[0] : null; // Retorna o primeiro item do array ou null
       } catch (e: any) {
         throw e;
       }

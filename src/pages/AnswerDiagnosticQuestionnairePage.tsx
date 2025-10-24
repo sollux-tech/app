@@ -132,19 +132,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   // Update form fields when currentQuestionnaire changes
   useEffect(() => {
     if (currentQuestionnaire) {
-      // Usar form.reset para garantir que o formulário seja completamente reinicializado
       form.reset({
         score_id: currentQuestionnaire.score_id || '',
         evidence: currentQuestionnaire.evidence || '',
       });
     } else {
-      // Resetar para valores vazios se nenhuma pergunta estiver selecionada
       form.reset({
         score_id: '',
         evidence: '',
       });
     }
-  }, [currentQuestionnaire, form, selectedDiagnosticId]); // Mantido selectedDiagnosticId como dependência para reset inicial
+  }, [currentQuestionnaire, form]); // Removido selectedDiagnosticId daqui
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
