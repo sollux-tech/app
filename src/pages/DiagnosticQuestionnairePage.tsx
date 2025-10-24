@@ -612,12 +612,20 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               />
               <FormField
                 control={editForm.control}
-                name="order_number" // Adicionado
+                name="order_number"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Ordem da Pergunta</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Ex: 1" {...field} className="rounded-lg" />
+                      <Input
+                        type="number"
+                        placeholder="Ex: 1"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)} // Garante a conversão para número
+                        min={1} // Mínimo 1
+                        max={999999} // Máximo 6 dígitos
+                        className="rounded-lg"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
