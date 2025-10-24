@@ -174,7 +174,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       evidence: data.evidence || null,
     });
     showSuccess('Resposta salva com sucesso!');
-    // Não refetch aqui, pois o refetch será feito na navegação para garantir a ordem
   };
 
   const handleNextQuestion = async () => {
@@ -182,10 +181,10 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     await form.handleSubmit(onSubmit)(); 
     
     // 2. Recarregar os dados do questionário para garantir que o estado mais recente esteja disponível
-    await refetchQuestionnaireEntries();
+    const { data: freshEntries } = await refetchQuestionnaireEntries();
 
-    // 3. Atualizar o índice da pergunta SOMENTE APÓS o salvamento e refetch
-    if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
+    // 3. Atualizar o índice da pergunta usando os dados frescos
+    if (freshEntries && currentQuestionIndex < freshEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
     } else {
       showSuccess("Você chegou ao final do questionário!");
@@ -197,11 +196,11 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     // 1. Salvar a resposta atual
     await form.handleSubmit(onSubmit)();
 
-    // 2. Recarregar os dados do questionário para garantir que o estado mais recente esteja disponível
-    await refetchQuestionnaireEntries();
+    // 2. Recarregar os dados do questionário
+    const { data: freshEntries } = await refetchQuestionnaireEntries();
 
-    // 3. Atualizar o índice da pergunta SOMENTE APÓS o salvamento e refetch
-    if (currentQuestionIndex > 0) {
+    // 3. Atualizar o índice da pergunta usando os dados frescos
+    if (freshEntries && currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
     }
   };
