@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm, FormProvider } from 'react-hook-form'; // Importar FormProvider
+import { useForm } from 'react-hook-form'; // Remover FormProvider
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -332,13 +332,14 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <FormProvider {...formMethods}> {/* Usar FormProvider aqui */}
+                <Form {...formMethods}> {/* Passa o objeto formMethods para o Form */}
                   <form
                     key={currentQuestionnaire?.id || 'loading-question'} // A key no form é crucial
                     onSubmit={formMethods.handleSubmit(saveCurrentQuestion)}
                     className="space-y-6"
                   >
                     <DiagnosticQuestionForm
+                      form={formMethods} // Passa o objeto formMethods como prop 'form'
                       currentQuestionnaire={currentQuestionnaire}
                       scoringScales={scoringScales}
                       isLoadingScoringScales={isLoadingScoringScales}
@@ -395,7 +396,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       </div>
                     )}
                   </form>
-                </FormProvider>
+                </Form>
               </CardContent>
             </Card>
           ) : (

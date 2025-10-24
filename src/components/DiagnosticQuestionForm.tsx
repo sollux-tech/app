@@ -1,21 +1,20 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { z } from 'zod';
+import { UseFormReturn } from 'react-hook-form'; // Importar UseFormReturn
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
-import { Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label'; // Importação adicionada
 
-// Schema para validar a resposta de uma única pergunta
-const questionResponseSchema = z.object({
-  score_id: z.string().min(1, { message: 'A nota é obrigatória.' }),
-  evidence: z.string().optional(),
-});
+// Definir o tipo para os dados do formulário que este componente espera
+interface QuestionResponseFormData {
+  score_id: string;
+  evidence?: string;
+}
 
 interface DiagnosticQuestionFormProps {
+  form: UseFormReturn<QuestionResponseFormData>; // Recebe o objeto form como prop
   currentQuestionnaire: DiagnosticQuestionnaire | null;
   scoringScales: ScoringScale[] | undefined;
   isLoadingScoringScales: boolean;
@@ -23,13 +22,12 @@ interface DiagnosticQuestionFormProps {
 }
 
 const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
+  form, // Recebe o objeto form aqui
   currentQuestionnaire,
   scoringScales,
   isLoadingScoringScales,
   isSaving,
 }) => {
-  const form = useFormContext<z.infer<typeof questionResponseSchema>>();
-
   if (!currentQuestionnaire) {
     return <p className="text-center text-muted-foreground">Nenhuma pergunta selecionada.</p>;
   }
