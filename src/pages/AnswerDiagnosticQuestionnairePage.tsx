@@ -123,15 +123,26 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   const form = useForm<z.infer<typeof questionResponseSchema>>({
     resolver: zodResolver(questionResponseSchema),
     shouldUnregister: true,
-    // Use useMemo for defaultValues to ensure they are reactive to currentQuestionnaire changes
-    defaultValues: useMemo(() => ({
-      score_id: currentQuestionnaire?.score_id || '',
-      evidence: currentQuestionnaire?.evidence || '',
-    }), [currentQuestionnaire]),
+    defaultValues: { // Inicializa com valores vazios
+      score_id: '',
+      evidence: '',
+    },
   });
 
-  // Removed the useEffect for form.reset as useMemo handles defaultValues reactively.
-  // This avoids potential race conditions or stale data issues.
+  // Use useEffect para resetar o formulário quando a pergunta atual mudar
+  useEffect(() => {
+    if (currentQuestionnaire) {
+      form.reset({
+        score_id: currentQuestionnaire.score_id || '',
+        evidence: currentQuestionnaire.evidence || '',
+      });
+    } else {
+      form.reset({
+        score_id: '',
+        evidence: '',
+      });
+    }
+  }, [currentQuestionnaire, form]); // Depende de currentQuestionnaire e form
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -153,7 +164,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     onSuccess: () => {
       // Invalida a query para garantir que os dados em cache estejam frescos para a próxima pergunta
       queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId] });
-      // showSuccess('Resposta salva com sucesso!'); // Removed to avoid multiple toasts during navigation
+      // showSuccess('Resposta salva com sucesso!'); // Removido para evitar múltiplos toasts durante a navegação
     },
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
@@ -180,6 +191,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         score_id: formData.score_id,
         evidence: formData.evidence || null,
       });
+      showSuccess('Resposta salva com sucesso!'); // Adicionado toast de sucesso aqui
       return true;
     } catch (error) {
       // Error already handled by onError of mutation
