@@ -52,7 +52,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   });
 
   // 2. Fetch all questionnaire entries for the selected diagnostic
-  const { data: questionnaireEntries, isLoading: isLoadingQuestionnaireEntries, error: errorQuestionnaireEntries, refetch: refetchQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
+  const { data: questionnaireEntries, isLoading: isLoadingQuestionnaireEntries, error: errorQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
     queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id || !selectedDiagnosticId) return [];
@@ -122,19 +122,13 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   // Formulário para a pergunta atual
   const form = useForm<z.infer<typeof questionResponseSchema>>({
     resolver: zodResolver(questionResponseSchema),
-    // Removido defaultValues do useForm para usar form.reset em useEffect
     shouldUnregister: true,
   });
 
   // Update form fields when currentQuestionnaire changes
   useEffect(() => {
-    console.log("AnswerDiagnosticQuestionnairePage: useEffect - currentQuestionnaire changed:", currentQuestionnaire);
     if (currentQuestionnaire) {
       form.reset({
-        score_id: currentQuestionnaire.score_id || '',
-        evidence: currentQuestionnaire.evidence || '',
-      });
-      console.log("AnswerDiagnosticQuestionnairePage: Form reset with values:", {
         score_id: currentQuestionnaire.score_id || '',
         evidence: currentQuestionnaire.evidence || '',
       });
@@ -143,14 +137,12 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         score_id: '',
         evidence: '',
       });
-      console.log("AnswerDiagnosticQuestionnairePage: Form reset to empty.");
     }
   }, [currentQuestionnaire, form]);
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
-      console.log("AnswerDiagnosticQuestionnairePage: Attempting to save data:", data);
       const { error } = await supabase
         .from('diagnostic_questionnaires')
         .update({
@@ -162,10 +154,13 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
       if (error) {
-        console.error("AnswerDiagnosticQuestionnairePage: Error saving to DB:", error);
         throw error;
       }
-      console.log("AnswerDiagnosticQuestionnairePage: Data saved successfully.");
+    },
+    onSuccess: () => {
+      // Invalida a query para garantir que os dados em cache estejam frescos para a próxima pergunta
+      queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId] });
+      showSuccess('Resposta salva com sucesso!');
     },
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
@@ -184,7 +179,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         score_id: data.score_id,
         evidence: data.evidence || null,
       });
-      showSuccess('Resposta salva com sucesso!');
     } catch (error) {
       // Erro já é tratado pelo onError da mutation
     }
@@ -194,24 +188,12 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     // 1. Salvar a resposta atual
     await form.handleSubmit(onSubmit)(); 
     
-    // 2. Recarregar os dados do questionário para garantir que o estado mais recente esteja disponível
-    console.log("AnswerDiagnosticQuestionnairePage: Refetching questionnaire entries...");
-    const { data: freshEntries, error: refetchError } = await refetchQuestionnaireEntries();
-    if (refetchError) {
-      console.error("AnswerDiagnosticQuestionnairePage: Error refetching entries:", refetchError);
-      showError(`Erro ao recarregar perguntas: ${refetchError.message}`);
-      return;
-    }
-    console.log("AnswerDiagnosticQuestionnairePage: Fresh entries after refetch:", freshEntries);
-
-    // 3. Atualizar o índice da pergunta usando os dados frescos
-    if (freshEntries && currentQuestionIndex < freshEntries.length - 1) {
+    // 2. Atualizar o índice da pergunta
+    if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
-      console.log("AnswerDiagnosticQuestionnairePage: Moving to next question. New index:", currentQuestionIndex + 1);
     } else {
       showSuccess("Você chegou ao final do questionário!");
       setIsSubmitted(true); // Marcar como concluído ao chegar ao final
-      console.log("AnswerDiagnosticQuestionnairePage: End of questionnaire reached.");
     }
   };
 
@@ -219,20 +201,9 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     // 1. Salvar a resposta atual
     await form.handleSubmit(onSubmit)();
 
-    // 2. Recarregar os dados do questionário
-    console.log("AnswerDiagnosticQuestionnairePage: Refetching questionnaire entries for previous...");
-    const { data: freshEntries, error: refetchError } = await refetchQuestionnaireEntries();
-    if (refetchError) {
-      console.error("AnswerDiagnosticQuestionnairePage: Error refetching entries for previous:", refetchError);
-      showError(`Erro ao recarregar perguntas: ${refetchError.message}`);
-      return;
-    }
-    console.log("AnswerDiagnosticQuestionnairePage: Fresh entries after refetch for previous:", freshEntries);
-
-    // 3. Atualizar o índice da pergunta usando os dados frescos
-    if (freshEntries && currentQuestionIndex > 0) {
+    // 2. Atualizar o índice da pergunta
+    if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
-      console.log("AnswerDiagnosticQuestionnairePage: Moving to previous question. New index:", currentQuestionIndex - 1);
     }
   };
 
