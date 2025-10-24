@@ -191,7 +191,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         score_id: formData.score_id,
         evidence: formData.evidence || null,
       });
-      showSuccess('Resposta salva com sucesso!'); // Adicionado toast de sucesso aqui
       return true;
     } catch (error) {
       // Error already handled by onError of mutation
@@ -348,6 +347,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                     </div>
 
                     <FormField
+                      key={`score-field-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="score_id"
                       render={({ field }) => (
@@ -384,6 +384,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       )}
                     />
                     <FormField
+                      key={`evidence-field-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="evidence"
                       render={({ field }) => (
