@@ -28,21 +28,15 @@ const PulsePage: React.FC = () => {
           .from('pulse_informatives')
           .select('*')
           .eq('publication_date', today)
-          .single(); 
+          .order('created_at', { ascending: false }) // Ordenar por data de criação para pegar o mais recente
+          .limit(1) // Limitar a um resultado
+          .maybeSingle(); // Usar maybeSingle para lidar com 0 ou 1 resultado graciosamente
         
         if (error) {
-          // Se for um erro de "no rows found" (PGRST116) ou status 406, retorna null
-          if (error.code === 'PGRST116' || (error as any).status === 406) {
-            return null;
-          }
-          throw error; // Re-lança outros erros
+          throw error; // Re-lança quaisquer erros reais
         }
-        return data;
+        return data; // data será null se nenhum informativo for encontrado, ou o informativo único
       } catch (e: any) {
-        // Captura erros que podem não ter o 'code' mas têm o 'status'
-        if (e.code === 'PGRST116' || e.status === 406) {
-          return null;
-        }
         throw e;
       }
     },

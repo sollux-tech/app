@@ -129,20 +129,22 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     return questionnaireEntries[currentQuestionIndex];
   }, [questionnaireEntries, currentQuestionIndex]);
 
-  // Update form fields when currentQuestionnaire changes OR when selectedDiagnosticId changes (initial load)
+  // Update form fields when currentQuestionnaire changes
   useEffect(() => {
     if (currentQuestionnaire) {
+      // Usar form.reset para garantir que o formulário seja completamente reinicializado
       form.reset({
         score_id: currentQuestionnaire.score_id || '',
         evidence: currentQuestionnaire.evidence || '',
       });
     } else {
+      // Resetar para valores vazios se nenhuma pergunta estiver selecionada
       form.reset({
         score_id: '',
         evidence: '',
       });
     }
-  }, [currentQuestionnaire, form, selectedDiagnosticId]); // Adicionado selectedDiagnosticId como dependência
+  }, [currentQuestionnaire, form, selectedDiagnosticId]); // Mantido selectedDiagnosticId como dependência para reset inicial
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -184,14 +186,8 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
 
     // 3. Atualizar o índice da pergunta usando os dados frescos
     if (freshEntries && currentQuestionIndex < freshEntries.length - 1) {
-      const nextIndex = currentQuestionIndex + 1;
-      setCurrentQuestionIndex(nextIndex);
-      // Resetar o formulário explicitamente com os dados da próxima pergunta
-      const nextQuestionnaire = freshEntries[nextIndex];
-      form.reset({
-        score_id: nextQuestionnaire.score_id || '',
-        evidence: nextQuestionnaire.evidence || '',
-      });
+      setCurrentQuestionIndex(prev => prev + 1);
+      // O useEffect reagirá à mudança de currentQuestionIndex e fará o reset
     } else {
       showSuccess("Você chegou ao final do questionário!");
       setIsSubmitted(true); // Marcar como concluído ao chegar ao final
@@ -207,14 +203,8 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
 
     // 3. Atualizar o índice da pergunta usando os dados frescos
     if (freshEntries && currentQuestionIndex > 0) {
-      const prevIndex = currentQuestionIndex - 1;
-      setCurrentQuestionIndex(prevIndex);
-      // Resetar o formulário explicitamente com os dados da pergunta anterior
-      const prevQuestionnaire = freshEntries[prevIndex];
-      form.reset({
-        score_id: prevQuestionnaire.score_id || '',
-        evidence: prevQuestionnaire.evidence || '',
-      });
+      setCurrentQuestionIndex(prev => prev - 1);
+      // O useEffect reagirá à mudança de currentQuestionIndex e fará o reset
     }
   };
 
