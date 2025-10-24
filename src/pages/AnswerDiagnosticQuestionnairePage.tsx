@@ -41,6 +41,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       score_id: '',
       evidence: '',
     },
+    shouldUnregister: true, // Adicionado para garantir que os campos sejam desregistrados corretamente
   });
 
   // 1. Fetch all diagnostics for the selected company
