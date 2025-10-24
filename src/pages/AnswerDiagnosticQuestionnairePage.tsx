@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form'; // Importar FormProvider
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,6 +18,7 @@ import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
 import { Loader2, ArrowLeft, ArrowRight, Save, CheckCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import DiagnosticQuestionForm from '@/components/DiagnosticQuestionForm'; // Importar o novo componente
 
 // Schema para validar a resposta de uma única pergunta
 const questionResponseSchema = z.object({
@@ -120,7 +121,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   }, [questionnaireEntries, currentQuestionIndex]);
 
   // Formulário para a pergunta atual
-  const form = useForm<z.infer<typeof questionResponseSchema>>({
+  const formMethods = useForm<z.infer<typeof questionResponseSchema>>({
     resolver: zodResolver(questionResponseSchema),
     shouldUnregister: true,
     defaultValues: { // Inicializa com valores vazios
@@ -132,17 +133,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   // Use useEffect para resetar o formulário quando a pergunta atual mudar
   useEffect(() => {
     if (currentQuestionnaire) {
-      form.reset({
+      formMethods.reset({
         score_id: currentQuestionnaire.score_id || '',
         evidence: currentQuestionnaire.evidence || '',
       });
     } else {
-      form.reset({
+      formMethods.reset({
         score_id: '',
         evidence: '',
       });
     }
-  }, [currentQuestionnaire, form]); // Depende de currentQuestionnaire e form
+  }, [currentQuestionnaire, formMethods]); // Depende de currentQuestionnaire e formMethods
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -164,7 +165,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     onSuccess: () => {
       // Invalida a query para garantir que os dados em cache estejam frescos para a próxima pergunta
       queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId] });
-      // showSuccess('Resposta salva com sucesso!'); // Removido para evitar múltiplos toasts durante a navegação
     },
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
@@ -178,19 +178,20 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       return false;
     }
 
-    const isValid = await form.trigger(); // Manually trigger validation
+    const isValid = await formMethods.trigger(); // Manually trigger validation
     if (!isValid) {
       showError("Por favor, preencha todos os campos obrigatórios.");
       return false;
     }
 
-    const formData = form.getValues();
+    const formData = formMethods.getValues();
     try {
       await updateQuestionnaireMutation.mutateAsync({
         id: currentQuestionnaire.id,
         score_id: formData.score_id,
         evidence: formData.evidence || null,
       });
+      showSuccess('Resposta salva com sucesso!');
       return true;
     } catch (error) {
       // Error already handled by onError of mutation
@@ -331,77 +332,17 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...form}>
+                <FormProvider {...formMethods}> {/* Usar FormProvider aqui */}
                   <form
-                    key={currentQuestionnaire?.id || 'loading-question'} // Use a unique key for the form based on the current question's ID
-                    onSubmit={form.handleSubmit(saveCurrentQuestion)} // Submit button now calls saveCurrentQuestion directly
+                    key={currentQuestionnaire?.id || 'loading-question'} // A key no form é crucial
+                    onSubmit={formMethods.handleSubmit(saveCurrentQuestion)}
                     className="space-y-6"
                   >
-                    <div className="space-y-2">
-                      <Label className="text-lg font-semibold text-foreground">
-                        {currentQuestionnaire?.kpis?.question || (isLoadingQuestionnaireEntries ? 'Carregando pergunta...' : 'Pergunta não disponível.')}
-                      </Label>
-                      <p className="text-sm text-muted-foreground">
-                        {/* Adicionar descrição do KPI se disponível */}
-                      </p>
-                    </div>
-
-                    <FormField
-                      key={`score-field-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
-                      control={form.control}
-                      name="score_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-foreground">Nota</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            disabled={isLoadingScoringScales || isSaving}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="rounded-lg">
-                                <SelectValue placeholder="Selecione uma nota" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {isLoadingScoringScales ? (
-                                <SelectItem value="loading" disabled>Carregando notas...</SelectItem>
-                              ) : (scoringScales?.length || 0) === 0 ? (
-                                <SelectItem value="no-scores" disabled>Nenhuma régua de pontuação cadastrada</SelectItem>
-                              ) : (
-                                scoringScales?.map((score) => (
-                                  score.id && score.id !== '' ? (
-                                    <SelectItem key={score.id} value={score.id}>
-                                      {score.score} - {score.description}
-                                    </SelectItem>
-                                  ) : null
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      key={`evidence-field-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
-                      control={form.control}
-                      name="evidence"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-foreground">Evidência (Opcional)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Descreva as evidências para esta resposta."
-                              {...field}
-                              className="rounded-lg"
-                              rows={4}
-                              disabled={isSaving}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                    <DiagnosticQuestionForm
+                      currentQuestionnaire={currentQuestionnaire}
+                      scoringScales={scoringScales}
+                      isLoadingScoringScales={isLoadingScoringScales}
+                      isSaving={isSaving}
                     />
 
                     <div className="flex justify-between gap-2 pt-4">
@@ -416,7 +357,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       </Button>
                       <div className="flex gap-2">
                         <Button
-                          type="submit" // This button now calls form.handleSubmit(saveCurrentQuestion)
+                          type="submit"
                           disabled={isSaving}
                           className="rounded-lg bg-sollux-red hover:bg-sollux-orange"
                         >
@@ -454,7 +395,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       </div>
                     )}
                   </form>
-                </Form>
+                </FormProvider>
               </CardContent>
             </Card>
           ) : (
