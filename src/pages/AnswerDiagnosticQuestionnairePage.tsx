@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form'; // Remover FormProvider
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import * as z from 'zod'; // Manter z para outros schemas se houver, ou remover se não for mais usado
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,13 +18,8 @@ import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
 import { Loader2, ArrowLeft, ArrowRight, Save, CheckCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import DiagnosticQuestionForm from '@/components/DiagnosticQuestionForm'; // Importar o novo componente
-
-// Schema para validar a resposta de uma única pergunta
-const questionResponseSchema = z.object({
-  score_id: z.string().min(1, { message: 'A nota é obrigatória.' }),
-  evidence: z.string().optional(),
-});
+import DiagnosticQuestionForm from '@/components/DiagnosticQuestionForm';
+import { questionResponseSchema, QuestionResponseFormData } from '@/types/questionResponse'; // Importar do novo arquivo
 
 const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -121,7 +116,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   }, [questionnaireEntries, currentQuestionIndex]);
 
   // Formulário para a pergunta atual
-  const formMethods = useForm<z.infer<typeof questionResponseSchema>>({
+  const formMethods = useForm<QuestionResponseFormData>({ // Usar o tipo importado aqui
     resolver: zodResolver(questionResponseSchema),
     shouldUnregister: true,
     defaultValues: { // Inicializa com valores vazios
