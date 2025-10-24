@@ -33,8 +33,9 @@ const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
         <Label className="text-lg font-semibold text-foreground">
           {currentQuestionnaire.kpis?.question || 'Pergunta não disponível.'}
         </Label>
-        <p className="text-sm text-muted-foreground">
-          {/* Adicionar descrição do KPI se disponível */}
+        {/* Adicionado o ID da pergunta (KPI) para depuração */}
+        <p className="text-xs text-muted-foreground">
+          ID da Pergunta (KPI): <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{currentQuestionnaire.kpi_id}</code>
         </p>
       </div>
 
@@ -46,7 +47,6 @@ const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
             <FormLabel className="text-foreground">Nota</FormLabel>
             <Select
               onValueChange={field.onChange}
-              // Garante que o valor é sempre uma string para o Select
               value={field.value || ''}
               disabled={isLoadingScoringScales || isSaving}
             >
