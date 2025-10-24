@@ -6,6 +6,7 @@ export interface DiagnosticQuestionnaire {
   kpi_id: string;
   score_id: string | null; // Alterado para permitir null
   evidence: string | null;
+  order_number: number | null; // Adicionado
   created_at: string;
   updated_at: string;
 
@@ -26,4 +27,5 @@ export interface DiagnosticQuestionnaireFormData {
   kpi_id: string;
   score_id: string;
   evidence: string;
+  order_number: number; // Adicionado
 }

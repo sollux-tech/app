@@ -62,6 +62,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
           kpi_id,
           score_id,
           evidence,
+          order_number, -- Adicionado
           created_at,
           updated_at,
           kpis(question),
@@ -70,7 +71,8 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
         .eq('diagnostic_id', selectedDiagnosticId)
-        .order('created_at', { ascending: true });
+        .order('order_number', { ascending: true }) // Ordenar por order_number
+        .order('created_at', { ascending: true }); // Fallback order
       if (error) throw error;
 
       // Post-process data to ensure kpis and scoring_scales are single objects or null
@@ -122,6 +124,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     defaultValues: { // Inicializa com valores vazios
       score_id: '',
       evidence: '',
+      order_number: 1, // Adicionado
     } as QuestionResponseFormData, // Adicionado type assertion aqui
   });
 
@@ -131,23 +134,26 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       formMethods.reset({
         score_id: currentQuestionnaire.score_id || '',
         evidence: currentQuestionnaire.evidence || '',
+        order_number: currentQuestionnaire.order_number || 1, // Adicionado
       });
     } else {
       formMethods.reset({
         score_id: '',
         evidence: '',
+        order_number: 1, // Adicionado
       });
     }
   }, [currentQuestionnaire, formMethods]); // Depende de currentQuestionnaire e formMethods
 
   const updateQuestionnaireMutation = useMutation({
-    mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
+    mutationFn: async (data: { id: string; score_id: string; evidence: string | null; order_number: number | null }) => { // Adicionado order_number
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       const { error } = await supabase
         .from('diagnostic_questionnaires')
         .update({
           score_id: data.score_id,
           evidence: data.evidence,
+          order_number: data.order_number, // Adicionado
           updated_at: new Date().toISOString(),
         })
         .eq('id', data.id)
@@ -183,8 +189,9 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     try {
       await updateQuestionnaireMutation.mutateAsync({
         id: currentQuestionnaire.id,
-        score_id: formData.score_id,
+        score_id: formData.score_id || '', // Ensure it's a string
         evidence: formData.evidence || null,
+        order_number: formData.order_number || null, // Adicionado
       });
       showSuccess('Resposta salva com sucesso!');
       return true;
@@ -254,7 +261,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
       <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center">
         <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-8 text-center border border-border">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-foreground mb-2">Questionário Concluído!</h2>
+          <h2 className="2xl font-bold text-foreground mb-2">Questionário Concluído!</h2>
           <p className="text-muted-foreground mb-6">
             Suas respostas foram salvas com sucesso.
           </p>

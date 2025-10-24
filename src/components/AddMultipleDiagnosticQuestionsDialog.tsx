@@ -39,6 +39,7 @@ interface KpiResponseFormItem {
   pillar_block_id: string; // Para filtragem
   isSelected: boolean;
   existingQuestionnaireId?: string; // ID da resposta existente, se houver
+  order_number: number; // Adicionado
 }
 
 // Schema para o formulário completo (um array de KpiResponseFormItem)
@@ -50,6 +51,7 @@ const formSchema = z.object({
     pillar_block_id: z.string(),
     isSelected: z.boolean(),
     existingQuestionnaireId: z.string().optional(),
+    order_number: z.number(), // Adicionado
   })),
 });
 
@@ -124,7 +126,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
   // Initialize form with KPIs and existing responses
   useEffect(() => {
     if (open && kpis && existingQuestionnaires && !isLoadingDiagnostic && !isLoadingKpis && !isLoadingExistingQuestionnaires) {
-      const initialKpiResponses: KpiResponseFormItem[] = kpis.map(kpi => {
+      const initialKpiResponses: KpiResponseFormItem[] = kpis.map((kpi, index) => {
         const existingResponse = existingQuestionnaires.find(eq => eq.kpi_id === kpi.id);
         return {
           kpi_id: kpi.id,
@@ -133,6 +135,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
           pillar_block_id: kpi.pillar_block_id || '',
           isSelected: !!existingResponse,
           existingQuestionnaireId: existingResponse?.id,
+          order_number: existingResponse?.order_number ?? (index + 1), // Use existing order or assign new
         };
       });
       form.reset({ kpiResponses: initialKpiResponses });
@@ -153,6 +156,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
       const existingResponsesMap = new Map(existingQuestionnaires?.map(eq => [eq.kpi_id, eq]) || []);
 
       const inserts = [];
+      const updates = []; // Para atualizar o order_number de itens existentes
       const deletes = [];
 
       for (const item of currentResponses) {
@@ -169,9 +173,15 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
               kpi_id: item.kpi_id,
               score_id: null, // Explicitamente null, pois não estamos respondendo aqui
               evidence: null, // Explicitamente null, pois não estamos respondendo aqui
+              order_number: item.order_number, // Adicionado
+            });
+          } else if (existing.order_number !== item.order_number) {
+            // Se já existe e a ordem mudou, atualiza
+            updates.push({
+              id: existing.id,
+              order_number: item.order_number,
             });
           }
-          // Se já existe, não faz nada (já está vinculado, e não há campos para atualizar aqui)
         } else {
           // Usuário NÃO quer este KPI vinculado
           if (existing) {
@@ -186,6 +196,11 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
 
       if (inserts.length > 0) {
         promises.push(supabase.from('diagnostic_questionnaires').insert(inserts));
+      }
+      if (updates.length > 0) {
+        for (const updateItem of updates) {
+          promises.push(supabase.from('diagnostic_questionnaires').update({ order_number: updateItem.order_number }).eq('id', updateItem.id));
+        }
       }
       if (deletes.length > 0) {
         promises.push(supabase.from('diagnostic_questionnaires').delete().in('id', deletes));
@@ -226,10 +241,10 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
     );
 
     // Combine selected items (always visible) with filtered unselected items
-    // Sort selected items by question, then filtered unselected items by question
+    // Sort by order_number first, then by question if order_number is the same
     return [
-      ...selectedItems.sort((a, b) => a.question.localeCompare(b.question)),
-      ...filteredUnselectedItems.sort((a, b) => a.question.localeCompare(b.question)),
+      ...selectedItems.sort((a, b) => a.order_number - b.order_number || a.question.localeCompare(b.question)),
+      ...filteredUnselectedItems.sort((a, b) => a.order_number - b.order_number || a.question.localeCompare(b.question)),
     ];
   }, [allKpiResponses, searchTerm]);
 
@@ -288,7 +303,7 @@ const AddMultipleDiagnosticQuestionsDialog: React.FC<AddMultipleDiagnosticQuesti
                                       />
                                     </FormControl>
                                     <FormLabel className="font-semibold text-foreground cursor-pointer">
-                                      {index + 1}. {item.question}
+                                      {item.order_number}. {item.question}
                                     </FormLabel>
                                   </FormItem>
                                 )}

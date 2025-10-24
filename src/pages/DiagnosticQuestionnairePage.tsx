@@ -51,12 +51,14 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       kpi_id: z.string().min(1, { message: 'A pergunta (KPI) é obrigatória.' }),
       score_id: z.string().min(1, { message: 'A nota é obrigatória.' }),
       evidence: z.string().optional(),
+      order_number: z.number().min(1, { message: 'O número de ordem é obrigatório.' }), // Adicionado
     })),
     defaultValues: {
       diagnostic_id: undefined,
       kpi_id: undefined,
       score_id: undefined,
       evidence: '',
+      order_number: 1, // Adicionado
     },
   });
 
@@ -69,6 +71,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         kpi_id: editingQuestionnaire.kpi_id || undefined,
         score_id: editingQuestionnaire.score_id || undefined,
         evidence: editingQuestionnaire.evidence || '',
+        order_number: editingQuestionnaire.order_number || 1, // Adicionado
       });
     } else {
       editForm.reset({
@@ -76,6 +79,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         kpi_id: undefined,
         score_id: undefined,
         evidence: '',
+        order_number: 1, // Adicionado
       });
     }
   }, [editingQuestionnaire, editForm, isEditDialogOpen]);
@@ -167,6 +171,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
           kpi_id,
           score_id,
           evidence,
+          order_number, -- Adicionado
           created_at,
           updated_at,
           diagnostics(
@@ -182,7 +187,8 @@ const DiagnosticQuestionnairePage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
         .eq('diagnostic_id', selectedDiagnosticToAnswer) // Filter by selected diagnostic
-        .order('created_at', { ascending: false });
+        .order('order_number', { ascending: true }) // Ordenar por order_number
+        .order('created_at', { ascending: false }); // Fallback order
       if (error) throw error;
 
       const processedData: DiagnosticQuestionnaire[] = data.map((item: any) => ({
@@ -277,6 +283,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
           kpi_id: data.kpi_id,
           score_id: data.score_id,
           evidence: data.evidence || null,
+          order_number: data.order_number, // Adicionado
         })
         .eq('id', editingQuestionnaire.id)
         .eq('user_id', user.id)
@@ -469,6 +476,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="text-foreground">Ordem</TableHead> {/* Nova coluna */}
                   <TableHead className="text-foreground">Diagnóstico</TableHead>
                   <TableHead className="text-foreground">Pergunta (KPI)</TableHead>
                   <TableHead className="text-right text-foreground">Ações</TableHead>
@@ -477,13 +485,14 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               <TableBody>
                 {questionnaires?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
+                    <TableCell colSpan={4} className="text-center text-muted-foreground"> {/* Colspan ajustado */}
                       Nenhuma resposta de questionário encontrada para este diagnóstico.
                     </TableCell>
                   </TableRow>
                 ) : (
                   questionnaires?.map((q) => (
                     <TableRow key={q.id}>
+                      <TableCell className="font-medium text-foreground">{q.order_number || 'N/A'}</TableCell> {/* Exibir order_number */}
                       <TableCell className="font-medium text-foreground">
                         {q.diagnostics?.id.substring(0, 8)}... ({q.diagnostics?.pillars?.description || 'N/A'} / {q.diagnostics?.pillar_blocks?.name || 'N/A'})
                       </TableCell>
@@ -597,6 +606,19 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                         )}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={editForm.control}
+                name="order_number" // Adicionado
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Ordem da Pergunta</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="Ex: 1" {...field} className="rounded-lg" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
