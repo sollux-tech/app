@@ -33,9 +33,12 @@ const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
         <Label className="text-lg font-semibold text-foreground">
           {currentQuestionnaire.kpis?.question || 'Pergunta não disponível.'}
         </Label>
-        {/* Adicionado o ID da pergunta (KPI) para depuração */}
+        {/* Adicionado o ID da pergunta (KPI) e o order_number para depuração */}
         <p className="text-xs text-muted-foreground">
           ID da Pergunta (KPI): <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{currentQuestionnaire.kpi_id}</code>
+          {currentQuestionnaire.order_number !== null && (
+            <span className="ml-2">Ordem: <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded">{currentQuestionnaire.order_number}</code></span>
+          )}
         </p>
       </div>
 
