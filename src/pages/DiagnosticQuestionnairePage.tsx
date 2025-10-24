@@ -26,6 +26,12 @@ import { ptBR } from 'date-fns/locale';
 import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagnosticQuestionsDialog';
 import { Label } from '@/components/ui/label';
 
+// Tipo específico para os dados de pilar do diagnóstico necessários para o filtro
+interface DiagnosticPillarInfo {
+  id: string;
+  pillar_id: string | null;
+}
+
 // Removido formSchema e o formulário de pergunta única, pois serão substituídos pelo novo diálogo.
 
 const DiagnosticQuestionnairePage: React.FC = () => {
@@ -75,17 +81,15 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   }, [editingQuestionnaire, editForm, isEditDialogOpen]);
 
   // 1. Fetch all diagnostics for the selected company and user to determine relevant pillars
-  const { data: allUserCompanyDiagnostics, isLoading: isLoadingAllUserCompanyDiagnostics } = useQuery<Diagnostic[], Error>({
+  const { data: allUserCompanyDiagnostics, isLoading: isLoadingAllUserCompanyDiagnostics } = useQuery<DiagnosticPillarInfo[], Error>({
     queryKey: ['allUserCompanyDiagnosticsForPillarFilter', user?.id, selectedCompany?.id],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
       const { data, error } = await supabase
         .from('diagnostics')
-        .select('id, pillar_id') // Only need id and pillar_id for filtering
-        .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id);
+        .select('id, pillar_id'); // Only need id and pillar_id for filtering
       if (error) throw error;
-      return data;
+      return data as DiagnosticPillarInfo[]; // Cast to the new specific type
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });
@@ -119,20 +123,20 @@ const DiagnosticQuestionnairePage: React.FC = () => {
 
   // 3. Fetch diagnostics based on selected pillar
   const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarId],
+    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarId], // Adicionado selectedPillarId
     queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return [];
+      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return []; // Depende de selectedPillarId
       const { data, error } = await supabase
         .from('diagnostics')
         .select('*, companies(name), pillars(description), pillar_blocks(name)')
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
-        .eq('pillar_id', selectedPillarId)
+        .eq('pillar_id', selectedPillarId) // Filtra por pillar_id
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId,
+    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId, // Habilitado apenas se um pilar for selecionado
   });
 
   // Reset selected diagnostic when pillar changes
