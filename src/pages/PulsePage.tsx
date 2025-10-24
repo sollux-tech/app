@@ -24,6 +24,7 @@ const PulsePage: React.FC = () => {
     queryKey: ['pulseInformativeToday', today],
     queryFn: async () => {
       try {
+        console.log(`PulsePage: Buscando informativo para a data: ${today}`); // Log para depuração
         const { data, error } = await supabase
           .from('pulse_informatives')
           .select('*')
@@ -32,10 +33,13 @@ const PulsePage: React.FC = () => {
           .limit(1); // Limitar a um resultado
         
         if (error) {
+          console.error("PulsePage: Erro na consulta de informativo:", error); // Log de erro
           throw error; // Re-lança quaisquer erros reais
         }
+        console.log("PulsePage: Dados brutos do informativo:", data); // Log dos dados brutos
         return data.length > 0 ? data[0] : null; // Retorna o primeiro item do array ou null
       } catch (e: any) {
+        console.error("PulsePage: Erro inesperado ao buscar informativo:", e); // Log de erro inesperado
         throw e;
       }
     },

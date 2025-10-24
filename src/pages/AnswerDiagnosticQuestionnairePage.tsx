@@ -34,16 +34,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Formulário para a pergunta atual
-  const form = useForm<z.infer<typeof questionResponseSchema>>({
-    resolver: zodResolver(questionResponseSchema),
-    defaultValues: {
-      score_id: '',
-      evidence: '',
-    },
-    shouldUnregister: true, // Adicionado para garantir que os campos sejam desregistrados corretamente
-  });
-
   // 1. Fetch all diagnostics for the selected company
   const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
     queryKey: ['diagnosticsListForAnswer', user?.id, selectedCompany?.id],
@@ -129,20 +119,16 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     return questionnaireEntries[currentQuestionIndex];
   }, [questionnaireEntries, currentQuestionIndex]);
 
-  // Update form fields when currentQuestionnaire changes
-  useEffect(() => {
-    if (currentQuestionnaire) {
-      form.reset({
-        score_id: currentQuestionnaire.score_id || '',
-        evidence: currentQuestionnaire.evidence || '',
-      });
-    } else {
-      form.reset({
-        score_id: '',
-        evidence: '',
-      });
-    }
-  }, [currentQuestionnaire, form]); // Removido selectedDiagnosticId daqui
+  // Formulário para a pergunta atual
+  const form = useForm<z.infer<typeof questionResponseSchema>>({
+    resolver: zodResolver(questionResponseSchema),
+    // Usar useMemo para defaultValues para que o formulário reinicialize quando currentQuestionnaire mudar
+    defaultValues: useMemo(() => ({
+      score_id: currentQuestionnaire?.score_id || '',
+      evidence: currentQuestionnaire?.evidence || '',
+    }), [currentQuestionnaire]),
+    shouldUnregister: true,
+  });
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -185,7 +171,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     // 3. Atualizar o índice da pergunta usando os dados frescos
     if (freshEntries && currentQuestionIndex < freshEntries.length - 1) {
       setCurrentQuestionIndex(prev => prev + 1);
-      // O useEffect reagirá à mudança de currentQuestionIndex e fará o reset
+      // O useMemo em defaultValues do useForm se encarregará de resetar o formulário
     } else {
       showSuccess("Você chegou ao final do questionário!");
       setIsSubmitted(true); // Marcar como concluído ao chegar ao final
@@ -202,7 +188,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     // 3. Atualizar o índice da pergunta usando os dados frescos
     if (freshEntries && currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prev => prev - 1);
-      // O useEffect reagirá à mudança de currentQuestionIndex e fará o reset
+      // O useMemo em defaultValues do useForm se encarregará de resetar o formulário
     }
   };
 
