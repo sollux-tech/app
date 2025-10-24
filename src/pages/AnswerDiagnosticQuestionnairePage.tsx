@@ -123,22 +123,15 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   const form = useForm<z.infer<typeof questionResponseSchema>>({
     resolver: zodResolver(questionResponseSchema),
     shouldUnregister: true,
+    // Use useMemo for defaultValues to ensure they are reactive to currentQuestionnaire changes
+    defaultValues: useMemo(() => ({
+      score_id: currentQuestionnaire?.score_id || '',
+      evidence: currentQuestionnaire?.evidence || '',
+    }), [currentQuestionnaire]),
   });
 
-  // Update form fields when currentQuestionnaire changes
-  useEffect(() => {
-    if (currentQuestionnaire) {
-      form.reset({
-        score_id: currentQuestionnaire.score_id || '',
-        evidence: currentQuestionnaire.evidence || '',
-      });
-    } else {
-      form.reset({
-        score_id: '',
-        evidence: '',
-      });
-    }
-  }, [currentQuestionnaire, form]);
+  // Removed the useEffect for form.reset as useMemo handles defaultValues reactively.
+  // This avoids potential race conditions or stale data issues.
 
   const updateQuestionnaireMutation = useMutation({
     mutationFn: async (data: { id: string; score_id: string; evidence: string | null }) => {
@@ -160,57 +153,67 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
     onSuccess: () => {
       // Invalida a query para garantir que os dados em cache estejam frescos para a próxima pergunta
       queryClient.invalidateQueries({ queryKey: ['diagnosticQuestionnaireEntries', user?.id, selectedCompany?.id, selectedDiagnosticId] });
-      showSuccess('Resposta salva com sucesso!');
+      // showSuccess('Resposta salva com sucesso!'); // Removed to avoid multiple toasts during navigation
     },
     onError: (error: Error) => {
       showError(`Erro ao salvar resposta: ${error.message}`);
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof questionResponseSchema>) => {
+  // Standalone function to save the current question's response
+  const saveCurrentQuestion = async (): Promise<boolean> => {
     if (!currentQuestionnaire) {
       showError("Nenhuma pergunta selecionada para salvar.");
-      return;
+      return false;
     }
 
+    const isValid = await form.trigger(); // Manually trigger validation
+    if (!isValid) {
+      showError("Por favor, preencha todos os campos obrigatórios.");
+      return false;
+    }
+
+    const formData = form.getValues();
     try {
       await updateQuestionnaireMutation.mutateAsync({
         id: currentQuestionnaire.id,
-        score_id: data.score_id,
-        evidence: data.evidence || null,
+        score_id: formData.score_id,
+        evidence: formData.evidence || null,
       });
+      return true;
     } catch (error) {
-      // Erro já é tratado pelo onError da mutation
+      // Error already handled by onError of mutation
+      return false;
     }
   };
 
   const handleNextQuestion = async () => {
-    // 1. Salvar a resposta atual
-    await form.handleSubmit(onSubmit)(); 
-    
-    // 2. Atualizar o índice da pergunta
-    if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      showSuccess("Você chegou ao final do questionário!");
-      setIsSubmitted(true); // Marcar como concluído ao chegar ao final
+    const savedSuccessfully = await saveCurrentQuestion();
+    if (savedSuccessfully) {
+      if (questionnaireEntries && currentQuestionIndex < questionnaireEntries.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+      } else {
+        showSuccess("Você chegou ao final do questionário!");
+        setIsSubmitted(true); // Marcar como concluído ao chegar ao final
+      }
     }
   };
 
   const handlePreviousQuestion = async () => {
-    // 1. Salvar a resposta atual
-    await form.handleSubmit(onSubmit)();
-
-    // 2. Atualizar o índice da pergunta
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+    const savedSuccessfully = await saveCurrentQuestion();
+    if (savedSuccessfully) {
+      if (currentQuestionIndex > 0) {
+        setCurrentQuestionIndex(prev => prev - 1);
+      }
     }
   };
 
   const handleSaveAll = async () => {
-    await form.handleSubmit(onSubmit)();
-    showSuccess("Todas as respostas foram salvas!");
-    setIsSubmitted(true);
+    const savedSuccessfully = await saveCurrentQuestion();
+    if (savedSuccessfully) {
+      showSuccess("Todas as respostas foram salvas!");
+      setIsSubmitted(true);
+    }
   };
 
   const isLoadingPage = isLoadingDiagnostics || isLoadingQuestionnaireEntries || isLoadingScoringScales;
@@ -319,8 +322,8 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
               <CardContent>
                 <Form {...form}>
                   <form
-                    key={currentQuestionnaire?.id || 'no-diagnostic-question-selected'} // Adicionado key aqui
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    key={currentQuestionnaire?.id || 'loading-question'} // Use a unique key for the form based on the current question's ID
+                    onSubmit={form.handleSubmit(saveCurrentQuestion)} // Submit button now calls saveCurrentQuestion directly
                     className="space-y-6"
                   >
                     <div className="space-y-2">
@@ -333,7 +336,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                     </div>
 
                     <FormField
-                      key={`form-field-score-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="score_id"
                       render={({ field }) => (
@@ -370,7 +372,6 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       )}
                     />
                     <FormField
-                      key={`form-field-evidence-${currentQuestionnaire?.id}`} // Adicionado key ao FormField
                       control={form.control}
                       name="evidence"
                       render={({ field }) => (
@@ -402,7 +403,7 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
                       </Button>
                       <div className="flex gap-2">
                         <Button
-                          type="submit"
+                          type="submit" // This button now calls form.handleSubmit(saveCurrentQuestion)
                           disabled={isSaving}
                           className="rounded-lg bg-sollux-red hover:bg-sollux-orange"
                         >
