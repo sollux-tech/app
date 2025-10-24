@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod'; // Manter z para outros schemas se houver, ou remover se não for mais usado
+import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -116,13 +116,13 @@ const AnswerDiagnosticQuestionnairePage: React.FC = () => {
   }, [questionnaireEntries, currentQuestionIndex]);
 
   // Formulário para a pergunta atual
-  const formMethods = useForm<QuestionResponseFormData>({ // Usar o tipo importado aqui
+  const formMethods = useForm<QuestionResponseFormData>({
     resolver: zodResolver(questionResponseSchema),
     shouldUnregister: true,
     defaultValues: { // Inicializa com valores vazios
       score_id: '',
       evidence: '',
-    },
+    } as QuestionResponseFormData, // Adicionado type assertion aqui
   });
 
   // Use useEffect para resetar o formulário quando a pergunta atual mudar
