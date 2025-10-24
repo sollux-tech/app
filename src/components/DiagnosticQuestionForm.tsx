@@ -6,12 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
 import { Label } from '@/components/ui/label'; // Importação adicionada
-
-// Definir o tipo para os dados do formulário que este componente espera
-interface QuestionResponseFormData {
-  score_id: string;
-  evidence?: string;
-}
+import { QuestionResponseFormData } from '@/types/questionResponse'; // Importação da definição correta
 
 interface DiagnosticQuestionFormProps {
   form: UseFormReturn<QuestionResponseFormData>; // Recebe o objeto form como prop
