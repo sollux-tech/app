@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire';
 import { ScoringScale } from '@/types/scoringScale';
 import { Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label'; // Importação adicionada
 
 // Schema para validar a resposta de uma única pergunta
 const questionResponseSchema = z.object({
