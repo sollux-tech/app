@@ -46,7 +46,8 @@ const DiagnosticQuestionForm: React.FC<DiagnosticQuestionFormProps> = ({
             <FormLabel className="text-foreground">Nota</FormLabel>
             <Select
               onValueChange={field.onChange}
-              value={field.value || ''} {/* Alterado aqui: Garante que o valor é sempre uma string */}
+              // Garante que o valor é sempre uma string para o Select
+              value={field.value || ''}
               disabled={isLoadingScoringScales || isSaving}
             >
               <FormControl>
