@@ -5,4 +5,9 @@ export const questionResponseSchema = z.object({
   evidence: z.string().optional(),
 });
 
-export type QuestionResponseFormData = z.infer<typeof questionResponseSchema>;
+// Ajustamos o tipo inferido para permitir que score_id seja opcional.
+// A validação do Zod (min(1)) ainda será aplicada no submit.
+export type QuestionResponseFormData = {
+  score_id?: string;
+  evidence?: string;
+};
