@@ -50,6 +50,37 @@ const DiagnosticEvaluationPage: React.FC = () => {
     },
   });
 
+  // Helper to classify a percentage based on classification scales
+  const classifyPercentage = (
+    percentage: number,
+    scales: ClassificationScale[],
+    pillarId: string | null,
+    blockId: string | null
+  ): ClassificationScale | null => {
+    // First, try to find a specific scale for the block
+    const specificBlockScale = scales.find(s =>
+      s.pillar_id === pillarId && s.pillar_block_id === blockId &&
+      percentage >= s.min_percentage && percentage <= s.max_percentage
+    );
+    if (specificBlockScale) return specificBlockScale;
+
+    // Then, try to find a specific scale for the pillar (global for pillar, but not block)
+    const specificPillarScale = scales.find(s =>
+      s.pillar_id === pillarId && s.pillar_block_id === null &&
+      percentage >= s.min_percentage && percentage <= s.max_percentage
+    );
+    if (specificPillarScale) return specificPillarScale;
+
+    // Finally, try to find a global scale (null for both pillar and block)
+    const globalScale = scales.find(s =>
+      s.pillar_id === null && s.pillar_block_id === null &&
+      percentage >= s.min_percentage && percentage <= s.max_percentage
+    );
+    if (globalScale) return globalScale;
+
+    return null;
+  };
+
   // Fetch all pillars for the filter dropdown
   const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
     queryKey: ['allPillarsForEvaluationFilter', user?.id],
@@ -282,38 +313,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
       pillarIndicator: { percentage: pillarOverallPercentage, classification: pillarOverallClassification },
       overallClassification: pillarOverallClassification,
     };
-  }, [selectedPillarId, allPillarQuestionnaireEntries, pillarBlocks, classificationScales]);
-
-  // Helper to classify a percentage based on classification scales
-  const classifyPercentage = (
-    percentage: number,
-    scales: ClassificationScale[],
-    pillarId: string | null,
-    blockId: string | null
-  ): ClassificationScale | null => {
-    // First, try to find a specific scale for the block
-    const specificBlockScale = scales.find(s =>
-      s.pillar_id === pillarId && s.pillar_block_id === blockId &&
-      percentage >= s.min_percentage && percentage <= s.max_percentage
-    );
-    if (specificBlockScale) return specificBlockScale;
-
-    // Then, try to find a specific scale for the pillar (global for pillar, but not block)
-    const specificPillarScale = scales.find(s =>
-      s.pillar_id === pillarId && s.pillar_block_id === null &&
-      percentage >= s.min_percentage && percentage <= s.max_percentage
-    );
-    if (specificPillarScale) return specificPillarScale;
-
-    // Finally, try to find a global scale (null for both pillar and block)
-    const globalScale = scales.find(s =>
-      s.pillar_id === null && s.pillar_block_id === null &&
-      percentage >= s.min_percentage && percentage <= s.max_percentage
-    );
-    if (globalScale) return globalScale;
-
-    return null;
-  };
+  }, [selectedPillarId, allPillarQuestionnaireEntries, pillarBlocks, classificationScales, classifyPercentage]); // Adicionado classifyPercentage como dependência
 
   const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
     switch (colorCode) {
