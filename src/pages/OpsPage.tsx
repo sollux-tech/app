@@ -16,7 +16,7 @@ const OpsPage: React.FC = () => {
   };
 
   const handleFlowClick = () => {
-    // navigate('/ops/flow'); // Rota futura
+    navigate('/ops/flow'); // Navega para a nova página FlowPage
   };
 
   return (

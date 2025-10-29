@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award } from 'lucide-react'; // Importar Award
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp } from 'lucide-react'; // Importar TrendingUp
 
 interface RouteInfo {
   name: string;
@@ -27,7 +27,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/diagnostics': { name: 'Diagnósticos', parent: '/ops/insight', icon: ClipboardCheck },
   '/ops/insight/questionnaires': { name: 'Gerenciar Perguntas do Diagnóstico', parent: '/ops/insight', icon: ClipboardList },
   '/ops/insight/answer-questionnaire': { name: 'Responder Questionário', parent: '/ops/insight', icon: MessageSquareText }, 
-  '/ops/insight/evaluation': { name: 'Avaliação do Diagnóstico', parent: '/ops/insight', icon: Award }, // Nova rota
+  '/ops/insight/evaluation': { name: 'Avaliação do Diagnóstico', parent: '/ops/insight', icon: Award },
+  '/ops/flow': { name: 'SOLLUX FLOW™', parent: '/ops', icon: TrendingUp }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },

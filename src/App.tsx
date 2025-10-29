@@ -57,7 +57,8 @@ import InsightPage from './pages/InsightPage';
 import DiagnosticQuestionnairePage from './pages/DiagnosticQuestionnairePage';
 import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage'; 
 import ClassificationScaleManagementPage from './pages/ClassificationScaleManagementPage';
-import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage'; // Importar a nova página
+import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage';
+import FlowPage from './pages/FlowPage'; // Importar a nova página FlowPage
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -127,7 +128,8 @@ function App() {
                             <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
                             <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
                             <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
-                            <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} /> {/* Nova rota */}
+                            <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} />
+                            <Route path="/ops/flow" element={<FlowPage />} /> {/* Nova rota para SOLLUX FLOW™ */}
                             <Route path="/core" element={<CorePage />} /> 
                             <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
