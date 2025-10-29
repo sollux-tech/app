@@ -19,7 +19,7 @@ import { ScoringScale } from '@/types/scoringScale';
 import { Pillar } from '@/types/pillar';
 import { PillarBlock } from '@/types/pillarBlock';
 import { ClassificationScale } from '@/types/classificationScale';
-import { Loader2, Save, Award, CheckCircle } from 'lucide-react';
+import { Loader2, Save, Award, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import ReactQuill from 'react-quill';
@@ -35,7 +35,8 @@ const DiagnosticEvaluationPage: React.FC = () => {
   const { user } = useSession();
   const { selectedCompany } = useCompany();
 
-  const [selectedDiagnosticId, setSelectedDiagnosticId] = useState<string | undefined>(undefined);
+  const [selectedPillarId, setSelectedPillarId] = useState<string | undefined>(undefined);
+  const [expandedDiagnosticId, setExpandedDiagnosticId] = useState<string | undefined>(undefined); // Para expandir/colapsar a avaliação individual
   const [editorLoaded, setEditorLoaded] = useState(false);
 
   useEffect(() => {
@@ -49,32 +50,66 @@ const DiagnosticEvaluationPage: React.FC = () => {
     },
   });
 
-  // Fetch diagnostics for the current company and user
-  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['diagnosticsListForEvaluation', user?.id, selectedCompany?.id],
+  // Fetch all pillars for the filter dropdown
+  const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['allPillarsForEvaluationFilter', user?.id],
     queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
+      if (!user?.id) return [];
       const { data, error } = await supabase
+        .from('pillars')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch diagnostics for the selected company and user, filtered by selectedPillarId
+  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
+    queryKey: ['diagnosticsListForEvaluation', user?.id, selectedCompany?.id, selectedPillarId],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return [];
+      let query = supabase
         .from('diagnostics')
         .select('*, companies(name), pillars(description), pillar_blocks(name), diagnostic_statuses(description)')
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
+        .eq('pillar_id', selectedPillarId) // Filter by selected pillar
         .order('created_at', { ascending: false });
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !!selectedCompany?.id,
+    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId,
   });
 
-  // Fetch questionnaire entries for the selected diagnostic
-  const { data: questionnaireEntries, isLoading: isLoadingQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
-    queryKey: ['diagnosticQuestionnaireEntriesForEvaluation', user?.id, selectedCompany?.id, selectedDiagnosticId],
+  // Fetch ALL questionnaire entries for ALL diagnostics under the selected pillar
+  const { data: allPillarQuestionnaireEntries, isLoading: isLoadingAllPillarQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
+    queryKey: ['allPillarQuestionnaireEntriesForEvaluation', user?.id, selectedCompany?.id, selectedPillarId],
     queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id || !selectedDiagnosticId) return [];
+      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return [];
+
+      // First, get all diagnostic IDs for the selected pillar and company
+      const { data: diagnosticIdsData, error: diagnosticIdsError } = await supabase
+        .from('diagnostics')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id)
+        .eq('pillar_id', selectedPillarId);
+
+      if (diagnosticIdsError) throw diagnosticIdsError;
+      const diagnosticIds = diagnosticIdsData.map(d => d.id);
+
+      if (diagnosticIds.length === 0) return [];
+
+      // Then, fetch all questionnaire entries for these diagnostic IDs
       const { data, error } = await supabase
         .from('diagnostic_questionnaires')
         .select(`
           id,
+          diagnostic_id,
           kpi_id,
           score_id,
           evidence,
@@ -84,7 +119,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
         `)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
-        .eq('diagnostic_id', selectedDiagnosticId)
+        .in('diagnostic_id', diagnosticIds) // Fetch for all diagnostics in the pillar
         .order('order_number', { ascending: true })
         .order('created_at', { ascending: true });
       if (error) throw error;
@@ -104,25 +139,24 @@ const DiagnosticEvaluationPage: React.FC = () => {
       }));
       return processedData;
     },
-    enabled: !!user?.id && !!selectedCompany?.id && !!selectedDiagnosticId,
+    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId,
   });
 
-  // Fetch all pillar blocks for the selected diagnostic's pillar to get weights
+  // Fetch all pillar blocks for the selected pillar to get weights
   const { data: pillarBlocks, isLoading: isLoadingPillarBlocks } = useQuery<PillarBlock[], Error>({
-    queryKey: ['pillarBlocksForEvaluation', user?.id, selectedDiagnosticId],
+    queryKey: ['pillarBlocksForEvaluation', user?.id, selectedPillarId],
     queryFn: async () => {
-      const diagnostic = diagnostics?.find(d => d.id === selectedDiagnosticId);
-      if (!user?.id || !diagnostic?.pillar_id) return [];
+      if (!user?.id || !selectedPillarId) return [];
       const { data, error } = await supabase
         .from('pillar_blocks')
         .select('*')
         .eq('user_id', user.id)
-        .eq('pillar_id', diagnostic.pillar_id)
+        .eq('pillar_id', selectedPillarId)
         .order('name', { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !!selectedDiagnosticId && !!diagnostics?.find(d => d.id === selectedDiagnosticId)?.pillar_id,
+    enabled: !!user?.id && !!selectedPillarId,
   });
 
   // Fetch classification scales
@@ -141,21 +175,21 @@ const DiagnosticEvaluationPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  // Update form with consultant_evaluation when selected diagnostic changes
+  // Update form with consultant_evaluation when expandedDiagnosticId changes
   useEffect(() => {
-    if (selectedDiagnosticId && diagnostics) {
-      const currentDiagnostic = diagnostics.find(d => d.id === selectedDiagnosticId);
+    if (expandedDiagnosticId && diagnostics) {
+      const currentDiagnostic = diagnostics.find(d => d.id === expandedDiagnosticId);
       form.reset({
         consultant_evaluation: currentDiagnostic?.consultant_evaluation || '',
       });
     } else {
       form.reset({ consultant_evaluation: '' });
     }
-  }, [selectedDiagnosticId, diagnostics, form]);
+  }, [expandedDiagnosticId, diagnostics, form]);
 
   const updateDiagnosticEvaluationMutation = useMutation({
     mutationFn: async (data: z.infer<typeof evaluationFormSchema>) => {
-      if (!user?.id || !selectedCompany?.id || !selectedDiagnosticId) {
+      if (!user?.id || !selectedCompany?.id || !expandedDiagnosticId) {
         throw new Error("Usuário não autenticado, empresa não selecionada ou diagnóstico não disponível.");
       }
       const { error } = await supabase
@@ -163,13 +197,13 @@ const DiagnosticEvaluationPage: React.FC = () => {
         .update({
           consultant_evaluation: data.consultant_evaluation || null,
         })
-        .eq('id', selectedDiagnosticId)
+        .eq('id', expandedDiagnosticId)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticsListForEvaluation', user?.id, selectedCompany?.id] });
+      queryClient.invalidateQueries({ queryKey: ['diagnosticsListForEvaluation', user?.id, selectedCompany?.id, selectedPillarId] });
       showSuccess('Avaliação do consultor salva com sucesso!');
     },
     onError: (error: Error) => {
@@ -181,14 +215,14 @@ const DiagnosticEvaluationPage: React.FC = () => {
     updateDiagnosticEvaluationMutation.mutate(data);
   };
 
-  const isLoadingPage = isLoadingDiagnostics || isLoadingQuestionnaireEntries || isLoadingPillarBlocks || isLoadingClassificationScales;
+  const isLoadingPage = isLoadingAllPillars || isLoadingDiagnostics || isLoadingAllPillarQuestionnaireEntries || isLoadingPillarBlocks || isLoadingClassificationScales;
   const isSaving = updateDiagnosticEvaluationMutation.isPending;
 
-  const selectedDiagnostic = diagnostics?.find(d => d.id === selectedDiagnosticId);
+  const selectedPillarDetails = allPillars?.find(p => p.id === selectedPillarId);
 
-  // --- Lógica de Cálculo de Indicadores ---
+  // --- Lógica de Cálculo de Indicadores (agora usando allPillarQuestionnaireEntries para o pilar) ---
   const { blockIndicators, pillarIndicator, overallClassification } = useMemo(() => {
-    if (!selectedDiagnostic || !questionnaireEntries || !pillarBlocks || !classificationScales) {
+    if (!selectedPillarId || !allPillarQuestionnaireEntries || !pillarBlocks || !classificationScales) {
       return { blockIndicators: {}, pillarIndicator: null, overallClassification: null };
     }
 
@@ -201,8 +235,8 @@ const DiagnosticEvaluationPage: React.FC = () => {
       blockWeights[block.id] = block.weight_percentage;
     });
 
-    // Aggregate scores for each block
-    questionnaireEntries.forEach(entry => {
+    // Aggregate scores for each block from ALL questionnaire entries under the selected pillar
+    allPillarQuestionnaireEntries.forEach(entry => {
       const blockId = entry.kpis?.pillar_block_id;
       const score = entry.scoring_scales?.score;
 
@@ -226,33 +260,29 @@ const DiagnosticEvaluationPage: React.FC = () => {
         const percentage = (blockData.totalScore / blockData.maxScore) * 100;
         calculatedBlockIndicators[blockId] = {
           percentage,
-          classification: classifyPercentage(percentage, classificationScales, selectedDiagnostic.pillar_id, blockId),
+          classification: classifyPercentage(percentage, classificationScales, selectedPillarId, blockId),
         };
         totalPillarWeightedScore += (percentage * blockWeight);
         totalPillarWeight += blockWeight;
       } else {
-        // If no questions in block, it contributes 0% to its own score, but its weight still counts for the pillar if it has one.
-        // For simplicity, if no questions, assume 0% for the block itself.
         calculatedBlockIndicators[blockId] = {
           percentage: 0,
-          classification: classifyPercentage(0, classificationScales, selectedDiagnostic.pillar_id, blockId),
+          classification: classifyPercentage(0, classificationScales, selectedPillarId, blockId),
         };
-        // If a block has no questions, its weight still contributes to the total pillar weight,
-        // but its contribution to the weighted score is 0.
         totalPillarWeight += blockWeight;
       }
     });
 
     // Calculate overall pillar indicator
     const pillarOverallPercentage = totalPillarWeight > 0 ? (totalPillarWeightedScore / totalPillarWeight) : 0;
-    const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, selectedDiagnostic.pillar_id, null);
+    const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, selectedPillarId, null);
 
     return {
       blockIndicators: calculatedBlockIndicators,
       pillarIndicator: { percentage: pillarOverallPercentage, classification: pillarOverallClassification },
       overallClassification: pillarOverallClassification,
     };
-  }, [selectedDiagnostic, questionnaireEntries, pillarBlocks, classificationScales]);
+  }, [selectedPillarId, allPillarQuestionnaireEntries, pillarBlocks, classificationScales]);
 
   // Helper to classify a percentage based on classification scales
   const classifyPercentage = (
@@ -323,51 +353,51 @@ const DiagnosticEvaluationPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="mb-6">
-            <Label className="text-foreground">Selecionar Diagnóstico</Label>
+            <Label className="text-foreground">Selecionar Pilar</Label>
             <Select
-              onValueChange={setSelectedDiagnosticId}
-              value={selectedDiagnosticId || 'placeholder'}
-              disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
+              onValueChange={(value) => {
+                setSelectedPillarId(value === 'placeholder' ? undefined : value);
+                setExpandedDiagnosticId(undefined); // Collapse any open diagnostic when pillar changes
+              }}
+              value={selectedPillarId || 'placeholder'}
+              disabled={isLoadingAllPillars || (allPillars?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
-                <SelectValue placeholder="Selecione um diagnóstico para avaliar" />
+                <SelectValue placeholder="Selecione um Pilar" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="placeholder" disabled>Selecione um Diagnóstico</SelectItem>
-                {isLoadingDiagnostics ? (
-                  <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
-                ) : (diagnostics?.length || 0) === 0 ? (
-                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para esta empresa.</SelectItem>
+                <SelectItem value="placeholder" disabled>Selecione um Pilar</SelectItem>
+                {isLoadingAllPillars ? (
+                  <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
+                ) : (allPillars?.length || 0) === 0 ? (
+                  <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado para esta empresa.</SelectItem>
                 ) : (
-                  diagnostics?.map((diagnostic) => (
-                    diagnostic.id && diagnostic.id !== '' ? (
-                      <SelectItem key={diagnostic.id} value={diagnostic.id}>
-                        {diagnostic.id.substring(0, 8)}... ({diagnostic.pillars?.description || 'N/A'} / {diagnostic.pillar_blocks?.name || 'N/A'})
+                  allPillars?.map((pillar) => (
+                    pillar.id && pillar.id !== '' ? (
+                      <SelectItem key={pillar.id} value={pillar.id}>
+                        {pillar.description}
                       </SelectItem>
                     ) : null
                   ))
                 )}
               </SelectContent>
             </Select>
-            {!selectedDiagnosticId && (diagnostics?.length || 0) > 0 && (
-              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para avaliar.</p>
+            {!selectedPillarId && (allPillars?.length || 0) > 0 && (
+              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um pilar para avaliar.</p>
             )}
-            {(diagnostics?.length || 0) === 0 && (
+            {(allPillars?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
-                Nenhum diagnóstico encontrado para esta empresa. Crie um em "OPS | Diagnósticos" e adicione perguntas em "Gerenciar Perguntas do Diagnóstico" primeiro.
+                Nenhum pilar encontrado para esta empresa. Crie um em "OPS | Pilares" primeiro.
               </p>
             )}
           </div>
 
-          {selectedDiagnosticId && selectedDiagnostic ? (
+          {selectedPillarId && selectedPillarDetails ? (
             <div className="space-y-6">
               <Card className="p-6 border border-border rounded-lg bg-muted/50">
                 <CardTitle className="text-xl font-bold text-foreground mb-4">
-                  Diagnóstico: {selectedDiagnostic.pillars?.description || 'N/A'} / {selectedDiagnostic.pillar_blocks?.name || 'N/A'}
+                  Pilar: {selectedPillarDetails.description || 'N/A'}
                 </CardTitle>
-                <CardDescription className="text-muted-foreground mb-4">
-                  Status: {selectedDiagnostic.diagnostic_statuses?.description || 'N/A'}
-                </CardDescription>
 
                 {/* Indicador Final do Pilar */}
                 {pillarIndicator && (
@@ -410,100 +440,137 @@ const DiagnosticEvaluationPage: React.FC = () => {
                     );
                   })}
                 </div>
-
-                <h3 className="text-lg font-semibold text-foreground mb-4">Perguntas e Respostas do Usuário</h3>
-                {questionnaireEntries && questionnaireEntries.length > 0 ? (
-                  <div className="space-y-4">
-                    {questionnaireEntries.map(entry => (
-                      <Card key={entry.id} className="p-4 border border-border rounded-lg">
-                        <p className="font-semibold text-foreground mb-1">
-                          {entry.order_number}. {entry.kpis?.question || 'Pergunta não disponível'}
-                        </p>
-                        <p className="text-muted-foreground text-sm">
-                          Nota do Usuário: {entry.scoring_scales?.score !== undefined ? entry.scoring_scales.score : 'N/A'}
-                          {entry.scoring_scales?.description && ` (${entry.scoring_scales.description})`}
-                        </p>
-                        {entry.evidence && (
-                          <p className="text-muted-foreground text-sm mt-1">
-                            Evidência: {entry.evidence}
-                          </p>
-                        )}
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground">Nenhuma pergunta respondida para este diagnóstico.</p>
-                )}
               </Card>
 
-              {/* Formulário de Avaliação do Consultor */}
-              <Card className="p-6 border border-border rounded-lg bg-muted/50">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-foreground">Avaliação do Consultor</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    Escreva sua avaliação final sobre o diagnóstico.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="consultant_evaluation"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-foreground">Avaliação</FormLabel>
-                            <FormControl>
-                              {editorLoaded ? (
-                                <ReactQuill
-                                  theme="snow"
-                                  value={field.value || ''}
-                                  onChange={field.onChange}
-                                  className="bg-card rounded-lg"
-                                  modules={{
-                                    toolbar: [
-                                      [{ 'header': [1, 2, false] }],
-                                      ['bold', 'italic', 'underline', 'strike', 'link'],
-                                      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                                      [{ 'indent': '-1'}, { 'indent': '+1' }],
-                                      ['image', 'code-block'],
-                                      [{ 'color': [] }, { 'background': [] }],
-                                      ['clean']
-                                    ],
-                                  }}
-                                />
-                              ) : (
-                                <div className="h-[200px] w-full bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                                  Carregando editor de texto...
-                                </div>
-                              )}
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="flex justify-end pt-4">
-                        <Button type="submit" disabled={isSaving} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                          {isSaving ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Salvando...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="mr-2 h-4 w-4" /> Salvar Avaliação
-                            </>
-                          )}
+              {/* Lista de Diagnósticos Individuais */}
+              <h3 className="text-lg font-semibold text-foreground mb-4">Diagnósticos neste Pilar</h3>
+              {diagnostics && diagnostics.length > 0 ? (
+                <div className="space-y-4">
+                  {diagnostics.map(diagnostic => (
+                    <Card key={diagnostic.id} className="p-4 border border-border rounded-lg bg-muted/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg font-bold text-foreground">
+                            Diagnóstico: {diagnostic.pillar_blocks?.name || 'N/A'}
+                          </CardTitle>
+                          <CardDescription className="text-muted-foreground">
+                            Status: {diagnostic.diagnostic_statuses?.description || 'N/A'}
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          onClick={() => setExpandedDiagnosticId(expandedDiagnosticId === diagnostic.id ? undefined : diagnostic.id)}
+                          className="rounded-lg"
+                        >
+                          {expandedDiagnosticId === diagnostic.id ? <ChevronUp className="h-4 w-4 mr-2" /> : <ChevronDown className="h-4 w-4 mr-2" />}
+                          {expandedDiagnosticId === diagnostic.id ? 'Fechar Avaliação' : 'Avaliar Diagnóstico'}
                         </Button>
                       </div>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
+
+                      {expandedDiagnosticId === diagnostic.id && (
+                        <CardContent className="mt-6 border-t border-border pt-6">
+                          <h4 className="text-md font-semibold text-foreground mb-4">Perguntas e Respostas do Usuário</h4>
+                          {allPillarQuestionnaireEntries && allPillarQuestionnaireEntries.filter(entry => entry.diagnostic_id === diagnostic.id).length > 0 ? (
+                            <div className="space-y-3 mb-6">
+                              {allPillarQuestionnaireEntries.filter(entry => entry.diagnostic_id === diagnostic.id).map(entry => (
+                                <Card key={entry.id} className="p-3 border border-border rounded-lg">
+                                  <p className="font-semibold text-foreground mb-1">
+                                    {entry.order_number}. {entry.kpis?.question || 'Pergunta não disponível'}
+                                  </p>
+                                  <p className="text-muted-foreground text-sm">
+                                    Nota do Usuário: {entry.scoring_scales?.score !== undefined ? entry.scoring_scales.score : 'N/A'}
+                                    {entry.scoring_scales?.description && ` (${entry.scoring_scales.description})`}
+                                  </p>
+                                  {entry.evidence && (
+                                    <p className="text-muted-foreground text-sm mt-1">
+                                      Evidência: {entry.evidence}
+                                    </p>
+                                  )}
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-center text-muted-foreground mb-6">Nenhuma pergunta respondida para este diagnóstico.</p>
+                          )}
+
+                          {/* Formulário de Avaliação do Consultor para ESTE diagnóstico */}
+                          <Card className="p-6 border border-border rounded-lg bg-background">
+                            <CardHeader className="pb-4">
+                              <CardTitle className="text-xl font-bold text-foreground">Avaliação do Consultor</CardTitle>
+                              <CardDescription className="text-muted-foreground">
+                                Escreva sua avaliação final para este diagnóstico específico.
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                              <Form {...form}>
+                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                  <FormField
+                                    control={form.control}
+                                    name="consultant_evaluation"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel className="text-foreground">Avaliação</FormLabel>
+                                        <FormControl>
+                                          {editorLoaded ? (
+                                            <ReactQuill
+                                              theme="snow"
+                                              value={field.value || ''}
+                                              onChange={field.onChange}
+                                              className="bg-card rounded-lg"
+                                              modules={{
+                                                toolbar: [
+                                                  [{ 'header': [1, 2, false] }],
+                                                  ['bold', 'italic', 'underline', 'strike', 'link'],
+                                                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                                  [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                                  ['image', 'code-block'],
+                                                  [{ 'color': [] }, { 'background': [] }],
+                                                  ['clean']
+                                                ],
+                                              }}
+                                            />
+                                          ) : (
+                                            <div className="h-[200px] w-full bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
+                                              Carregando editor de texto...
+                                            </div>
+                                          )}
+                                        </FormControl>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <div className="flex justify-end pt-4">
+                                    <Button type="submit" disabled={isSaving} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
+                                      {isSaving ? (
+                                        <>
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                          Salvando...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Save className="mr-2 h-4 w-4" /> Salvar Avaliação
+                                        </>
+                                      )}
+                                    </Button>
+                                  </div>
+                                </form>
+                              </Form>
+                            </CardContent>
+                          </Card>
+                        </CardContent>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhum diagnóstico encontrado para o pilar selecionado.
+                </p>
+              )}
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              Selecione um diagnóstico acima para visualizar as respostas e realizar a avaliação.
+              Selecione um pilar acima para visualizar os indicadores e realizar as avaliações.
             </p>
           )}
         </CardContent>
