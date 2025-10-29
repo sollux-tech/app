@@ -81,20 +81,44 @@ const DiagnosticEvaluationPage: React.FC = () => {
     return null;
   };
 
-  // Fetch all pillars for the filter dropdown
-  const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['allPillarsForEvaluationFilter', user?.id],
+  // NEW: Fetch distinct pillar_ids from diagnostics for the current company and user
+  const { data: diagnosticPillarIds, isLoading: isLoadingDiagnosticPillarIds } = useQuery<Array<{ pillar_id: string }>, Error>({
+    queryKey: ['diagnosticPillarIdsForEvaluation', user?.id, selectedCompany?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('diagnostics')
+        .select('pillar_id')
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id)
+        .not('pillar_id', 'is', null); // Only get diagnostics with a pillar_id
+      if (error) throw error;
+      // Extract unique pillar_ids
+      const uniquePillarIds = Array.from(new Set(data.map(d => d.pillar_id)));
+      return uniquePillarIds.map(id => ({ pillar_id: id! })); // Map back to expected format
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  const uniquePillarIds = useMemo(() => {
+    return diagnosticPillarIds?.map(d => d.pillar_id) || [];
+  }, [diagnosticPillarIds]);
+
+  // Fetch all pillars for the filter dropdown, now filtered by uniquePillarIds
+  const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['allPillarsForEvaluationFilter', user?.id, uniquePillarIds],
+    queryFn: async () => {
+      if (!user?.id || uniquePillarIds.length === 0) return [];
       const { data, error } = await supabase
         .from('pillars')
         .select('*')
         .eq('user_id', user.id)
+        .in('id', uniquePillarIds) // Filter by pillars that have diagnostics
         .order('description', { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && uniquePillarIds.length > 0 && !isLoadingDiagnosticPillarIds,
   });
 
   // Fetch diagnostics for the selected company and user, filtered by selectedPillarId
@@ -246,7 +270,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
     updateDiagnosticEvaluationMutation.mutate(data);
   };
 
-  const isLoadingPage = isLoadingAllPillars || isLoadingDiagnostics || isLoadingAllPillarQuestionnaireEntries || isLoadingPillarBlocks || isLoadingClassificationScales;
+  const isLoadingPage = isLoadingDiagnosticPillarIds || isLoadingAllPillars || isLoadingDiagnostics || isLoadingAllPillarQuestionnaireEntries || isLoadingPillarBlocks || isLoadingClassificationScales;
   const isSaving = updateDiagnosticEvaluationMutation.isPending;
 
   const selectedPillarDetails = allPillars?.find(p => p.id === selectedPillarId);
@@ -313,7 +337,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
       pillarIndicator: { percentage: pillarOverallPercentage, classification: pillarOverallClassification },
       overallClassification: pillarOverallClassification,
     };
-  }, [selectedPillarId, allPillarQuestionnaireEntries, pillarBlocks, classificationScales, classifyPercentage]); // Adicionado classifyPercentage como dependência
+  }, [selectedPillarId, allPillarQuestionnaireEntries, pillarBlocks, classificationScales, classifyPercentage]);
 
   const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
     switch (colorCode) {
@@ -370,7 +394,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
                 {isLoadingAllPillars ? (
                   <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
                 ) : (allPillars?.length || 0) === 0 ? (
-                  <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado para esta empresa.</SelectItem>
+                  <SelectItem value="no-pillars" disabled>Nenhum pilar com diagnóstico cadastrado para esta empresa.</SelectItem>
                 ) : (
                   allPillars?.map((pillar) => (
                     pillar.id && pillar.id !== '' ? (
@@ -387,7 +411,7 @@ const DiagnosticEvaluationPage: React.FC = () => {
             )}
             {(allPillars?.length || 0) === 0 && (
               <p className="text-sm text-destructive mt-2">
-                Nenhum pilar encontrado para esta empresa. Crie um em "OPS | Pilares" primeiro.
+                Nenhum pilar encontrado para esta empresa. Crie um em "OPS | Pilares" e associe-o a um diagnóstico primeiro.
               </p>
             )}
           </div>
