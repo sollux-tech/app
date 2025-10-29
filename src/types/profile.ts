@@ -7,6 +7,7 @@ export interface Profile {
   state: string | null;
   avatar_url: string | null;
   updated_at: string | null;
+  theme: 'light' | 'dark' | 'system'; // Nova propriedade para escolha do tema
 }
 
 export interface BasicProfileInfo {
@@ -22,4 +23,5 @@ export interface ProfileFormData {
   city: string;
   state: string;
   avatar_url: string;
+  theme: 'light' | 'dark' | 'system'; // Nova propriedade para escolha do tema
 }
