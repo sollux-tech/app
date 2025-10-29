@@ -20,7 +20,7 @@ import NotificationManagementPage from './pages/NotificationManagementPage';
 import AllCompaniesManagementPage from './pages/AllCompaniesManagementPage';
 import CompanySharingPage from './pages/CompanySharingPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
-import React from 'react';
+import React, { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import DataDoctorPage from './pages/DataDoctorPage';
 import ConnectPage from './pages/ConnectPage';
@@ -47,7 +47,7 @@ import KpiManagementPage from './pages/KpiManagementPage';
 import CompanyFormPage from './pages/CompanyFormPage';
 import MarketManagementPage from './pages/MarketManagementPage';
 import AllInformativesPage from './pages/AllInformativesPage';
-import { ThemeProvider } from './components/ThemeProvider';
+import { ThemeProvider, useTheme } from './components/ThemeProvider'; // Importar useTheme
 import DocumentManagementPage from './pages/DocumentManagementPage';
 import AllDocumentsPage from './pages/AllDocumentsPage';
 import TagManagementPage from './pages/TagManagementPage';
@@ -93,6 +93,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 // Novo componente para encapsular o conteúdo principal do App
 const AppContent: React.FC = () => {
   const { profile, isLoading: isLoadingProfile } = useSession();
+  const { setTheme } = useTheme(); // Obter a função setTheme do ThemeProvider
+
+  useEffect(() => {
+    if (!isLoadingProfile && profile?.theme) {
+      setTheme(profile.theme); // Definir o tema do perfil assim que ele for carregado
+    }
+  }, [profile?.theme, isLoadingProfile, setTheme]);
 
   if (isLoadingProfile) {
     return (
