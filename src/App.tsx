@@ -60,6 +60,7 @@ import ClassificationScaleManagementPage from './pages/ClassificationScaleManage
 import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage';
 import FlowPage from './pages/FlowPage';
 import PublicDiagnosticResultsPage from './pages/PublicDiagnosticResultsPage'; // Importar a nova página
+import ShopPage from './pages/ShopPage'; // Importar a nova página ShopPage
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -159,6 +160,7 @@ function App() {
                             <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                             <Route path="/core/markets" element={<MarketManagementPage />} /> 
                             <Route path="/core/documents" element={<DocumentManagementPage />} />
+                            <Route path="/shop" element={<ShopPage />} /> {/* Nova rota para ShopPage */}
                             
                             {/* Rotas SOLLUX FORM™ */}
                             <Route path="/connect/forms" element={<FormsPage />} />

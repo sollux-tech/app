@@ -20,6 +20,7 @@ import { useSession } from '@/components/SessionContextProvider';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect'; // Importar MultiSelect
+import { Label } from '@/components/ui/label'; // Importar Label
 
 const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
@@ -33,6 +34,10 @@ const KpiManagementPage: React.FC = () => {
   const { user } = useSession();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpi, setEditingKpi] = useState<Kpi | null>(null);
+
+  // Estados para os filtros
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedBlockFilter, setSelectedBlockFilter] = useState<string>('all');
 
   const form = useForm<z.infer<typeof formSchema>>({ // Usar z.infer<typeof formSchema> para o tipo do form
     resolver: zodResolver(formSchema),
@@ -65,14 +70,24 @@ const KpiManagementPage: React.FC = () => {
   }, [editingKpi, form, isDialogOpen]);
 
   const { data: kpis, isLoading: isLoadingKpis, error: errorKpis } = useQuery<Kpi[], Error>({
-    queryKey: ['kpis', user?.id],
+    queryKey: ['kpis', user?.id, selectedPillarFilter, selectedBlockFilter], // Adicionado filtros ao queryKey
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('kpis')
         .select('*, pillars(description, pillar_types(description)), pillar_blocks(name)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user.id);
+      
+      // Aplicar filtros
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedBlockFilter !== 'all') {
+        query = query.eq('pillar_block_id', selectedBlockFilter);
+      }
+
+      query = query.order('created_at', { ascending: false });
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -132,6 +147,13 @@ const KpiManagementPage: React.FC = () => {
     if (!pillarBlocks || !selectedPillarId) return [];
     return pillarBlocks.filter(block => block.pillar_id === selectedPillarId);
   }, [pillarBlocks, selectedPillarId]);
+
+  // Filtra os blocos para o dropdown de filtro
+  const filteredBlocksForFilter = useMemo(() => {
+    if (!pillarBlocks) return [];
+    if (selectedPillarFilter === 'all') return pillarBlocks;
+    return pillarBlocks.filter(block => block.pillar_id === selectedPillarFilter);
+  }, [pillarBlocks, selectedPillarFilter]);
 
   const selectedPillar = pillars?.find(p => p.id === selectedPillarId);
   const selectedPillarTypeName = (selectedPillar as any)?.pillar_types?.description || 'N/A';
@@ -264,6 +286,59 @@ const KpiManagementPage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Filtro por Pilar */}
+            <div>
+              <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
+              <Select
+                value={selectedPillarFilter}
+                onValueChange={(value) => {
+                  setSelectedPillarFilter(value);
+                  setSelectedBlockFilter('all'); // Resetar filtro de bloco ao mudar o pilar
+                }}
+                disabled={isLoadingPillars}
+              >
+                <SelectTrigger id="pillar-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Pilares" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pilares</SelectItem>
+                  {pillars?.map((pillar) => (
+                    <SelectItem key={pillar.id} value={pillar.id}>
+                      {pillar.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por Bloco */}
+            <div>
+              <Label htmlFor="block-filter" className="text-foreground">Filtrar por Bloco</Label>
+              <Select
+                value={selectedBlockFilter}
+                onValueChange={setSelectedBlockFilter}
+                disabled={isLoadingPillarBlocks || (selectedPillarFilter !== 'all' && filteredBlocksForFilter.length === 0)}
+              >
+                <SelectTrigger id="block-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Blocos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Blocos</SelectItem>
+                  {filteredBlocksForFilter.length === 0 ? (
+                    <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
+                  ) : (
+                    filteredBlocksForFilter.map((block) => (
+                      <SelectItem key={block.id} value={block.id}>
+                        {block.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -278,7 +353,7 @@ const KpiManagementPage: React.FC = () => {
               {kpis?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-gray-500"> {/* Colspan ajustado */}
-                    Nenhuma pergunta de KPI encontrada.
+                    Nenhuma pergunta de KPI encontrada com os filtros aplicados.
                   </TableCell>
                 </TableRow>
               ) : (

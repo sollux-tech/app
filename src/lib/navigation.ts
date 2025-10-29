@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp } from 'lucide-react';
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag } from 'lucide-react';
 
 interface RouteInfo {
   name: string;
@@ -35,6 +35,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
   '/core/pulse-informatives/new': { name: 'Novo Informativo', parent: '/core/pulse-informatives' },
   '/core/pulse-informatives/:id': { name: 'Editar Informativo', parent: '/core/pulse-informatives' },
+  '/informative/:id': { name: 'Informativo Público', parent: '/pulse' }, // Rota pública
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
   '/core/global-settings/jobs': { name: 'Configurações de Vagas', parent: '/core/global-settings' },
   '/core/global-settings/job-sectors': { name: 'Jobs - Áreas/Setores', parent: '/core/global-settings/jobs' },
@@ -55,6 +56,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/data-doctor': { name: 'Diagnóstico de Dados', parent: '/core' },
   '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store },
   '/core/documents': { name: 'Documentos', parent: '/core', icon: FileText },
+  '/shop': { name: 'SHOP', icon: ShoppingBag }, // Nova rota para ShopPage
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático

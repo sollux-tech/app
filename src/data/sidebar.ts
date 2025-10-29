@@ -6,7 +6,8 @@ export const defaultNavItems = [
   {id: "id", label: "ID", to: "/id", icon: "Fingerprint", order: 2},
   {id: "connect", label: "CONNECT", to: "/connect", icon: "Link", order: 3},
   {id: "ops", label: "OPS", to: "/ops", icon: "Settings", order: 4},
-  {id: "core", label: "CORE", to: "/core", icon: "Box", order: 5}
+  {id: "core", label: "CORE", to: "/core", icon: "Box", order: 5},
+  {id: "shop", label: "SHOP", to: "/shop", icon: "ShoppingBag", order: 6} // Novo item para ShopPage
 ];
 
 export const getOrCreateSidebarConfig = async (userId: string): Promise<SidebarConfig> => {
