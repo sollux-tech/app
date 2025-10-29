@@ -17,7 +17,7 @@ export interface DiagnosticQuestionnaire {
     pillars?: { description: string } | null;
     pillar_blocks?: { name: string } | null;
   } | null;
-  kpis?: { question: string } | null;
+  kpis?: { question: string; pillar_id: string | null; pillar_block_id: string | null } | null; // Adicionado pillar_id e pillar_block_id
   scoring_scales?: { score: number; description: string } | null;
   profiles?: { first_name: string | null; last_name: string | null } | null;
 }
