@@ -96,6 +96,19 @@ const PulseInformativeFormPage: React.FC = () => {
     }
   }, [isEditing, editingInformative, form]);
 
+  // Definir mutationOptions antes de serem usados
+  const mutationOptions = {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pulseInformatives'] });
+      showSuccess('Informativo atualizado com sucesso!');
+      navigate('/core/pulse-informatives');
+    },
+    onError: (error: Error) => {
+      console.error("Error updating informative:", error); // Log de erro
+      showError(`Erro ao atualizar informativo: ${error.message}`);
+    },
+  };
+
   const createInformativeMutation = useMutation({
     mutationFn: async (data: PulseInformativeFormData) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
@@ -126,7 +139,7 @@ const PulseInformativeFormPage: React.FC = () => {
   });
 
   const updateInformativeMutation = useMutation({
-    mutationFn: async (data: PulseInformativeFormData) => {
+    mutationFn: async (data: PulseInformativeFormData) => { // Adicionado 'data' como argumento
       if (!informativeId) throw new Error("ID do informativo está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
       console.log("Updating informative with data:", data); // Log para depuração
@@ -146,15 +159,6 @@ const PulseInformativeFormPage: React.FC = () => {
       return updatedInformative;
     },
     ...mutationOptions,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pulseInformatives'] });
-      showSuccess('Informativo atualizado com sucesso!');
-      navigate('/core/pulse-informatives');
-    },
-    onError: (error) => {
-      console.error("Error updating informative:", error); // Log de erro
-      showError(`Erro ao atualizar informativo: ${error.message}`);
-    },
   });
 
   const onSubmit = (data: PulseInformativeFormData) => {
