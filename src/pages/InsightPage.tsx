@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Brain, Target, ClipboardCheck, ClipboardList, MessageSquareText } from 'lucide-react'; // Importar MessageSquareText para o novo card
+import { Brain, Target, ClipboardCheck, ClipboardList, MessageSquareText, Award } from 'lucide-react'; // Importar Award para o novo card
 
 const InsightPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +17,10 @@ const InsightPage: React.FC = () => {
 
   const handleAnswerQuestionnaireClick = () => {
     navigate('/ops/insight/answer-questionnaire'); // Nova rota para responder o questionário
+  };
+
+  const handleDiagnosticEvaluationClick = () => {
+    navigate('/ops/insight/evaluation'); // Nova rota para a avaliação do diagnóstico
   };
 
   return (
@@ -45,8 +49,14 @@ const InsightPage: React.FC = () => {
             <FeatureCard
               title="Responder Questionário"
               description="Responda as perguntas de um diagnóstico selecionado."
-              icon={MessageSquareText} // Ícone para o novo card
+              icon={MessageSquareText}
               onClick={handleAnswerQuestionnaireClick}
+            />
+            <FeatureCard
+              title="Avaliação do Diagnóstico"
+              description="Consultor avalia as respostas do usuário e o diagnóstico."
+              icon={Award} // Usando o ícone Award para avaliação
+              onClick={handleDiagnosticEvaluationClick}
             />
           </div>
         </CardContent>

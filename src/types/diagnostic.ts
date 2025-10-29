@@ -5,6 +5,7 @@ export interface Diagnostic {
   pillar_id: string | null;
   pillar_block_id: string | null;
   diagnostic_status_id: string | null;
+  consultant_evaluation: string | null; // Novo campo para a avaliação do consultor
   created_at: string;
   
   // Propriedades para exibição com joins
