@@ -89,23 +89,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     }
   }, [editingQuestionnaire, editForm, isEditDialogOpen]);
 
-  // 1. Fetch all pillars for the filter dropdown
-  const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['allPillarsListForQuestionnaire'],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('pillars')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  // 2. Fetch all diagnostic statuses for the filter dropdown
+  // 1. Fetch all diagnostic statuses for the filter dropdown
   const { data: allDiagnosticStatuses, isLoading: isLoadingAllDiagnosticStatuses } = useQuery<DiagnosticStatus[], Error>({
     queryKey: ['allDiagnosticStatusesListForQuestionnaire', user?.id],
     queryFn: async () => {
@@ -121,7 +105,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  // 3. Fetch diagnostics based on selected filters for the "Select Diagnostic" dropdown
+  // 2. Fetch diagnostics based on selected filters for the "Select Diagnostic" dropdown
   const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
     queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarFilter, selectedDiagnosticStatusFilter],
     queryFn: async () => {
@@ -157,6 +141,51 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       setSelectedDiagnosticToAnswer(undefined);
     }
   }, [selectedPillarFilter, selectedDiagnosticStatusFilter, diagnostics]);
+
+  // NEW: Fetch all diagnostics for the current company and user (without applying the current filters)
+  // This is to get the full set of pillars that have diagnostics for this company, to populate the pillar filter dropdown
+  const { data: allCompanyDiagnostics, isLoading: isLoadingAllCompanyDiagnostics } = useQuery<Diagnostic[], Error>({
+    queryKey: ['allCompanyDiagnosticsForPillarFilter', user?.id, selectedCompany?.id],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('diagnostics')
+        .select('pillar_id') // Only need pillar_id
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  const uniquePillarIdsInCompanyDiagnostics = useMemo(() => {
+    if (!allCompanyDiagnostics) return [];
+    const ids = new Set<string>();
+    allCompanyDiagnostics.forEach(d => {
+      if (d.pillar_id) {
+        ids.add(d.pillar_id);
+      }
+    });
+    return Array.from(ids);
+  }, [allCompanyDiagnostics]);
+
+  // Now fetch the actual Pillar objects for these IDs, for the filter dropdown
+  const { data: availablePillarsForFilter, isLoading: isLoadingAvailablePillarsForFilter } = useQuery<Pillar[], Error>({
+    queryKey: ['availablePillarsForFilter', user?.id, uniquePillarIdsInCompanyDiagnostics],
+    queryFn: async () => {
+      if (!user?.id || uniquePillarIdsInCompanyDiagnostics.length === 0) return [];
+      const { data, error } = await supabase
+        .from('pillars')
+        .select('*')
+        .in('id', uniquePillarIdsInCompanyDiagnostics)
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && uniquePillarIdsInCompanyDiagnostics.length > 0,
+  });
 
 
   // 4. Fetch questionnaire entries for the selected diagnostic
@@ -361,7 +390,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const isMutating = updateQuestionnaireMutation.isPending || deleteQuestionnaireMutation.isPending;
-  const isLoadingPage = isLoadingAllPillars || isLoadingAllDiagnosticStatuses || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales || isLoadingQuestionnaires;
+  const isLoadingPage = isLoadingAllCompanyDiagnostics || isLoadingAvailablePillarsForFilter || isLoadingAllDiagnosticStatuses || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales || isLoadingQuestionnaires;
 
   if (!selectedCompany) {
     return (
@@ -404,19 +433,19 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 setSelectedPillarFilter(value);
               }}
               value={selectedPillarFilter}
-              disabled={isLoadingAllPillars}
+              disabled={isLoadingAvailablePillarsForFilter}
             >
               <SelectTrigger className="rounded-lg">
                 <SelectValue placeholder="Todos os Pilares" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os Pilares</SelectItem>
-                {isLoadingAllPillars ? (
+                {isLoadingAvailablePillarsForFilter ? (
                   <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
-                ) : (allPillars?.length || 0) === 0 ? (
-                  <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado.</SelectItem>
+                ) : (availablePillarsForFilter?.length || 0) === 0 ? (
+                  <SelectItem value="no-pillars" disabled>Nenhum pilar com diagnóstico cadastrado.</SelectItem>
                 ) : (
-                  allPillars?.map((pillar) => (
+                  availablePillarsForFilter?.map((pillar) => (
                     pillar.id && pillar.id !== '' ? (
                       <SelectItem key={pillar.id} value={pillar.id}>
                         {pillar.description}
