@@ -226,38 +226,44 @@ const FlowPage: React.FC = () => {
       };
     } = {};
 
-    // Initialize pillar results
-    allPillars.forEach(pillar => {
-      if (pillar.id) {
-        pillarResults[pillar.id] = {
-          description: pillar.description,
-          totalWeightedScore: 0,
-          totalWeight: 0,
-          blocks: {},
-        };
-      }
-    });
-
-    // Initialize block results within each pillar
-    allPillarBlocks.forEach(block => {
-      if (block.pillar_id && pillarResults[block.pillar_id] && block.id) {
-        pillarResults[block.pillar_id].blocks[block.id] = {
-          name: block.name,
-          totalScore: 0,
-          maxScore: 0,
-          questionCount: 0,
-          weight: block.weight_percentage,
-        };
-      }
-    });
-
     // Aggregate scores for each block from ALL questionnaire entries
     allCompanyQuestionnaireEntries.forEach(entry => {
       const pillarId = entry.kpis?.pillar_id;
       const blockId = entry.kpis?.pillar_block_id;
       const score = entry.scoring_scales?.score;
 
-      if (pillarId && blockId && score !== undefined && pillarResults[pillarId]?.blocks[blockId]) {
+      if (pillarId && blockId && score !== undefined) {
+        // Ensure pillar exists in results
+        if (!pillarResults[pillarId]) {
+          const pillarDetails = allPillars.find(p => p.id === pillarId);
+          if (pillarDetails) {
+            pillarResults[pillarId] = {
+              description: pillarDetails.description,
+              totalWeightedScore: 0,
+              totalWeight: 0,
+              blocks: {},
+            };
+          } else {
+            return; // Skip if pillar details not found
+          }
+        }
+
+        // Ensure block exists within pillar results
+        if (!pillarResults[pillarId].blocks[blockId]) {
+          const blockDetails = allPillarBlocks.find(b => b.id === blockId);
+          if (blockDetails) {
+            pillarResults[pillarId].blocks[blockId] = {
+              name: blockDetails.name,
+              totalScore: 0,
+              maxScore: 0,
+              questionCount: 0,
+              weight: blockDetails.weight_percentage,
+            };
+          } else {
+            return; // Skip if block details not found
+          }
+        }
+
         pillarResults[pillarId].blocks[blockId].totalScore += score;
         pillarResults[pillarId].blocks[blockId].maxScore += 5; // Max score for one question is 5
         pillarResults[pillarId].blocks[blockId].questionCount += 1;
@@ -292,19 +298,22 @@ const FlowPage: React.FC = () => {
         }
       });
 
-      const pillarOverallPercentage = currentPillarTotalWeight > 0 ? (currentPillarWeightedScore / currentPillarTotalWeight) : 0;
-      const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, pillarId, null);
+      // Only include pillars that actually have some weight from answered questions
+      if (currentPillarTotalWeight > 0) {
+        const pillarOverallPercentage = (currentPillarWeightedScore / currentPillarTotalWeight);
+        const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, pillarId, null);
 
-      calculatedPillarIndicators.push({
-        id: pillarId,
-        description: pillarData.description,
-        percentage: pillarOverallPercentage,
-        classification: pillarOverallClassification,
-      });
+        calculatedPillarIndicators.push({
+          id: pillarId,
+          description: pillarData.description,
+          percentage: pillarOverallPercentage,
+          classification: pillarOverallClassification,
+        });
 
-      if (pillarOverallClassification) {
-        const label = pillarOverallClassification.classification_label;
-        classificationCounts[label] = (classificationCounts[label] || 0) + 1;
+        if (pillarOverallClassification) {
+          const label = pillarOverallClassification.classification_label;
+          classificationCounts[label] = (classificationCounts[label] || 0) + 1;
+        }
       }
     });
 
@@ -458,7 +467,7 @@ const FlowPage: React.FC = () => {
                         Criado em: {format(new Date(diagnostic.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                       </p>
                     </div>
-                    <Link to={`/ops/insight/evaluation`}> {/* Link para a página de avaliação */}
+                    <Link to={`/ops/flow/diagnostic-results/${diagnostic.id}`}> {/* Link atualizado */}
                       <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
                         Ver Detalhes
                       </Button>
