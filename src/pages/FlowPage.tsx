@@ -290,7 +290,9 @@ const FlowPage: React.FC = () => {
     });
 
     // Aggregate scores for each block from ALL questionnaire entries
-    allCompanyQuestionnaireEntries.forEach(entry => {
+    allCompanyQuestionnaireEntries
+      .filter(entry => entry.score_id !== null) // ONLY process answered questions
+      .forEach(entry => {
       const pillarId = entry.kpis?.pillar_id;
       const blockId = entry.kpis?.pillar_block_id;
       const score = entry.scoring_scales?.score;
