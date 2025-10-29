@@ -91,6 +91,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 function App() {
+  const { profile, isLoading: isLoadingProfile } = useSession();
+
+  if (isLoadingProfile) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-sollux-light-gray">
+        <p className="text-gray-600">Carregando perfil do usuário...</p>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <ErrorBoundary>
@@ -98,7 +108,7 @@ function App() {
           <SessionContextProvider>
             <CompanyProvider>
               <Toaster />
-              <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+              <ThemeProvider defaultTheme={profile?.theme || "system"} storageKey="vite-ui-theme">
                 <Routes>
                   <Route path="/login" element={<Login />} />
                   {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
