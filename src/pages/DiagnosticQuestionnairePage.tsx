@@ -16,6 +16,7 @@ import { Diagnostic } from '@/types/diagnostic';
 import { Kpi } from '@/types/kpi';
 import { ScoringScale } from '@/types/scoringScale';
 import { Pillar } from '@/types/pillar'; // Importar Pillar
+import { DiagnosticStatus } from '@/types/diagnosticStatus'; // Importar DiagnosticStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -41,7 +42,11 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   const [isAddQuestionsDialogOpen, setIsAddQuestionsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingQuestionnaire, setEditingQuestionnaire] = useState<DiagnosticQuestionnaire | null>(null);
-  const [selectedPillarId, setSelectedPillarId] = useState<string | undefined>(undefined); // Novo estado para o pilar selecionado
+  
+  // Novos estados para os filtros
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedDiagnosticStatusFilter, setSelectedDiagnosticStatusFilter] = useState<string>('all');
+
   const [selectedDiagnosticToAnswer, setSelectedDiagnosticToAnswer] = useState<string | undefined>(undefined);
 
   // Formulário para edição de UMA pergunta (o mesmo que antes, mas agora para edição)
@@ -84,27 +89,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     }
   }, [editingQuestionnaire, editForm, isEditDialogOpen]);
 
-  // 1. Fetch all diagnostics for the selected company and user to determine relevant pillars
-  const { data: allUserCompanyDiagnostics, isLoading: isLoadingAllUserCompanyDiagnostics } = useQuery<DiagnosticPillarInfo[], Error>({
-    queryKey: ['allUserCompanyDiagnosticsForPillarFilter', user?.id, selectedCompany?.id],
-    queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
-      const { data, error } = await supabase
-        .from('diagnostics')
-        .select('id, pillar_id'); // Only need id and pillar_id for filtering
-      if (error) throw error;
-      return data as DiagnosticPillarInfo[]; // Cast to the new specific type
-    },
-    enabled: !!user?.id && !!selectedCompany?.id,
-  });
-
-  // Extract unique pillar IDs from these diagnostics
-  const relevantPillarIds = useMemo(() => {
-    if (!allUserCompanyDiagnostics) return [];
-    return Array.from(new Set(allUserCompanyDiagnostics.map(d => d.pillar_id).filter((id): id is string => id !== null)));
-  }, [allUserCompanyDiagnostics]);
-
-  // 2. Fetch pillars, then filter them based on relevantPillarIds
+  // 1. Fetch all pillars for the filter dropdown
   const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
     queryKey: ['allPillarsListForQuestionnaire'],
     queryFn: async () => {
@@ -120,40 +105,58 @@ const DiagnosticQuestionnairePage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const filteredPillars = useMemo(() => {
-    if (!allPillars || relevantPillarIds.length === 0) return [];
-    return allPillars.filter(pillar => relevantPillarIds.includes(pillar.id));
-  }, [allPillars, relevantPillarIds]);
-
-  // 3. Fetch diagnostics based on selected pillar
-  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarId], // Adicionado selectedPillarId
+  // 2. Fetch all diagnostic statuses for the filter dropdown
+  const { data: allDiagnosticStatuses, isLoading: isLoadingAllDiagnosticStatuses } = useQuery<DiagnosticStatus[], Error>({
+    queryKey: ['allDiagnosticStatusesListForQuestionnaire', user?.id],
     queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id || !selectedPillarId) return []; // Depende de selectedPillarId
+      if (!user?.id) return [];
       const { data, error } = await supabase
-        .from('diagnostics')
-        .select('*, companies(name), pillars(description), pillar_blocks(name)')
+        .from('diagnostic_statuses')
+        .select('*')
         .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
-        .eq('pillar_id', selectedPillarId) // Filtra por pillar_id
-        .order('created_at', { ascending: false });
+        .order('description', { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id && !!selectedCompany?.id && !!selectedPillarId, // Habilitado apenas se um pilar for selecionado
+    enabled: !!user?.id,
   });
 
-  // Reset selected diagnostic when pillar changes
+  // 3. Fetch diagnostics based on selected filters for the "Select Diagnostic" dropdown
+  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
+    queryKey: ['diagnosticsListForQuestionnaire', user?.id, selectedCompany?.id, selectedPillarFilter, selectedDiagnosticStatusFilter],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id) return [];
+      let query = supabase
+        .from('diagnostics')
+        .select('*, companies(name), pillars(description), pillar_blocks(name)')
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id);
+      
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedDiagnosticStatusFilter !== 'all') {
+        query = query.eq('diagnostic_status_id', selectedDiagnosticStatusFilter);
+      }
+
+      query = query.order('created_at', { ascending: false });
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  // Reset selected diagnostic when filters change
   useEffect(() => {
-    if (selectedPillarId && diagnostics && diagnostics.length > 0) {
-      // If the previously selected diagnostic is still in the new list, keep it. Otherwise, clear.
+    if (diagnostics && diagnostics.length > 0) {
       if (!diagnostics.some(d => d.id === selectedDiagnosticToAnswer)) {
         setSelectedDiagnosticToAnswer(undefined);
       }
-    } else if (!selectedPillarId) {
+    } else {
       setSelectedDiagnosticToAnswer(undefined);
     }
-  }, [selectedPillarId, diagnostics]);
+  }, [selectedPillarFilter, selectedDiagnosticStatusFilter, diagnostics]);
 
 
   // 4. Fetch questionnaire entries for the selected diagnostic
@@ -331,7 +334,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
       showError("Por favor, selecione uma empresa na barra lateral para adicionar perguntas.");
       return;
     }
-    if (!selectedPillarId) {
+    if (!selectedPillarFilter || selectedPillarFilter === 'all') {
       showError("Por favor, selecione um pilar para adicionar perguntas.");
       return;
     }
@@ -358,7 +361,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
   };
 
   const isMutating = updateQuestionnaireMutation.isPending || deleteQuestionnaireMutation.isPending;
-  const isLoadingPage = isLoadingAllUserCompanyDiagnostics || isLoadingAllPillars || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales || isLoadingQuestionnaires;
+  const isLoadingPage = isLoadingAllPillars || isLoadingAllDiagnosticStatuses || isLoadingDiagnostics || isLoadingKpis || isLoadingScoringScales || isLoadingQuestionnaires;
 
   if (!selectedCompany) {
     return (
@@ -393,28 +396,27 @@ const DiagnosticQuestionnairePage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          {/* Seletor de Pilar */}
+          {/* Seletor de Pilar para Filtro */}
           <div className="mb-4">
             <Label className="text-foreground">Filtrar por Pilar</Label>
             <Select
               onValueChange={(value) => {
-                setSelectedPillarId(value === 'placeholder' ? undefined : value);
-                setSelectedDiagnosticToAnswer(undefined); // Resetar diagnóstico selecionado ao mudar o pilar
+                setSelectedPillarFilter(value);
               }}
-              value={selectedPillarId || 'placeholder'}
-              disabled={isLoadingAllPillars || filteredPillars.length === 0}
+              value={selectedPillarFilter}
+              disabled={isLoadingAllPillars}
             >
               <SelectTrigger className="rounded-lg">
-                <SelectValue placeholder="Selecione um Pilar" />
+                <SelectValue placeholder="Todos os Pilares" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="placeholder" disabled>Selecione um Pilar</SelectItem>
+                <SelectItem value="all">Todos os Pilares</SelectItem>
                 {isLoadingAllPillars ? (
                   <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
-                ) : filteredPillars.length === 0 ? (
-                  <SelectItem value="no-pillars" disabled>Nenhum pilar com diagnóstico cadastrado.</SelectItem>
+                ) : (allPillars?.length || 0) === 0 ? (
+                  <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado.</SelectItem>
                 ) : (
-                  filteredPillars.map((pillar) => (
+                  allPillars?.map((pillar) => (
                     pillar.id && pillar.id !== '' ? (
                       <SelectItem key={pillar.id} value={pillar.id}>
                         {pillar.description}
@@ -424,14 +426,38 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               </SelectContent>
             </Select>
-            {!selectedPillarId && filteredPillars.length > 0 && (
-              <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um pilar para filtrar os diagnósticos.</p>
-            )}
-            {filteredPillars.length === 0 && (
-              <p className="text-sm text-destructive mt-2">
-                Nenhum pilar com diagnóstico encontrado para esta empresa. Crie um diagnóstico em "OPS | Diagnósticos" primeiro.
-              </p>
-            )}
+          </div>
+
+          {/* Seletor de Status do Diagnóstico para Filtro */}
+          <div className="mb-6">
+            <Label className="text-foreground">Filtrar por Status do Diagnóstico</Label>
+            <Select
+              onValueChange={(value) => {
+                setSelectedDiagnosticStatusFilter(value);
+              }}
+              value={selectedDiagnosticStatusFilter}
+              disabled={isLoadingAllDiagnosticStatuses}
+            >
+              <SelectTrigger className="rounded-lg">
+                <SelectValue placeholder="Todos os Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Status</SelectItem>
+                {isLoadingAllDiagnosticStatuses ? (
+                  <SelectItem value="loading" disabled>Carregando status...</SelectItem>
+                ) : (allDiagnosticStatuses?.length || 0) === 0 ? (
+                  <SelectItem value="no-statuses" disabled>Nenhum status cadastrado.</SelectItem>
+                ) : (
+                  allDiagnosticStatuses?.map((status) => (
+                    status.id && status.id !== '' ? (
+                      <SelectItem key={status.id} value={status.id}>
+                        {status.description}
+                      </SelectItem>
+                    ) : null
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Seletor de Diagnóstico */}
@@ -440,17 +466,17 @@ const DiagnosticQuestionnairePage: React.FC = () => {
             <Select
               onValueChange={setSelectedDiagnosticToAnswer}
               value={selectedDiagnosticToAnswer || 'placeholder'}
-              disabled={!selectedPillarId || isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
+              disabled={isLoadingDiagnostics || (diagnostics?.length || 0) === 0}
             >
               <SelectTrigger className="rounded-lg">
-                <SelectValue placeholder={selectedPillarId ? "Selecione um diagnóstico" : "Selecione um Pilar primeiro"} />
+                <SelectValue placeholder="Selecione um diagnóstico" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="placeholder" disabled>{selectedPillarId ? "Selecione um Diagnóstico" : "Selecione um Pilar primeiro"}</SelectItem>
+                <SelectItem value="placeholder" disabled>Selecione um Diagnóstico</SelectItem>
                 {isLoadingDiagnostics ? (
                   <SelectItem value="loading" disabled>Carregando diagnósticos...</SelectItem>
                 ) : (diagnostics?.length || 0) === 0 ? (
-                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico cadastrado para este pilar.</SelectItem>
+                  <SelectItem value="no-diagnostics" disabled>Nenhum diagnóstico encontrado para os filtros aplicados.</SelectItem>
                 ) : (
                   diagnostics?.map((diagnostic) => (
                     diagnostic.id && diagnostic.id !== '' ? (
@@ -462,12 +488,12 @@ const DiagnosticQuestionnairePage: React.FC = () => {
                 )}
               </SelectContent>
             </Select>
-            {!selectedDiagnosticToAnswer && selectedPillarId && (diagnostics?.length || 0) > 0 && (
+            {!selectedDiagnosticToAnswer && (diagnostics?.length || 0) > 0 && (
               <p className="text-sm font-medium text-destructive mt-2">Por favor, selecione um diagnóstico para adicionar perguntas.</p>
             )}
-            {selectedPillarId && (diagnostics?.length || 0) === 0 && (
+            {(diagnostics?.length || 0) === 0 && (selectedPillarFilter !== 'all' || selectedDiagnosticStatusFilter !== 'all') && (
               <p className="text-sm text-destructive mt-2">
-                Nenhum diagnóstico encontrado para o pilar selecionado. Crie um em "OPS | Diagnósticos" primeiro.
+                Nenhum diagnóstico encontrado com os filtros aplicados. Tente ajustar os filtros ou criar novos diagnósticos.
               </p>
             )}
           </div>
@@ -477,7 +503,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-foreground w-[80px]">Ordem</TableHead> {/* Nova coluna com largura definida */}
+                  <TableHead className="text-foreground w-[80px]">Ordem</TableHead>
                   <TableHead className="text-foreground">Diagnóstico</TableHead>
                   <TableHead className="text-foreground">Pergunta (KPI)</TableHead>
                   <TableHead className="text-right text-foreground">Ações</TableHead>
@@ -486,14 +512,14 @@ const DiagnosticQuestionnairePage: React.FC = () => {
               <TableBody>
                 {questionnaires?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground"> {/* Colspan ajustado */}
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
                       Nenhuma resposta de questionário encontrada para este diagnóstico.
                     </TableCell>
                   </TableRow>
                 ) : (
                   questionnaires?.map((q) => (
                     <TableRow key={q.id}>
-                      <TableCell className="font-bold text-sollux-red">{q.order_number || 'N/A'}</TableCell> {/* Exibir order_number com destaque */}
+                      <TableCell className="font-bold text-sollux-red">{q.order_number || 'N/A'}</TableCell>
                       <TableCell className="font-medium text-foreground">
                         {q.diagnostics?.id.substring(0, 8)}... ({q.diagnostics?.pillars?.description || 'N/A'} / {q.diagnostics?.pillar_blocks?.name || 'N/A'})
                       </TableCell>
