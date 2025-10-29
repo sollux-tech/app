@@ -90,7 +90,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-function App() {
+// Novo componente para encapsular o conteúdo principal do App
+const AppContent: React.FC = () => {
   const { profile, isLoading: isLoadingProfile } = useSession();
 
   if (isLoadingProfile) {
@@ -102,88 +103,93 @@ function App() {
   }
 
   return (
+    <ThemeProvider defaultTheme={profile?.theme || "system"} storageKey="vite-ui-theme">
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
+        <Route path="/jobs/:id" element={<PublicJobPage />} />
+        <Route path="/form/:id" element={<PublicFormPage />} />
+        <Route path="/informative/:id" element={<PublicInformativePage />} /> {/* Rota pública */}
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/pulse" replace />} /> 
+                  <Route path="/pulse" element={<PulsePage />} /> 
+                  <Route path="/pulse/informatives" element={<AllInformativesPage />} />
+                  <Route path="/id" element={<IdPage />} />
+                  <Route path="/id/companies" element={<CompanyManagementPage />} />
+                  <Route path="/id/companies/new" element={<CompanyFormPage />} />
+                  <Route path="/id/companies/:id" element={<CompanyFormPage />} />
+                  <Route path="/id/users" element={<UserManagementPage />} />
+                  <Route path="/id/sharing" element={<CompanySharingPage />} />
+                  <Route path="/id/documents" element={<AllDocumentsPage />} />
+                  <Route path="/connect" element={<ConnectPage />} />
+                  <Route path="/connect/jobs" element={<JobsPage />} />
+                  <Route path="/connect/jobs/new" element={<JobFormPage />} />
+                  <Route path="/connect/jobs/:id" element={<JobFormPage />} />
+                  <Route path="/connect/calc" element={<SolluxCalcPage />} />
+                  <Route path="/ops" element={<OpsPage />} />
+                  <Route path="/ops/insight" element={<InsightPage />} />
+                  <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
+                  <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
+                  <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
+                  <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} />
+                  <Route path="/ops/flow" element={<FlowPage />} />
+                  <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> {/* Nova rota */}
+                  <Route path="/core" element={<CorePage />} /> 
+                  <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
+                  <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
+                  <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
+                  <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
+                  <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
+                  <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
+                  <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
+                  <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
+                  <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
+                  <Route path="/core/global-settings/ops" element={<OpsSettingsPage />} />
+                  <Route path="/core/global-settings/ops/pillar-types" element={<PillarTypeManagementPage />} />
+                  <Route path="/core/global-settings/ops/pillars" element={<PillarManagementPage />} />
+                  <Route path="/core/global-settings/ops/pillar-blocks" element={<PillarBlockManagementPage />} />
+                  <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
+                  <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
+                  <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
+                  <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
+                  <Route path="/core/global-settings/ops/classification-scale" element={<ClassificationScaleManagementPage />} />
+                  <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
+                  <Route path="/core/notifications" element={<NotificationManagementPage />} />
+                  <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
+                  <Route path="/core/data-doctor" element={<DataDoctorPage />} />
+                  <Route path="/core/markets" element={<MarketManagementPage />} /> 
+                  <Route path="/core/documents" element={<DocumentManagementPage />} />
+                  <Route path="/shop" element={<ShopPage />} /> {/* Nova rota para ShopPage */}
+                  
+                  {/* Rotas SOLLUX FORM™ */}
+                  <Route path="/connect/forms" element={<FormsPage />} />
+                  <Route path="/connect/forms/new" element={<FormCreatePage />} /> 
+                  <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
+                  <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
+                </Routes>
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </ThemeProvider>
+  );
+};
+
+function App() {
+  return (
     <Router>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}> 
           <SessionContextProvider>
             <CompanyProvider>
               <Toaster />
-              <ThemeProvider defaultTheme={profile?.theme || "system"} storageKey="vite-ui-theme">
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
-                  <Route path="/jobs/:id" element={<PublicJobPage />} />
-                  <Route path="/form/:id" element={<PublicFormPage />} />
-                  <Route
-                    path="*"
-                    element={
-                      <ProtectedRoute>
-                        <Layout>
-                          <Routes>
-                            <Route path="/" element={<Navigate to="/pulse" replace />} /> 
-                            <Route path="/pulse" element={<PulsePage />} /> 
-                            <Route path="/pulse/informatives" element={<AllInformativesPage />} />
-                            <Route path="/id" element={<IdPage />} />
-                            <Route path="/id/companies" element={<CompanyManagementPage />} />
-                            <Route path="/id/companies/new" element={<CompanyFormPage />} />
-                            <Route path="/id/companies/:id" element={<CompanyFormPage />} />
-                            <Route path="/id/users" element={<UserManagementPage />} />
-                            <Route path="/id/sharing" element={<CompanySharingPage />} />
-                            <Route path="/id/documents" element={<AllDocumentsPage />} />
-                            <Route path="/connect" element={<ConnectPage />} />
-                            <Route path="/connect/jobs" element={<JobsPage />} />
-                            <Route path="/connect/jobs/new" element={<JobFormPage />} />
-                            <Route path="/connect/jobs/:id" element={<JobFormPage />} />
-                            <Route path="/connect/calc" element={<SolluxCalcPage />} />
-                            <Route path="/ops" element={<OpsPage />} />
-                            <Route path="/ops/insight" element={<InsightPage />} />
-                            <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
-                            <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
-                            <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
-                            <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} />
-                            <Route path="/ops/flow" element={<FlowPage />} />
-                            <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> {/* Nova rota */}
-                            <Route path="/core" element={<CorePage />} /> 
-                            <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
-                            <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
-                            <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
-                            <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
-                            {/* A rota /informative/:id agora está dentro do ProtectedRoute e Layout */}
-                            <Route path="/informative/:id" element={<PublicInformativePage />} /> 
-                            <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
-                            <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
-                            <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
-                            <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
-                            <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
-                            <Route path="/core/global-settings/ops" element={<OpsSettingsPage />} />
-                            <Route path="/core/global-settings/ops/pillar-types" element={<PillarTypeManagementPage />} />
-                            <Route path="/core/global-settings/ops/pillars" element={<PillarManagementPage />} />
-                            <Route path="/core/global-settings/ops/pillar-blocks" element={<PillarBlockManagementPage />} />
-                            <Route path="/core/global-settings/ops/scoring-scale" element={<ScoringScaleManagementPage />} />
-                            <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
-                            <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
-                            <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
-                            <Route path="/core/global-settings/ops/classification-scale" element={<ClassificationScaleManagementPage />} />
-                            <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
-                            <Route path="/core/notifications" element={<NotificationManagementPage />} />
-                            <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
-                            <Route path="/core/data-doctor" element={<DataDoctorPage />} />
-                            <Route path="/core/markets" element={<MarketManagementPage />} /> 
-                            <Route path="/core/documents" element={<DocumentManagementPage />} />
-                            <Route path="/shop" element={<ShopPage />} /> {/* Nova rota para ShopPage */}
-                            
-                            {/* Rotas SOLLUX FORM™ */}
-                            <Route path="/connect/forms" element={<FormsPage />} />
-                            <Route path="/connect/forms/new" element={<FormCreatePage />} /> 
-                            <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
-                            <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
-                          </Routes>
-                        </Layout>
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </ThemeProvider>
+              <AppContent /> {/* Renderiza o novo componente aqui */}
             </CompanyProvider>
           </SessionContextProvider>
         </QueryClientProvider>
