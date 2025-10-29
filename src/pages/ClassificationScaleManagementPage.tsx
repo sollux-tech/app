@@ -287,15 +287,9 @@ const ClassificationScaleManagementPage: React.FC = () => {
               ) : (
                 classificationScales?.map((scale) => (
                   <TableRow key={scale.id}>
-                    <TableCell className="text-muted-foreground">
-                      {(scale as any).pillars?.description || 'Global'}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {(scale as any).pillar_blocks?.name || 'Global'}
-                    </TableCell>
-                    <TableCell className="font-medium text-foreground">
-                      {scale.min_percentage}% a {scale.max_percentage}%
-                    </TableCell>
+                    <TableCell className="text-muted-foreground">{(scale as any).pillars?.description || 'Global'}</TableCell>
+                    <TableCell className="text-muted-foreground">{(scale as any).pillar_blocks?.name || 'Global'}</TableCell>
+                    <TableCell className="font-medium text-foreground">{scale.min_percentage}% a {scale.max_percentage}%</TableCell>
                     <TableCell className="text-muted-foreground">{scale.classification_label}</TableCell>
                     <TableCell>
                       <Badge className={getColorClass(scale.color_code)}>
@@ -345,7 +339,7 @@ const ClassificationScaleManagementPage: React.FC = () => {
                     <FormItem>
                       <FormLabel className="text-foreground">Pilar (Opcional)</FormLabel>
                       <Select onValueChange={(value) => {
-                        field.onChange(value);
+                        field.onChange(value === 'null-option' ? '' : value); // Pass '' to form, which then transforms to null
                         form.setValue('pillar_block_id', ''); // Reset pillar block when pillar changes
                       }} value={field.value || ''} disabled={isLoadingPillars}>
                         <FormControl>
@@ -354,7 +348,7 @@ const ClassificationScaleManagementPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Global (todos os pilares)</SelectItem>
+                          <SelectItem value="null-option">Global (todos os pilares)</SelectItem>
                           {pillars?.length === 0 ? (
                             <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
                           ) : (
@@ -378,14 +372,14 @@ const ClassificationScaleManagementPage: React.FC = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-foreground">Bloco (Opcional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''} disabled={!selectedPillarId || isLoadingPillarBlocks || filteredPillarBlocks.length === 0}>
+                      <Select onValueChange={(value) => field.onChange(value === 'null-option' ? '' : value)} value={field.value || ''} disabled={!selectedPillarId || isLoadingPillarBlocks || filteredPillarBlocks.length === 0}>
                         <FormControl>
                           <SelectTrigger className="rounded-lg">
                             <SelectValue placeholder="Global (todos os blocos)" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Global (todos os blocos)</SelectItem>
+                          <SelectItem value="null-option">Global (todos os blocos)</SelectItem>
                           {filteredPillarBlocks.length === 0 ? (
                             <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
                           ) : (
