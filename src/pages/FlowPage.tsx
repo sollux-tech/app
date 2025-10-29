@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
+import { Link } from '@/components/ui/link'; // Importar Link do shadcn/ui
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -55,13 +55,13 @@ const classifyPercentage = (
   return null;
 };
 
-const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
+const getColorHex = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
   switch (colorCode) {
-    case 'red': return 'bg-red-500 text-white';
-    case 'yellow': return 'bg-yellow-500 text-black';
-    case 'blue': return 'bg-blue-500 text-white';
-    case 'green': return 'bg-green-500 text-white';
-    default: return 'bg-gray-500 text-white';
+    case 'red': return '#EF4444'; // Tailwind red-500
+    case 'yellow': return '#F59E0B'; // Tailwind yellow-500
+    case 'blue': return '#3B82F6'; // Tailwind blue-500
+    case 'green': return '#22C55E'; // Tailwind green-500
+    default: return '#9CA3AF'; // Tailwind gray-400
   }
 };
 
@@ -379,7 +379,7 @@ const FlowPage: React.FC = () => {
       return {
         name: label,
         value: classificationCounts[label],
-        color: classification ? getColorClass(classification.color_code) : '#ccc',
+        color: classification ? getColorHex(classification.color_code) : '#ccc', // Usar getColorHex aqui
       };
     });
 
