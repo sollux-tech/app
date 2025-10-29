@@ -54,6 +54,17 @@ const classifyPercentage = (
   return null;
 };
 
+// Função para obter o código hexadecimal da cor
+const getColorHex = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
+  switch (colorCode) {
+    case 'red': return '#EF4444'; // Tailwind red-500
+    case 'yellow': return '#F59E0B'; // Tailwind yellow-500
+    case 'blue': return '#3B82F6'; // Tailwind blue-500
+    case 'green': return '#22C55E'; // Tailwind green-500
+    default: return '#9CA3AF'; // Tailwind gray-400
+  }
+};
+
 const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
   switch (colorCode) {
     case 'red': return 'bg-red-500 text-white';
@@ -387,7 +398,7 @@ const PulsePage: React.FC = () => {
       return {
         name: label,
         value: classificationCounts[label],
-        color: classification ? getColorClass(classification.color_code) : '#ccc',
+        color: classification ? getColorHex(classification.color_code) : '#ccc',
       };
     });
 
@@ -533,7 +544,8 @@ const PulsePage: React.FC = () => {
             <Button variant="outline" size="sm" onClick={() => navigate('/ops/flow')} className="rounded-lg text-foreground border-border hover:bg-accent">
               Ver Detalhes no Flow
             </Button>
-          </div>
+          </Link>
+        </div>
         )}
       </SectionWrapper>
 
