@@ -307,6 +307,7 @@ const FormsPage: React.FC = () => {
       </Card>
 
       {/* Dialog de QR Code */}
+      
       <Dialog open={isQRDialogOpen} onOpenChange={setIsQRDialogOpen}>
         <DialogContent className="sm:max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>

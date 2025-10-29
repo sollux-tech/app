@@ -219,16 +219,16 @@ const UserManagementPage: React.FC = () => {
   }, [profiles, form]);
 
   if (isLoadingPage) {
-    return <div className="text-center text-gray-600">Carregando perfis...</div>;
+    return <div className="text-center text-muted-foreground">Carregando perfis...</div>;
   }
 
   if (errorProfiles) {
-    return <div className="text-center text-red-600">Erro ao carregar perfis: {errorProfiles.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar perfis: {errorProfiles.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
           <CardTitle className="text-foreground uppercase font-bold">Gerenciar Perfis do Usuário</CardTitle>
           <CardDescription className="text-muted-foreground">

@@ -40,10 +40,10 @@ const ShareJobQrDialog: React.FC<ShareJobQrDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+      <DialogContent className="sm:max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
         <DialogHeader>
-          <DialogTitle className="text-sollux-black">QR Code da Vaga</DialogTitle>
-          <DialogDescription className="text-gray-600">
+          <DialogTitle className="text-foreground">QR Code da Vaga</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Escaneie o QR Code ou copie o link para compartilhar a vaga "{jobTitle}".
           </DialogDescription>
         </DialogHeader>
@@ -53,8 +53,8 @@ const ShareJobQrDialog: React.FC<ShareJobQrDialogProps> = ({
               <img src={qrCodeUrl} alt="QR Code da Vaga" className="w-48 h-48 border rounded-lg" />
             </div>
           )}
-          <div className="bg-gray-100 p-3 rounded-lg mb-4">
-            <p className="text-sm font-mono text-sollux-black break-all">
+          <div className="bg-muted p-3 rounded-lg mb-4">
+            <p className="text-sm font-mono text-foreground break-all">
               {shareUrl}
             </p>
           </div>

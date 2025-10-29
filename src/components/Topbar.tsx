@@ -175,7 +175,7 @@ const Topbar: React.FC<TopbarProps> = ({ className }) => {
             </Sheet>
           )}
           <div className="flex items-center gap-2">
-            <span className="text-xl font-semibold text-sollux-black">SOLLUX FLOW</span>
+            <span className="text-xl font-semibold text-foreground">SOLLUX FLOW</span>
             <span className="text-xl font-semibold text-sollux-red">| {getPageTitle()}</span>
           </div>
         </div>

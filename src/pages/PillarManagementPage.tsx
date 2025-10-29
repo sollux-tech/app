@@ -309,12 +309,14 @@ const PillarManagementPage: React.FC = () => {
                       </FormControl>
                       <SelectContent>
                         {pillarTypes?.length === 0 ? (
-                          <SelectItem value="" disabled>Nenhum tipo de pilar cadastrado</SelectItem>
+                          <SelectItem value="no-pillars" disabled>Nenhum tipo de pilar cadastrado</SelectItem>
                         ) : (
                           pillarTypes?.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
-                              {type.description}
-                            </SelectItem>
+                            type.id && type.id !== '' ? (
+                              <SelectItem key={type.id} value={type.id}>
+                                {type.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>

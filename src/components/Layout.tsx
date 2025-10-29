@@ -16,7 +16,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col"> {/* Alterado bg-sollux-light-gray para bg-background e adicionado text-foreground */}
       {/* Topbar */}
-      <Topbar className={cn(!isMobile && "left-20")} /> {/* Ajusta a posição da topbar */}
+      <Topbar className={cn(!isMobile && "left-20")} /> 
       
       <div className="flex flex-1 pt-16"> {/* pt-16 para compensar a topbar fixa */}
         {/* Sidebar - apenas em desktop */}

@@ -23,8 +23,8 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
 import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import SearchableUserSelect from '@/components/SearchableUserSelect'; // Importar o novo componente
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),

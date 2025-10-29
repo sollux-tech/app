@@ -53,7 +53,7 @@ const CompanyManagementPage: React.FC = () => {
   };
 
   if (isLoadingCompanies) {
-    return <div className="text-center text-gray-600">Carregando suas empresas...</div>;
+    return <div className="text-center text-muted-foreground">Carregando suas empresas...</div>;
   }
 
   // Filtra a lista de empresas do contexto para mostrar apenas as que o usuário é proprietário
@@ -61,9 +61,9 @@ const CompanyManagementPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Minhas Empresas</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Minhas Empresas</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Empresa
           </Button>
@@ -71,7 +71,7 @@ const CompanyManagementPage: React.FC = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {ownedCompanies.length === 0 ? (
-              <p className="text-gray-500 col-span-full text-center">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
+              <p className="text-muted-foreground col-span-full text-center">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
             ) : (
               ownedCompanies.map((company) => (
                 <CompanyCard

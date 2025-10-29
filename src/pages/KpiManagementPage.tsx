@@ -269,18 +269,18 @@ const KpiManagementPage: React.FC = () => {
   const isLoadingPage = isLoadingKpis || isLoadingPillars || isLoadingPillarBlocks || isLoadingTags;
 
   if (isLoadingPage) {
-    return <div className="text-center text-gray-600">Carregando KPIs...</div>;
+    return <div className="text-center text-muted-foreground">Carregando KPIs...</div>;
   }
 
   if (errorKpis) {
-    return <div className="text-center text-red-600">Erro ao carregar KPIs: {errorKpis.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar KPIs: {errorKpis.message}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Perguntas para KPIs de Diagnóstico</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Perguntas para KPIs de Diagnóstico</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Pergunta
           </Button>
@@ -342,31 +342,31 @@ const KpiManagementPage: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-sollux-black">Pilar</TableHead>
-                <TableHead className="text-sollux-black">Bloco</TableHead>
-                <TableHead className="text-sollux-black">Pergunta</TableHead>
-                <TableHead className="text-sollux-black">Tags</TableHead> {/* Nova coluna para Tags */}
-                <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                <TableHead className="text-foreground">Pilar</TableHead>
+                <TableHead className="text-foreground">Bloco</TableHead>
+                <TableHead className="text-foreground">Pergunta</TableHead>
+                <TableHead className="text-foreground">Tags</TableHead> {/* Nova coluna para Tags */}
+                <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {kpis?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-gray-500"> {/* Colspan ajustado */}
+                  <TableCell colSpan={5} className="text-center text-muted-foreground"> {/* Colspan ajustado */}
                     Nenhuma pergunta de KPI encontrada com os filtros aplicados.
                   </TableCell>
                 </TableRow>
               ) : (
                 kpis?.map((kpi) => (
                   <TableRow key={kpi.id}>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {(kpi as any).pillars?.description || 'N/A'}
                     </TableCell>
-                    <TableCell className="text-gray-700">
+                    <TableCell className="text-muted-foreground">
                       {(kpi as any).pillar_blocks?.name || 'N/A'}
                     </TableCell>
-                    <TableCell className="font-medium text-sollux-black">{kpi.question}</TableCell>
-                    <TableCell className="text-gray-700"> {/* Exibir Tags */}
+                    <TableCell className="font-medium text-foreground">{kpi.question}</TableCell>
+                    <TableCell className="text-muted-foreground"> {/* Exibir Tags */}
                       {kpi.tags && kpi.tags.length > 0 ? kpi.tags.join(', ') : 'N/A'}
                     </TableCell>
                     <TableCell className="text-right flex justify-end items-center gap-1">
@@ -374,7 +374,7 @@ const KpiManagementPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEditClick(kpi)}
-                        className="mr-2 text-sollux-black hover:bg-gray-100 rounded-lg"
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
                         <Edit className="h-4 w-4" />
@@ -398,9 +398,9 @@ const KpiManagementPage: React.FC = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-lg bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg border border-sollux-card-border">
+        <DialogContent className="sm:max-w-lg bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
-            <DialogTitle className="text-sollux-black">{editingKpi ? 'Editar Pergunta de KPI' : 'Adicionar Nova Pergunta de KPI'}</DialogTitle>
+            <DialogTitle className="text-foreground">{editingKpi ? 'Editar Pergunta de KPI' : 'Adicionar Nova Pergunta de KPI'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -409,7 +409,7 @@ const KpiManagementPage: React.FC = () => {
                 name="pillar_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Pilar</FormLabel>
+                    <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
                       form.setValue('pillar_block_id', ''); // Reset pillar block when pillar changes
@@ -438,15 +438,15 @@ const KpiManagementPage: React.FC = () => {
                 )}
               />
               <FormItem>
-                <FormLabel className="text-sollux-black">Tipo do Pilar</FormLabel>
-                <Input value={selectedPillarTypeName} readOnly className="rounded-lg bg-gray-100 text-gray-700" />
+                <FormLabel className="text-foreground">Tipo do Pilar</FormLabel>
+                <Input value={selectedPillarTypeName} readOnly className="rounded-lg bg-muted text-muted-foreground" />
               </FormItem>
               <FormField
                 control={form.control}
                 name="pillar_block_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Bloco</FormLabel>
+                    <FormLabel className="text-foreground">Bloco</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarId || isLoadingPillarBlocks || filteredPillarBlocks.length === 0}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -476,7 +476,7 @@ const KpiManagementPage: React.FC = () => {
                 name="question"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Pergunta</FormLabel>
+                    <FormLabel className="text-foreground">Pergunta</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Ex: Quão satisfeito você está com o produto?" {...field} className="rounded-lg" />
                     </FormControl>
@@ -489,7 +489,7 @@ const KpiManagementPage: React.FC = () => {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sollux-black">Tags (Opcional)</FormLabel>
+                    <FormLabel className="text-foreground">Tags (Opcional)</FormLabel>
                     <FormControl>
                       <MultiSelect
                         options={tagOptions}

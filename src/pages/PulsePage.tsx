@@ -558,7 +558,7 @@ const PulsePage: React.FC = () => {
                   <Briefcase className="h-5 w-5 text-blue-600" />
                   <span className="text-sm font-medium text-blue-900">Total de Vagas</span>
                 </div>
-                <div className="2xl font-bold text-blue-900">{totalJobs}</div>
+                <div className="text-2xl font-bold text-blue-900">{totalJobs}</div>
                 <p className="text-xs text-blue-700">Últimos 30 dias</p>
               </div>
               
@@ -567,7 +567,7 @@ const PulsePage: React.FC = () => {
                   <Activity className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-medium text-green-900">Vagas Ativas</span>
                 </div>
-                <div className="2xl font-bold text-green-900">{activeJobs}</div>
+                <div className="text-2xl font-bold text-green-900">{activeJobs}</div>
                 <p className="text-xs text-green-700">Disponíveis para candidatos</p>
               </div>
               
@@ -576,7 +576,7 @@ const PulsePage: React.FC = () => {
                   <Calendar className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">Vagas Inativas</span>
                 </div>
-                <div className="2xl font-bold text-foreground">{inactiveJobs}</div>
+                <div className="text-2xl font-bold text-foreground">{inactiveJobs}</div>
                 <p className="text-xs text-muted-foreground">Pausadas ou encerradas</p>
               </div>
               
@@ -585,7 +585,7 @@ const PulsePage: React.FC = () => {
                   <TrendingUp className="h-5 w-5 text-purple-600" />
                   <span className="text-sm font-medium text-purple-900">Média Salarial</span>
                 </div>
-                <div className="2xl font-bold text-purple-900">
+                <div className="text-2xl font-bold text-purple-900">
                   {avgSalary > 0 ? `R$ ${avgSalary.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : 'N/A'}
                 </div>
                 <p className="text-xs text-purple-700">Baseado nas vagas publicadas</p>
@@ -667,7 +667,7 @@ const PulsePage: React.FC = () => {
                   <FileText className="h-5 w-5 text-blue-600" />
                   <span className="text-sm font-medium text-blue-900">Total de Formulários</span>
                 </div>
-                <div className="2xl font-bold text-blue-900">{totalForms}</div>
+                <div className="text-2xl font-bold text-blue-900">{totalForms}</div>
                 <p className="text-xs text-blue-700">Últimos 30 dias</p>
               </div>
               
@@ -676,7 +676,7 @@ const PulsePage: React.FC = () => {
                   <CheckCircle className="h-5 w-5 text-green-600" />
                   <span className="text-sm font-medium text-green-900">Formulários Publicados</span>
                 </div>
-                <div className="2xl font-bold text-green-900">{publishedForms}</div>
+                <div className="text-2xl font-bold text-green-900">{publishedForms}</div>
                 <p className="text-xs text-green-700">Disponíveis para respostas</p>
               </div>
               
@@ -685,7 +685,7 @@ const PulsePage: React.FC = () => {
                   <FileText className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm font-medium text-foreground">Formulários em Rascunho</span>
                 </div>
-                <div className="2xl font-bold text-foreground">{draftForms}</div>
+                <div className="text-2xl font-bold text-foreground">{draftForms}</div>
                 <p className="text-xs text-muted-foreground">Aguardando edição</p>
               </div>
               
@@ -694,7 +694,7 @@ const PulsePage: React.FC = () => {
                   <MessageSquareText className="h-5 w-5 text-purple-600" />
                   <span className="text-sm font-medium text-purple-900">Total de Respostas</span>
                 </div>
-                <div className="2xl font-bold text-purple-900">{totalFormResponses}</div>
+                <div className="text-2xl font-bold text-purple-900">{totalFormResponses}</div>
                   <p className="text-xs text-purple-700">Recebidas nos formulários</p>
                 </div>
               </div>
@@ -702,7 +702,7 @@ const PulsePage: React.FC = () => {
               {/* Formulários Recentes */}
               {recentForms && recentForms.length > 0 && (
                 <div>
-                  <h4 className="lg font-semibold text-foreground mb-4">Formulários Recentes</h4>
+                  <h4 className="text-lg font-semibold text-foreground mb-4">Formulários Recentes</h4>
                   <div className="space-y-3">
                     {recentForms.slice(0, 5).map((formItem) => (
                       <div key={formItem.id} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">

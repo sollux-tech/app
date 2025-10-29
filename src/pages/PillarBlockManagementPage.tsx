@@ -349,9 +349,11 @@ const PillarBlockManagementPage: React.FC = () => {
                           <SelectItem value="" disabled>Nenhum pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
-                            <SelectItem key={pillar.id} value={pillar.id}>
-                              {pillar.description}
-                            </SelectItem>
+                            pillar.id && pillar.id !== '' ? (
+                              <SelectItem key={pillar.id} value={pillar.id}>
+                                {pillar.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>

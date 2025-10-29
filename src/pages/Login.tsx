@@ -70,8 +70,8 @@ const ptBR = {
 
 const Login = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-sollux-light-gray p-4">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
+    <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-4xl bg-card rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
         
         {/* Painel Esquerdo (Visual) */}
         <div className="relative hidden md:flex flex-col items-center justify-center p-12 bg-gradient-to-br from-sollux-red via-red-500 to-sollux-orange text-white text-center">
@@ -87,8 +87,8 @@ const Login = () => {
         {/* Painel Direito (Formulário) */}
         <div className="p-8 md:p-12 flex flex-col justify-center">
           <div className="w-full max-w-sm mx-auto">
-            <h2 className="text-3xl font-bold text-sollux-black mb-2">Login</h2>
-            <p className="text-gray-600 mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-2">Login</h2>
+            <p className="text-muted-foreground mb-8">
               Entre com suas credenciais ou crie uma nova conta.
             </p>
             <Auth
@@ -104,7 +104,7 @@ const Login = () => {
                     colors: {
                       brand: '#E53935', // SOLLUX Red
                       brandAccent: '#FB8C00', // SOLLUX Orange
-                      inputText: '#212121', // SOLLUX Black for text
+                      inputText: 'hsl(var(--foreground))', // Usar variável CSS para texto
                     },
                     radii: {
                       inputBorderRadius: '0.75rem', // rounded-lg
@@ -113,7 +113,7 @@ const Login = () => {
                   },
                 },
               }}
-              theme="light"
+              theme="light" // O tema será controlado pelo next-themes, mas o Auth UI precisa de um default
               redirectTo={window.location.origin}
               // Adiciona campos de Primeiro Nome e Sobrenome ao formulário de cadastro
               // Usando um type assertion para contornar o erro de compilação do TypeScript,

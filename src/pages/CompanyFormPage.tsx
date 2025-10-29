@@ -278,18 +278,18 @@ const CompanyFormPage: React.FC = () => {
   const isLoadingForm = createCompanyMutation.isPending || updateCompanyMutation.isPending || isLoadingCompany || isLoadingMarkets;
 
   if (isEditing && isLoadingCompany) {
-    return <div className="text-center text-gray-600">Carregando empresa...</div>;
+    return <div className="text-center text-muted-foreground">Carregando empresa...</div>;
   }
 
   if (isEditing && !editingCompany && !isLoadingCompany) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
-        <Card className="w-full max-w-md bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+        <Card className="w-full max-w-md bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-sollux-red">Empresa não encontrada</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">A empresa que você está tentando editar não existe ou você não tem permissão.</p>
+            <p className="text-muted-foreground">A empresa que você está tentando editar não existe ou você não tem permissão.</p>
             <Button onClick={() => navigate('/id/companies')} className="mt-4 rounded-lg bg-sollux-red hover:bg-sollux-orange">
               Voltar para Empresas
             </Button>
@@ -301,12 +301,12 @@ const CompanyFormPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-4xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold mb-2 text-sollux-black">
+          <CardTitle className="text-3xl font-bold mb-2 text-foreground">
             {isEditing ? 'Editar Empresa' : 'Criar Nova Empresa'}
           </CardTitle>
-          <CardDescription className="text-lg text-gray-600">
+          <CardDescription className="text-lg text-muted-foreground">
             {isEditing ? 'Atualize os detalhes da sua empresa.' : 'Adicione uma nova empresa à sua conta com informações detalhadas.'}
           </CardDescription>
         </CardHeader>
@@ -314,15 +314,15 @@ const CompanyFormPage: React.FC = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Dados Básicos */}
-              <Card className="bg-white/50 border border-gray-200 shadow-sm rounded-lg">
-                <CardHeader><CardTitle className="text-xl text-sollux-black">Dados Básicos</CardTitle></CardHeader>
+              <Card className="bg-card/50 border border-border shadow-sm rounded-lg">
+                <CardHeader><CardTitle className="text-xl text-foreground">Dados Básicos</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Nome da Empresa</FormLabel>
+                        <FormLabel className="text-foreground">Nome da Empresa</FormLabel>
                         <FormControl>
                           <Input placeholder="Nome da empresa" {...field} className="rounded-lg" />
                         </FormControl>
@@ -335,7 +335,7 @@ const CompanyFormPage: React.FC = () => {
                     name="sector_market_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Setor/Mercado Principal de Atuação</FormLabel>
+                        <FormLabel className="text-foreground">Setor/Mercado Principal de Atuação</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingMarkets}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
@@ -365,7 +365,7 @@ const CompanyFormPage: React.FC = () => {
                     name="annual_revenue_range"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Faturamento Anual Aproximado</FormLabel>
+                        <FormLabel className="text-foreground">Faturamento Anual Aproximado</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
@@ -390,7 +390,7 @@ const CompanyFormPage: React.FC = () => {
                     name="num_employees_range"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Número de Funcionários</FormLabel>
+                        <FormLabel className="text-foreground">Número de Funcionários</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
@@ -415,7 +415,7 @@ const CompanyFormPage: React.FC = () => {
                     name="time_in_market_years"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Tempo de Mercado (anos de operação)</FormLabel>
+                        <FormLabel className="text-foreground">Tempo de Mercado (anos de operação)</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="Ex: 5" {...field} className="rounded-lg" />
                         </FormControl>
@@ -427,15 +427,15 @@ const CompanyFormPage: React.FC = () => {
               </Card>
 
               {/* Análise Estratégica */}
-              <Card className="bg-white/50 border border-gray-200 shadow-sm rounded-lg">
-                <CardHeader><CardTitle className="text-xl text-sollux-black">Análise Estratégica</CardTitle></CardHeader>
+              <Card className="bg-card/50 border border-border shadow-sm rounded-lg">
+                <CardHeader><CardTitle className="text-xl text-foreground">Análise Estratégica</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="strengths"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Principais Forças da Empresa</FormLabel>
+                        <FormLabel className="text-foreground">Principais Forças da Empresa</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Equipe qualificada, Tecnologia exclusiva (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -449,7 +449,7 @@ const CompanyFormPage: React.FC = () => {
                     name="weaknesses"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Maiores Fraquezas Atuais</FormLabel>
+                        <FormLabel className="text-foreground">Maiores Fraquezas Atuais</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Falta de dados para decisões, Turnover alto (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -463,7 +463,7 @@ const CompanyFormPage: React.FC = () => {
                     name="opportunities"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Oportunidades Não Exploradas</FormLabel>
+                        <FormLabel className="text-foreground">Oportunidades Não Exploradas</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Mercado em crescimento, Parcerias potenciais (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -477,7 +477,7 @@ const CompanyFormPage: React.FC = () => {
                     name="threats"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Ameaças ou Riscos Externos</FormLabel>
+                        <FormLabel className="text-foreground">Ameaças ou Riscos Externos</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Concorrência agressiva, Mudanças regulatórias (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -490,15 +490,15 @@ const CompanyFormPage: React.FC = () => {
               </Card>
 
               {/* Desafios e Objetivos */}
-              <Card className="bg-white/50 border border-gray-200 shadow-sm rounded-lg">
-                <CardHeader><CardTitle className="text-xl text-sollux-black">Desafios e Objetivos</CardTitle></CardHeader>
+              <Card className="bg-card/50 border border-border shadow-sm rounded-lg">
+                <CardHeader><CardTitle className="text-xl text-foreground">Desafios e Objetivos</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="urgent_problem"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Problema/Dor Mais Urgente (próximo trimestre)</FormLabel>
+                        <FormLabel className="text-foreground">Problema/Dor Mais Urgente (próximo trimestre)</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Descreva o problema mais crítico" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -511,7 +511,7 @@ const CompanyFormPage: React.FC = () => {
                     name="main_goal"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Meta Principal (próximos 12 meses)</FormLabel>
+                        <FormLabel className="text-foreground">Meta Principal (próximos 12 meses)</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Aumentar faturamento em 20%" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -524,7 +524,7 @@ const CompanyFormPage: React.FC = () => {
                     name="main_competitors"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Principais Concorrentes (ou Referências do Setor)</FormLabel>
+                        <FormLabel className="text-foreground">Principais Concorrentes (ou Referências do Setor)</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Concorrente A, Concorrente B (um por linha)" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -538,7 +538,7 @@ const CompanyFormPage: React.FC = () => {
                     name="critical_success_factors"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Fatores Críticos de Sucesso no seu Mercado</FormLabel>
+                        <FormLabel className="text-foreground">Fatores Críticos de Sucesso no seu Mercado</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Atendimento rápido, Preço competitivo (um por linha)" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -551,15 +551,15 @@ const CompanyFormPage: React.FC = () => {
               </Card>
 
               {/* Operações e Tomada de Decisão */}
-              <Card className="bg-white/50 border border-gray-200 shadow-sm rounded-lg">
-                <CardHeader><CardTitle className="text-xl text-sollux-black">Operações e Tomada de Decisão</CardTitle></CardHeader>
+              <Card className="bg-card/50 border border-border shadow-sm rounded-lg">
+                <CardHeader><CardTitle className="text-xl text-foreground">Operações e Tomada de Decisão</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="decision_making_process"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Como as decisões estratégicas são tomadas hoje?</FormLabel>
+                        <FormLabel className="text-foreground">Como as decisões estratégicas são tomadas hoje?</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Baseadas em dados, Intuição, Consultoria" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -572,7 +572,7 @@ const CompanyFormPage: React.FC = () => {
                     name="tools_technologies"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Ferramentas/Tecnologias Usadas Atualmente</FormLabel>
+                        <FormLabel className="text-foreground">Ferramentas/Tecnologias Usadas Atualmente</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: CRM, ERP, Planilhas (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -586,7 +586,7 @@ const CompanyFormPage: React.FC = () => {
                     name="kpis_monitored"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Indicadores-Chave Monitorados (KPIs)</FormLabel>
+                        <FormLabel className="text-foreground">Indicadores-Chave Monitorados (KPIs)</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Taxa de conversão, Custo de aquisição (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>
@@ -599,15 +599,15 @@ const CompanyFormPage: React.FC = () => {
               </Card>
 
               {/* Perspectivas Futuras */}
-              <Card className="bg-white/50 border border-gray-200 shadow-sm rounded-lg">
-                <CardHeader><CardTitle className="text-xl text-sollux-black">Perspectivas Futuras</CardTitle></CardHeader>
+              <Card className="bg-card/50 border border-border shadow-sm rounded-lg">
+                <CardHeader><CardTitle className="text-xl text-foreground">Perspectivas Futuras</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
                     control={form.control}
                     name="business_model_changes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Mudanças Previstas no Modelo de Negócios (próximos 2 anos)</FormLabel>
+                        <FormLabel className="text-foreground">Mudanças Previstas no Modelo de Negócios (próximos 2 anos)</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Descreva as mudanças esperadas" {...field} rows={3} className="rounded-lg" />
                         </FormControl>
@@ -620,7 +620,7 @@ const CompanyFormPage: React.FC = () => {
                     name="priority_investments"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-sollux-black">Investimentos Prioritários</FormLabel>
+                        <FormLabel className="text-foreground">Investimentos Prioritários</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Ex: Marketing, Treinamento, Tecnologia (um por linha)" {...field} rows={4} className="rounded-lg" />
                         </FormControl>

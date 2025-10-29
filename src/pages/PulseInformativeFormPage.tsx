@@ -145,6 +145,7 @@ const PulseInformativeFormPage: React.FC = () => {
       if (error) throw error;
       return updatedInformative;
     },
+    ...mutationOptions,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pulseInformatives'] });
       showSuccess('Informativo atualizado com sucesso!');

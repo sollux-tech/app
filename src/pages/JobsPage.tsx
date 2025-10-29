@@ -89,11 +89,11 @@ const JobsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="text-sollux-black uppercase font-bold">Gerenciar Vagas</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-foreground uppercase font-bold">Gerenciar Vagas</CardTitle>
+            <CardDescription className="text-muted-foreground">
               {selectedCompany ? `Vagas para: ${selectedCompany.name}` : 'Selecione uma empresa para ver as vagas.'}
             </CardDescription>
           </div>
@@ -103,32 +103,32 @@ const JobsPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {!selectedCompany ? (
-            <p className="text-center text-gray-500 py-8">Por favor, selecione uma empresa na barra lateral para gerenciar as vagas.</p>
+            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para gerenciar as vagas.</p>
           ) : isLoading ? (
-            <p>Carregando vagas...</p>
+            <p className="text-muted-foreground">Carregando vagas...</p>
           ) : error ? (
-            <p className="text-red-500">Erro ao carregar vagas: {error.message}</p>
+            <p className="text-destructive">Erro ao carregar vagas: {error.message}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-sollux-black">Título</TableHead>
-                  <TableHead className="text-sollux-black">Status</TableHead>
-                  <TableHead className="text-sollux-black">Criado em</TableHead>
-                  <TableHead className="text-right text-sollux-black">Ações</TableHead>
+                  <TableHead className="text-foreground">Título</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
+                  <TableHead className="text-foreground">Criado em</TableHead>
+                  <TableHead className="text-right text-foreground">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {jobs?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-gray-500">
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
                       Nenhuma vaga encontrada para esta empresa.
                     </TableCell>
                   </TableRow>
                 ) : (
                   jobs?.map((job) => (
                     <TableRow key={job.id}>
-                      <TableCell className="font-medium text-sollux-black">{job.title}</TableCell>
+                      <TableCell className="font-medium text-foreground">{job.title}</TableCell>
                       <TableCell>
                         <Badge
                           variant={job.status === 'active' ? 'default' : 'secondary'}
@@ -137,7 +137,7 @@ const JobsPage: React.FC = () => {
                           {job.status === 'active' ? 'Ativa' : 'Inativa'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-700">{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
+                      <TableCell className="text-muted-foreground">{format(new Date(job.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}</TableCell>
                       <TableCell className="text-right flex justify-end items-center gap-1">
                         <Button variant="ghost" size="sm" onClick={() => handleGenerateQrClick(job)} className="text-purple-600 hover:bg-purple-50 rounded-lg" disabled={isMutating} title="Gerar QR Code">
                           <QrCode className="h-4 w-4" />
@@ -145,10 +145,10 @@ const JobsPage: React.FC = () => {
                         <Button variant="ghost" size="sm" onClick={() => handleShareClick(job)} className="text-blue-600 hover:bg-blue-50 rounded-lg" disabled={isMutating} title="Compartilhar Vaga">
                           <Share2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleEditClick(job.id)} className="rounded-lg" disabled={isMutating} title="Editar Vaga">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditClick(job.id)} className="rounded-lg text-foreground hover:bg-accent" disabled={isMutating} title="Editar Vaga">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(job.id)} className="rounded-lg" disabled={isMutating} title="Excluir Vaga">
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteClick(job.id)} className="rounded-lg bg-sollux-red hover:bg-red-700 text-white" disabled={isMutating} title="Excluir Vaga">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>

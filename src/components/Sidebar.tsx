@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSheet = false, onLinkClick })
                 {selectedCompany ? `Empresa: ${selectedCompany.name}` : 'Selecionar Empresa'}
               </TooltipContent>
             </Tooltip>
-            <SelectContent className="bg-sollux-card-bg backdrop-blur-md rounded-lg shadow-lg border border-sollux-card-border">
+            <SelectContent className="bg-card backdrop-blur-md rounded-lg shadow-lg border border-border">
               {isLoadingCompanies ? (
                 <SelectItem value="loading" disabled>Carregando empresas...</SelectItem>
               ) : companies.length === 0 ? (

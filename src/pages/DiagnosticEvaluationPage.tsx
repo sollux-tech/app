@@ -112,8 +112,8 @@ const DiagnosticEvaluationPage: React.FC = () => {
       const { data, error } = await supabase
         .from('pillars')
         .select('*')
-        .eq('user_id', user.id)
         .in('id', uniquePillarIds) // Filter by pillars that have diagnostics
+        .eq('user_id', user.id)
         .order('description', { ascending: true });
       if (error) throw error;
       return data;
