@@ -55,7 +55,8 @@ import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPa
 import DiagnosticManagementPage from './pages/DiagnosticManagementPage';
 import InsightPage from './pages/InsightPage';
 import DiagnosticQuestionnairePage from './pages/DiagnosticQuestionnairePage';
-import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage'; // Importar a nova página
+import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage'; 
+import ClassificationScaleManagementPage from './pages/ClassificationScaleManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -124,7 +125,7 @@ function App() {
                             <Route path="/ops/insight" element={<InsightPage />} />
                             <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
                             <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
-                            <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> {/* Nova rota */}
+                            <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
                             <Route path="/core" element={<CorePage />} /> 
                             <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                             <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
@@ -145,6 +146,7 @@ function App() {
                             <Route path="/core/global-settings/ops/kpis" element={<KpiManagementPage />} />
                             <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
                             <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
+                            <Route path="/core/global-settings/ops/classification-scale" element={<ClassificationScaleManagementPage />} /> {/* Nova rota */}
                             <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                             <Route path="/core/notifications" element={<NotificationManagementPage />} />
                             <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />

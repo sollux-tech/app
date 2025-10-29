@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,6 +33,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleDiagnosticStatusClick = () => {
     navigate('/core/global-settings/ops/diagnostic-statuses'); // Nova rota para Status do Diagnóstico
+  };
+
+  const handleClassificationScaleClick = () => {
+    navigate('/core/global-settings/ops/classification-scale'); // Nova rota para Régua de Classificação
   };
 
   return (
@@ -90,6 +94,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie os status para os diagnósticos."
               icon={ClipboardCheck} 
               onClick={handleDiagnosticStatusClick}
+            />
+            <FeatureCard
+              title="Régua de Classificação"
+              description="Defina níveis de classificação com base em percentuais para pilares/blocos."
+              icon={Award} 
+              onClick={handleClassificationScaleClick}
             />
           </div>
         </CardContent>

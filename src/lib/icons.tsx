@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Users, Building2, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Icon as LucideIcon, Home, BarChart2, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, ClipboardList, MessageSquareText
+  HeartPulse, Fingerprint, Link as LinkIcon, Settings, Box, Users, Building2, ShieldCheck, Briefcase, UserCog, Newspaper, LayoutDashboard, Icon as LucideIcon, Home, BarChart2, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, ClipboardList, MessageSquareText, Award
 } from 'lucide-react';
 import { IconMap } from '@/types/sidebar';
 
@@ -27,7 +27,8 @@ export const iconMap: IconMap = {
   Tag,
   ClipboardCheck,
   ClipboardList,
-  MessageSquareText, // Novo ícone
+  MessageSquareText,
+  Award, // Novo ícone
 };
 
 export const iconNames = Object.keys(iconMap).sort();
