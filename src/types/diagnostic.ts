@@ -16,6 +16,5 @@ export interface Diagnostic {
 
 export interface DiagnosticFormData {
   pillar_id: string;
-  pillar_block_id: string;
   diagnostic_status_id: string;
 }

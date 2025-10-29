@@ -24,7 +24,6 @@ import { ptBR } from 'date-fns/locale';
 
 const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
-  pillar_block_id: z.string().min(1, { message: 'O bloco é obrigatório.' }),
   diagnostic_status_id: z.string().min(1, { message: 'O status do diagnóstico é obrigatório.' }),
 });
 
@@ -39,24 +38,22 @@ const DiagnosticManagementPage: React.FC = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: undefined,
-      pillar_block_id: undefined,
       diagnostic_status_id: undefined,
     },
   });
 
-  const selectedPillarId = form.watch('pillar_id');
-
   useEffect(() => {
     if (editingDiagnostic) {
       form.reset({
-        pillar_id: editingDiagnostic.pillar_id || undefined,
-        pillar_block_id: editingDiagnostic.pillar_block_id || undefined,
         diagnostic_status_id: editingDiagnostic.diagnostic_status_id || undefined,
+        // pillar_id e pillar_block_id são somente leitura na edição, não são resetados no form
+        // O campo pillar_id não é parte do formulário de edição, então não o resetamos aqui.
+        // Ele é apenas para criação.
+        pillar_id: undefined, // Garante que o campo pillar_id não seja preenchido no formulário de edição
       });
     } else {
       form.reset({
         pillar_id: undefined,
-        pillar_block_id: undefined,
         diagnostic_status_id: undefined,
       });
     }
@@ -93,21 +90,6 @@ const DiagnosticManagementPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const { data: pillarBlocks, isLoading: isLoadingPillarBlocks } = useQuery<PillarBlock[], Error>({
-    queryKey: ['pillarBlocksListForDiagnostic', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('pillar_blocks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('name', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
   const { data: diagnosticStatuses, isLoading: isLoadingDiagnosticStatuses } = useQuery<DiagnosticStatus[], Error>({
     queryKey: ['diagnosticStatusesListForDiagnostic', user?.id],
     queryFn: async () => {
@@ -123,11 +105,6 @@ const DiagnosticManagementPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const filteredPillarBlocks = useMemo(() => {
-    if (!pillarBlocks || !selectedPillarId) return [];
-    return pillarBlocks.filter(block => block.pillar_id === selectedPillarId);
-  }, [pillarBlocks, selectedPillarId]);
-
   const mutationOptions = {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['diagnostics', user?.id, selectedCompany?.id] });
@@ -142,21 +119,39 @@ const DiagnosticManagementPage: React.FC = () => {
   const createDiagnosticMutation = useMutation({
     mutationFn: async (data: DiagnosticFormData) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
+
+      // 1. Fetch all pillar blocks associated with the selected pillar
+      const { data: blocks, error: blocksError } = await supabase
+        .from('pillar_blocks')
+        .select('id')
+        .eq('user_id', user.id) // Ensure only user's blocks
+        .eq('pillar_id', data.pillar_id);
+
+      if (blocksError) throw blocksError;
+      if (!blocks || blocks.length === 0) {
+        throw new Error("Nenhum bloco de pilar encontrado para o pilar selecionado. Cadastre blocos em 'OPS | Blocos dos Pilares'.");
+      }
+
+      // 2. Prepare multiple insert operations
+      const insertPayloads = blocks.map(block => ({
+        user_id: user.id,
+        company_id: selectedCompany.id,
+        pillar_id: data.pillar_id,
+        pillar_block_id: block.id, // Assign each block's ID
+        diagnostic_status_id: data.diagnostic_status_id,
+      }));
+
+      // 3. Perform the bulk insert
       const { error } = await supabase
         .from('diagnostics')
-        .insert({
-          user_id: user.id,
-          company_id: selectedCompany.id,
-          pillar_id: data.pillar_id,
-          pillar_block_id: data.pillar_block_id,
-          diagnostic_status_id: data.diagnostic_status_id,
-        });
+        .insert(insertPayloads);
+
       if (error) throw error;
     },
     ...mutationOptions,
     onSuccess: () => {
       mutationOptions.onSuccess();
-      showSuccess('Diagnóstico criado com sucesso!');
+      showSuccess('Diagnósticos criados com sucesso para todos os blocos do pilar!');
     },
   });
 
@@ -164,11 +159,11 @@ const DiagnosticManagementPage: React.FC = () => {
     mutationFn: async (data: DiagnosticFormData) => {
       if (!editingDiagnostic?.id) throw new Error("ID do diagnóstico está faltando.");
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
+
+      // Only update diagnostic_status_id for existing diagnostics
       const { error } = await supabase
         .from('diagnostics')
         .update({
-          pillar_id: data.pillar_id,
-          pillar_block_id: data.pillar_block_id,
           diagnostic_status_id: data.diagnostic_status_id,
         })
         .eq('id', editingDiagnostic.id)
@@ -179,7 +174,7 @@ const DiagnosticManagementPage: React.FC = () => {
     ...mutationOptions,
     onSuccess: () => {
       mutationOptions.onSuccess();
-      showSuccess('Diagnóstico atualizado com sucesso!');
+      showSuccess('Status do diagnóstico atualizado com sucesso!');
     },
   });
 
@@ -232,7 +227,7 @@ const DiagnosticManagementPage: React.FC = () => {
   };
 
   const isMutating = createDiagnosticMutation.isPending || updateDiagnosticMutation.isPending || deleteDiagnosticMutation.isPending;
-  const isLoadingPage = isLoadingDiagnostics || isLoadingPillars || isLoadingPillarBlocks || isLoadingDiagnosticStatuses;
+  const isLoadingPage = isLoadingDiagnostics || isLoadingPillars || isLoadingDiagnosticStatuses;
 
   if (!selectedCompany) {
     return (
@@ -330,81 +325,61 @@ const DiagnosticManagementPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="text-foreground">{editingDiagnostic ? 'Editar Diagnóstico' : 'Adicionar Novo Diagnóstico'}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              {editingDiagnostic ? 'Atualize os detalhes do diagnóstico.' : 'Crie um novo diagnóstico para a empresa selecionada.'}
+              {editingDiagnostic ? 'Atualize o status do diagnóstico.' : 'Selecione um pilar para criar um diagnóstico para cada bloco associado.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="pillar_id"
-                render={({ field }) => (
+              {editingDiagnostic ? (
+                <>
                   <FormItem>
                     <FormLabel className="text-foreground">Pilar</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      form.setValue('pillar_block_id', undefined); // Reset pillar block when pillar changes
-                    }} value={field.value} disabled={isLoadingPillars}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione um pilar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {pillars?.length === 0 ? (
-                          <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
-                        ) : (
-                          pillars?.map((pillar) => (
-                            pillar.id && pillar.id !== '' ? (
-                              <SelectItem key={pillar.id} value={pillar.id}>
-                                {pillar.description}
-                              </SelectItem>
-                            ) : null
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                    <Input value={editingDiagnostic.pillars?.description || 'N/A'} readOnly className="rounded-lg bg-muted text-muted-foreground" />
                   </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="pillar_block_id"
-                render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Bloco</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarId || isLoadingPillarBlocks || filteredPillarBlocks.length === 0}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione um bloco" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredPillarBlocks.length === 0 ? (
-                          <SelectItem value="no-blocks" disabled>Nenhum bloco para este pilar</SelectItem>
-                        ) : (
-                          filteredPillarBlocks.map((block) => (
-                            block.id && block.id !== '' ? (
-                              <SelectItem key={block.id} value={block.id}>
-                                {block.name}
-                              </SelectItem>
-                            ) : null
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                    <Input value={editingDiagnostic.pillar_blocks?.name || 'N/A'} readOnly className="rounded-lg bg-muted text-muted-foreground" />
                   </FormItem>
-                )}
-              />
+                </>
+              ) : (
+                <FormField
+                  control={form.control}
+                  name="pillar_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground">Pilar</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingPillars || isMutating}>
+                        <FormControl>
+                          <SelectTrigger className="rounded-lg">
+                            <SelectValue placeholder="Selecione um pilar" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {pillars?.length === 0 ? (
+                            <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
+                          ) : (
+                            pillars?.map((pillar) => (
+                              pillar.id && pillar.id !== '' ? (
+                                <SelectItem key={pillar.id} value={pillar.id}>
+                                  {pillar.description}
+                                </SelectItem>
+                              ) : null
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="diagnostic_status_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Status do Diagnóstico</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingDiagnosticStatuses}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingDiagnosticStatuses || isMutating}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um status" />
