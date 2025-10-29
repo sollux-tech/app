@@ -28,8 +28,7 @@ import AddMultipleDiagnosticQuestionsDialog from '@/components/AddMultipleDiagno
 import { Label } from '@/components/ui/label';
 
 // Tipo específico para os dados de pilar do diagnóstico necessários para o filtro
-interface DiagnosticPillarInfo {
-  id: string;
+interface DiagnosticPillarOnly {
   pillar_id: string | null;
 }
 
@@ -144,7 +143,7 @@ const DiagnosticQuestionnairePage: React.FC = () => {
 
   // NEW: Fetch all diagnostics for the current company and user (without applying the current filters)
   // This is to get the full set of pillars that have diagnostics for this company, to populate the pillar filter dropdown
-  const { data: allCompanyDiagnostics, isLoading: isLoadingAllCompanyDiagnostics } = useQuery<Diagnostic[], Error>({
+  const { data: allCompanyDiagnostics, isLoading: isLoadingAllCompanyDiagnostics } = useQuery<DiagnosticPillarOnly[], Error>({
     queryKey: ['allCompanyDiagnosticsForPillarFilter', user?.id, selectedCompany?.id],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
