@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText, CheckCircle } from 'lucide-react'; 
+import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText, CheckCircle, Award, LayoutDashboard, Loader2 } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@tanstack/react-query';
@@ -10,12 +10,60 @@ import { Job } from '@/types/job';
 import { Form as FormType } from '@/types/form'; // Importar o tipo Form
 import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { Button } from '@/components/ui/button';
 import { useCompany } from '@/components/CompanyContext';
+import { Pillar } from '@/types/pillar'; // Importar Pillar
+import { PillarBlock } from '@/types/pillarBlock'; // Importar PillarBlock
+import { ClassificationScale } from '@/types/classificationScale'; // Importar ClassificationScale
+import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire'; // Importar DiagnosticQuestionnaire
+import { Badge } from '@/components/ui/badge';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+
+// Helper to classify a percentage based on classification scales (duplicated for standalone page)
+const classifyPercentage = (
+  percentage: number,
+  scales: ClassificationScale[],
+  pillarId: string | null,
+  blockId: string | null
+): ClassificationScale | null => {
+  // First, try to find a specific scale for the block
+  const specificBlockScale = scales.find(s =>
+    s.pillar_id === pillarId && s.pillar_block_id === blockId &&
+    percentage >= s.min_percentage && percentage <= s.max_percentage
+  );
+  if (specificBlockScale) return specificBlockScale;
+
+  // Then, try to find a specific scale for the pillar (global for pillar, but not block)
+  const specificPillarScale = scales.find(s =>
+    s.pillar_id === pillarId && s.pillar_block_id === null &&
+    percentage >= s.min_percentage && percentage <= s.max_percentage
+  );
+  if (specificPillarScale) return specificPillarScale;
+
+  // Finally, try to find a global scale (null for both pillar and block)
+  const globalScale = scales.find(s =>
+    s.pillar_id === null && s.pillar_block_id === null &&
+    percentage >= s.min_percentage && percentage <= s.max_percentage
+  );
+  if (globalScale) return globalScale;
+
+  return null;
+};
+
+const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
+  switch (colorCode) {
+    case 'red': return 'bg-red-500 text-white';
+    case 'yellow': return 'bg-yellow-500 text-black';
+    case 'blue': return 'bg-blue-500 text-white';
+    case 'green': return 'bg-green-500 text-white';
+    default: return 'bg-gray-500 text-white';
+  }
+};
 
 const PulsePage: React.FC = () => {
   const { selectedCompany } = useCompany();
+  const navigate = useNavigate(); // Inicializar useNavigate
   const today = format(new Date(), 'yyyy-MM-dd');
   const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
 
@@ -24,7 +72,6 @@ const PulsePage: React.FC = () => {
     queryKey: ['pulseInformativeToday', today],
     queryFn: async () => {
       try {
-        console.log(`PulsePage: Buscando informativo para a data: ${today}`); // Log para depuração
         const { data, error } = await supabase
           .from('pulse_informatives')
           .select('*')
@@ -37,7 +84,6 @@ const PulsePage: React.FC = () => {
           console.error("PulsePage: Detalhes do erro:", JSON.stringify(error, null, 2)); // Log detalhado do erro
           throw error; // Re-lança quaisquer erros reais
         }
-        console.log("PulsePage: Dados brutos do informativo:", data); // Log dos dados brutos
         return data.length > 0 ? data[0] : null; // Retorna o primeiro item do array ou null
       } catch (e: any) {
         console.error("PulsePage: Erro inesperado ao buscar informativo:", e); // Log de erro inesperado
@@ -85,6 +131,106 @@ const PulsePage: React.FC = () => {
     enabled: !!selectedCompany,
   });
 
+  // --- Queries para o Dashboard de Indicadores ---
+  const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['allPillarsForPulseDashboard', selectedCompany?.id],
+    queryFn: async () => {
+      if (!selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('pillars')
+        .select('*')
+        .eq('user_id', selectedCompany.user_id) // Assuming company owner is the user for pillars
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedCompany?.id,
+  });
+
+  const { data: allPillarBlocks, isLoading: isLoadingAllPillarBlocks } = useQuery<PillarBlock[], Error>({
+    queryKey: ['allPillarBlocksForPulseDashboard', selectedCompany?.id],
+    queryFn: async () => {
+      if (!selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('pillar_blocks')
+        .select('*')
+        .eq('user_id', selectedCompany.user_id) // Assuming company owner is the user for pillar blocks
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedCompany?.id,
+  });
+
+  const { data: allCompanyQuestionnaireEntries, isLoading: isLoadingAllCompanyQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
+    queryKey: ['allCompanyQuestionnaireEntriesForPulseDashboard', selectedCompany?.id],
+    queryFn: async () => {
+      if (!selectedCompany?.id) return [];
+
+      // First, get all diagnostic IDs for the selected company
+      const { data: diagnosticIdsData, error: diagnosticIdsError } = await supabase
+        .from('diagnostics')
+        .select('id')
+        .eq('company_id', selectedCompany.id);
+
+      if (diagnosticIdsError) throw diagnosticIdsError;
+      const diagnosticIds = diagnosticIdsData.map(d => d.id);
+
+      if (diagnosticIds.length === 0) return [];
+
+      // Then, fetch all questionnaire entries for these diagnostic IDs
+      const { data, error } = await supabase
+        .from('diagnostic_questionnaires')
+        .select(`
+          id,
+          diagnostic_id,
+          kpi_id,
+          score_id,
+          evidence,
+          order_number,
+          kpis(question, pillar_id, pillar_block_id),
+          scoring_scales(score, description)
+        `)
+        .eq('company_id', selectedCompany.id)
+        .in('diagnostic_id', diagnosticIds)
+        .order('order_number', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+
+      const processedData: DiagnosticQuestionnaire[] = data.map((item: any) => ({
+        ...item,
+        kpis: item.kpis
+          ? (Array.isArray(item.kpis)
+            ? (item.kpis.length > 0 ? item.kpis[0] : null)
+            : item.kpis)
+          : null,
+        scoring_scales: item.scoring_scales
+          ? (Array.isArray(item.scoring_scales)
+            ? (item.scoring_scales.length > 0 ? item.scoring_scales[0] : null)
+            : item.scoring_scales)
+          : null,
+      }));
+      return processedData;
+    },
+    enabled: !!selectedCompany?.id,
+  });
+
+  const { data: classificationScales, isLoading: isLoadingClassificationScales } = useQuery<ClassificationScale[], Error>({
+    queryKey: ['classificationScalesForPulseDashboard', selectedCompany?.id],
+    queryFn: async () => {
+      if (!selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('classification_scales')
+        .select('*, pillars(description), pillar_blocks(name)')
+        .eq('user_id', selectedCompany.user_id) // Assuming company owner is the user for classification scales
+        .order('min_percentage', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!selectedCompany?.id,
+  });
+  // --- Fim das Queries para o Dashboard de Indicadores ---
+
   // Calcular estatísticas de vagas
   const totalJobs = recentJobs?.length || 0;
   const activeJobs = recentJobs?.filter(job => job.status === 'active').length || 0;
@@ -102,6 +248,132 @@ const PulsePage: React.FC = () => {
   const draftForms = totalForms - publishedForms;
   const totalFormResponses = recentForms?.reduce((sum, form) => sum + (form.response_count || 0), 0) || 0;
 
+  // --- Lógica de Cálculo de Indicadores Agregados por Pilar (para o Dashboard de Indicadores) ---
+  const { pillarIndicators, classificationDistribution } = useMemo(() => {
+    if (!allPillars || !allCompanyQuestionnaireEntries || !allPillarBlocks || !classificationScales) {
+      return { pillarIndicators: [], classificationDistribution: [] };
+    }
+
+    const pillarResults: {
+      [pillarId: string]: {
+        description: string;
+        totalWeightedScore: number;
+        totalWeight: number;
+        blocks: {
+          [blockId: string]: {
+            name: string;
+            totalScore: number;
+            maxScore: number;
+            questionCount: number;
+            weight: number;
+          };
+        };
+      };
+    } = {};
+
+    // Initialize pillar results for all relevant pillars
+    allPillars.forEach(pillar => {
+      if (pillar.id) {
+        pillarResults[pillar.id] = {
+          description: pillar.description,
+          totalWeightedScore: 0,
+          totalWeight: 0,
+          blocks: {},
+        };
+      }
+    });
+
+    // Initialize block results within each pillar
+    allPillarBlocks.forEach(block => {
+      if (block.pillar_id && pillarResults[block.pillar_id] && block.id) {
+        pillarResults[block.pillar_id].blocks[block.id] = {
+          name: block.name,
+          totalScore: 0,
+          maxScore: 0,
+          questionCount: 0,
+          weight: block.weight_percentage,
+        };
+      }
+    });
+
+    // Aggregate scores for each block from ALL answered questionnaire entries
+    allCompanyQuestionnaireEntries
+      .filter(entry => entry.score_id !== null) // ONLY process answered questions
+      .forEach(entry => {
+      const pillarId = entry.kpis?.pillar_id;
+      const blockId = entry.kpis?.pillar_block_id;
+      const score = entry.scoring_scales?.score;
+
+      if (pillarId && blockId && score !== undefined && pillarResults[pillarId]?.blocks[blockId]) {
+        pillarResults[pillarId].blocks[blockId].totalScore += score;
+        pillarResults[pillarId].blocks[blockId].maxScore += 5; // Max score for one question is 5
+        pillarResults[pillarId].blocks[blockId].questionCount += 1;
+      }
+    });
+
+    const calculatedPillarIndicators: Array<{
+      id: string;
+      description: string;
+      percentage: number;
+      classification: ClassificationScale | null;
+    }> = [];
+
+    const classificationCounts: { [label: string]: number } = {};
+
+    // Calculate percentage for each block and then weighted average for each pillar
+    Object.keys(pillarResults).forEach(pillarId => {
+      const pillarData = pillarResults[pillarId];
+      let currentPillarWeightedScore = 0;
+      let currentPillarTotalWeight = 0;
+      let hasAnsweredQuestionsInPillar = false; // Flag to check if any question in this pillar was answered
+
+      Object.keys(pillarData.blocks).forEach(blockId => {
+        const blockData = pillarData.blocks[blockId];
+        if (blockData.questionCount > 0) {
+          const blockPercentage = (blockData.totalScore / blockData.maxScore) * 100;
+          currentPillarWeightedScore += (blockPercentage * blockData.weight);
+          currentPillarTotalWeight += blockData.weight;
+          hasAnsweredQuestionsInPillar = true;
+        } else {
+          // If no questions answered for a block, its weight still contributes to total weight
+          // but its score contribution is 0.
+          currentPillarTotalWeight += blockData.weight;
+        }
+      });
+
+      // Only include pillars that actually have some answered questions
+      if (hasAnsweredQuestionsInPillar && currentPillarTotalWeight > 0) {
+        const pillarOverallPercentage = (currentPillarWeightedScore / currentPillarTotalWeight);
+        const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, pillarId, null);
+
+        calculatedPillarIndicators.push({
+          id: pillarId,
+          description: pillarData.description,
+          percentage: pillarOverallPercentage,
+          classification: pillarOverallClassification,
+        });
+
+        if (pillarOverallClassification) {
+          const label = pillarOverallClassification.classification_label;
+          classificationCounts[label] = (classificationCounts[label] || 0) + 1;
+        }
+      }
+    });
+
+    const chartData = Object.keys(classificationCounts).map(label => {
+      const classification = classificationScales.find(s => s.classification_label === label);
+      return {
+        name: label,
+        value: classificationCounts[label],
+        color: classification ? getColorClass(classification.color_code) : '#ccc',
+      };
+    });
+
+    return { pillarIndicators: calculatedPillarIndicators, classificationDistribution: chartData };
+  }, [allPillars, allCompanyQuestionnaireEntries, allPillarBlocks, classificationScales, selectedCompany?.id]);
+  // --- Fim da Lógica de Cálculo de Indicadores ---
+
+  const isLoadingIndicators = isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales;
 
   return (
     <div className="space-y-6">
@@ -109,7 +381,7 @@ const PulsePage: React.FC = () => {
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-foreground uppercase font-bold">PULSE do Dia</CardTitle>
-          <Link to="/pulse/informatives"> {/* Rota atualizada aqui */}
+          <Link to="/pulse/informatives">
             <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
               Ver Todos
             </Button>
@@ -122,10 +394,6 @@ const PulsePage: React.FC = () => {
             <p className="text-destructive text-center">Erro ao carregar informativo: {errorInformative.message}</p>
           ) : informativeToday ? (
             <div className="space-y-4">
-              {/* Removido: <h3 className="text-2xl font-bold text-sollux-red">{informativeToday.title}</h3> */}
-              {/* Removido: <p className="text-sm text-muted-foreground">
-                Publicado em: {informativeToday.publication_date ? format(new Date(informativeToday.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
-              </p> */}
               {informativeToday.short_summary && (
                 <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
               )}
@@ -139,6 +407,89 @@ const PulsePage: React.FC = () => {
             </div>
           ) : (
             <p className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Dashboard de Indicadores */}
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Indicadores</CardTitle>
+            <CardDescription className="text-muted-foreground">
+              {selectedCompany ? `Visão consolidada para: ${selectedCompany.name}` : 'Selecione uma empresa para ver os indicadores.'}
+            </CardDescription>
+          </div>
+          {selectedCompany && (
+            <Button variant="outline" size="sm" onClick={() => navigate('/ops/flow')} className="rounded-lg text-foreground border-border hover:bg-accent">
+              Ver Detalhes no Flow
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {!selectedCompany ? (
+            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver os indicadores.</p>
+          ) : isLoadingIndicators ? (
+            <div className="flex items-center justify-center h-48">
+              <Loader2 className="h-8 w-8 animate-spin text-sollux-red" />
+              <span className="ml-2 text-muted-foreground">Carregando indicadores...</span>
+            </div>
+          ) : pillarIndicators.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares.
+              Certifique-se de que há diagnósticos criados e questionários respondidos para esta empresa.
+            </p>
+          ) : (
+            <div className="space-y-6">
+              {/* Performance por Pilar */}
+              <h3 className="text-lg font-semibold text-foreground mb-4">Performance por Pilar</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+                {pillarIndicators.map(pillar => (
+                  <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
+                    <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
+                    </h4>
+                    <p className="text-2xl font-bold text-foreground">
+                      {pillar.percentage.toFixed(2)}%
+                      {pillar.classification && (
+                        <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
+                          {pillar.classification.classification_label}
+                        </Badge>
+                      )}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Gráfico de Distribuição de Classificação */}
+              {classificationDistribution.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Distribuição de Classificação dos Pilares</h3>
+                  <Card className="p-4 border border-border rounded-lg bg-muted/50 h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={classificationDistribution}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="name"
+                        >
+                          {classificationDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip formatter={(value: number, name: string) => [`${value} Pilares`, name]} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
