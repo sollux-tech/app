@@ -1,6 +1,7 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
+import React, { useEffect } from 'react'; // Importar useEffect
 
 // Objeto de localização para traduzir a UI de autenticação para Português (Brasil)
 const ptBR = {
@@ -69,6 +70,29 @@ const ptBR = {
 };
 
 const Login = () => {
+  useEffect(() => {
+    const htmlElement = document.documentElement;
+    const originalClass = htmlElement.className;
+    const originalDataTheme = htmlElement.getAttribute('data-theme');
+    const originalColorScheme = htmlElement.style.colorScheme;
+
+    // Força o tema claro
+    htmlElement.classList.remove('dark');
+    htmlElement.setAttribute('data-theme', 'light');
+    htmlElement.style.colorScheme = 'light';
+
+    return () => {
+      // Restaura o tema original ao sair da página de login
+      htmlElement.className = originalClass;
+      if (originalDataTheme) {
+        htmlElement.setAttribute('data-theme', originalDataTheme);
+      } else {
+        htmlElement.removeAttribute('data-theme');
+      }
+      htmlElement.style.colorScheme = originalColorScheme;
+    };
+  }, []);
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-4xl bg-card rounded-2xl shadow-2xl overflow-hidden grid md:grid-cols-2">
