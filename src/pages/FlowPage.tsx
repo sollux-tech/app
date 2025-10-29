@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Award, CheckCircle, Clock, XCircle, TrendingUp, LayoutDashboard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 // Helper to classify a percentage based on classification scales
 const classifyPercentage = (
@@ -64,26 +66,13 @@ const FlowPage: React.FC = () => {
   const { user } = useSession();
   const { selectedCompany } = useCompany();
 
-  // Fetch all diagnostics for the selected company and user
-  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['allDiagnosticsForFlow', user?.id, selectedCompany?.id],
-    queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
-      const { data, error } = await supabase
-        .from('diagnostics')
-        .select('*, companies(name), pillars(description), pillar_blocks(name), diagnostic_statuses(description)')
-        .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id && !!selectedCompany?.id,
-  });
+  // Global filter states
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  // Fetch all pillars for the current user
+  // Fetch all pillars for the current user (for filter dropdown)
   const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['allPillarsForFlow', user?.id],
+    queryKey: ['allPillarsForFlowFilter', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
@@ -97,34 +86,91 @@ const FlowPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch all pillar blocks for the current user
-  const { data: allPillarBlocks, isLoading: isLoadingAllPillarBlocks } = useQuery<PillarBlock[], Error>({
-    queryKey: ['allPillarBlocksForFlow', user?.id],
+  // Fetch all diagnostic statuses for the current user (for filter dropdown)
+  const { data: allDiagnosticStatuses, isLoading: isLoadingAllDiagnosticStatuses } = useQuery<DiagnosticStatus[], Error>({
+    queryKey: ['allDiagnosticStatusesForFlowFilter', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
-        .from('pillar_blocks')
+        .from('diagnostic_statuses')
         .select('*')
         .eq('user_id', user.id)
-        .order('name', { ascending: true });
+        .order('description', { ascending: true });
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id,
   });
 
-  // Fetch ALL questionnaire entries for ALL diagnostics under the selected company
+  // Fetch diagnostics based on selected filters for the selected company and user
+  const { data: diagnostics, isLoading: isLoadingDiagnostics } = useQuery<Diagnostic[], Error>({
+    queryKey: ['diagnosticsForFlow', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id) return [];
+      let query = supabase
+        .from('diagnostics')
+        .select('*, companies(name), pillars(description), pillar_blocks(name), diagnostic_statuses(description)')
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id);
+      
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedStatusFilter !== 'all') {
+        query = query.eq('diagnostic_status_id', selectedStatusFilter);
+      }
+
+      query = query.order('created_at', { ascending: false });
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  // Fetch all pillar blocks for the current user (filtered by selectedPillarFilter if applicable)
+  const { data: allPillarBlocks, isLoading: isLoadingAllPillarBlocks } = useQuery<PillarBlock[], Error>({
+    queryKey: ['allPillarBlocksForFlow', user?.id, selectedPillarFilter],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      let query = supabase
+        .from('pillar_blocks')
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+
+      query = query.order('name', { ascending: true });
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch ALL questionnaire entries for ALL diagnostics under the selected company and filters
   const { data: allCompanyQuestionnaireEntries, isLoading: isLoadingAllCompanyQuestionnaireEntries } = useQuery<DiagnosticQuestionnaire[], Error>({
-    queryKey: ['allCompanyQuestionnaireEntriesForFlow', user?.id, selectedCompany?.id],
+    queryKey: ['allCompanyQuestionnaireEntriesForFlow', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
 
-      // First, get all diagnostic IDs for the selected company
-      const { data: diagnosticIdsData, error: diagnosticIdsError } = await supabase
+      // First, get all diagnostic IDs for the selected company and filters
+      let diagnosticIdsQuery = supabase
         .from('diagnostics')
         .select('id')
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
+      
+      if (selectedPillarFilter !== 'all') {
+        diagnosticIdsQuery = diagnosticIdsQuery.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedStatusFilter !== 'all') {
+        diagnosticIdsQuery = diagnosticIdsQuery.eq('diagnostic_status_id', selectedStatusFilter);
+      }
+
+      const { data: diagnosticIdsData, error: diagnosticIdsError } = await diagnosticIdsQuery;
 
       if (diagnosticIdsError) throw diagnosticIdsError;
       const diagnosticIds = diagnosticIdsData.map(d => d.id);
@@ -185,23 +231,7 @@ const FlowPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  // Fetch diagnostic statuses for display
-  const { data: diagnosticStatuses, isLoading: isLoadingDiagnosticStatuses } = useQuery<DiagnosticStatus[], Error>({
-    queryKey: ['diagnosticStatusesForFlow', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('diagnostic_statuses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const isLoadingPage = isLoadingDiagnostics || isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales || isLoadingDiagnosticStatuses;
+  const isLoadingPage = isLoadingDiagnostics || isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales || isLoadingAllDiagnosticStatuses;
 
   // --- Lógica de Cálculo de Indicadores Agregados por Pilar ---
   const { pillarIndicators, classificationDistribution } = useMemo(() => {
@@ -226,44 +256,46 @@ const FlowPage: React.FC = () => {
       };
     } = {};
 
+    // Initialize pillar results for all relevant pillars (based on filter)
+    const filteredPillars = selectedPillarFilter === 'all'
+      ? allPillars
+      : allPillars.filter(p => p.id === selectedPillarFilter);
+
+    filteredPillars.forEach(pillar => {
+      if (pillar.id) {
+        pillarResults[pillar.id] = {
+          description: pillar.description,
+          totalWeightedScore: 0,
+          totalWeight: 0,
+          blocks: {},
+        };
+      }
+    });
+
+    // Initialize block results within each pillar (filtered by selectedPillarFilter if applicable)
+    const filteredPillarBlocks = selectedPillarFilter === 'all'
+      ? allPillarBlocks
+      : allPillarBlocks.filter(block => block.pillar_id === selectedPillarFilter);
+
+    filteredPillarBlocks.forEach(block => {
+      if (block.pillar_id && pillarResults[block.pillar_id] && block.id) {
+        pillarResults[block.pillar_id].blocks[block.id] = {
+          name: block.name,
+          totalScore: 0,
+          maxScore: 0,
+          questionCount: 0,
+          weight: block.weight_percentage,
+        };
+      }
+    });
+
     // Aggregate scores for each block from ALL questionnaire entries
     allCompanyQuestionnaireEntries.forEach(entry => {
       const pillarId = entry.kpis?.pillar_id;
       const blockId = entry.kpis?.pillar_block_id;
       const score = entry.scoring_scales?.score;
 
-      if (pillarId && blockId && score !== undefined) {
-        // Ensure pillar exists in results
-        if (!pillarResults[pillarId]) {
-          const pillarDetails = allPillars.find(p => p.id === pillarId);
-          if (pillarDetails) {
-            pillarResults[pillarId] = {
-              description: pillarDetails.description,
-              totalWeightedScore: 0,
-              totalWeight: 0,
-              blocks: {},
-            };
-          } else {
-            return; // Skip if pillar details not found
-          }
-        }
-
-        // Ensure block exists within pillar results
-        if (!pillarResults[pillarId].blocks[blockId]) {
-          const blockDetails = allPillarBlocks.find(b => b.id === blockId);
-          if (blockDetails) {
-            pillarResults[pillarId].blocks[blockId] = {
-              name: blockDetails.name,
-              totalScore: 0,
-              maxScore: 0,
-              questionCount: 0,
-              weight: blockDetails.weight_percentage,
-            };
-          } else {
-            return; // Skip if block details not found
-          }
-        }
-
+      if (pillarId && blockId && score !== undefined && pillarResults[pillarId]?.blocks[blockId]) {
         pillarResults[pillarId].blocks[blockId].totalScore += score;
         pillarResults[pillarId].blocks[blockId].maxScore += 5; // Max score for one question is 5
         pillarResults[pillarId].blocks[blockId].questionCount += 1;
@@ -284,6 +316,7 @@ const FlowPage: React.FC = () => {
       const pillarData = pillarResults[pillarId];
       let currentPillarWeightedScore = 0;
       let currentPillarTotalWeight = 0;
+      let hasAnsweredQuestionsInPillar = false; // Flag to check if any question in this pillar was answered
 
       Object.keys(pillarData.blocks).forEach(blockId => {
         const blockData = pillarData.blocks[blockId];
@@ -291,6 +324,7 @@ const FlowPage: React.FC = () => {
           const blockPercentage = (blockData.totalScore / blockData.maxScore) * 100;
           currentPillarWeightedScore += (blockPercentage * blockData.weight);
           currentPillarTotalWeight += blockData.weight;
+          hasAnsweredQuestionsInPillar = true;
         } else {
           // If no questions answered for a block, its weight still contributes to total weight
           // but its score contribution is 0.
@@ -298,8 +332,8 @@ const FlowPage: React.FC = () => {
         }
       });
 
-      // Only include pillars that actually have some weight from answered questions
-      if (currentPillarTotalWeight > 0) {
+      // Only include pillars that actually have some answered questions
+      if (hasAnsweredQuestionsInPillar && currentPillarTotalWeight > 0) {
         const pillarOverallPercentage = (currentPillarWeightedScore / currentPillarTotalWeight);
         const pillarOverallClassification = classifyPercentage(pillarOverallPercentage, classificationScales, pillarId, null);
 
@@ -327,9 +361,9 @@ const FlowPage: React.FC = () => {
     });
 
     return { pillarIndicators: calculatedPillarIndicators, classificationDistribution: chartData };
-  }, [allPillars, allCompanyQuestionnaireEntries, allPillarBlocks, classificationScales]);
+  }, [allPillars, allCompanyQuestionnaireEntries, allPillarBlocks, classificationScales, selectedPillarFilter]);
 
-  // Diagnostic Status Counts
+  // Diagnostic Status Counts (filtered by global filters)
   const diagnosticStatusCounts = useMemo(() => {
     const counts: { [statusId: string]: number } = {};
     diagnostics?.forEach(d => {
@@ -341,7 +375,7 @@ const FlowPage: React.FC = () => {
   }, [diagnostics]);
 
   const getStatusDescription = (statusId: string) => {
-    return diagnosticStatuses?.find(s => s.id === statusId)?.description || 'Desconhecido';
+    return allDiagnosticStatuses?.find(s => s.id === statusId)?.description || 'Desconhecido';
   };
 
   if (!selectedCompany) {
@@ -371,6 +405,51 @@ const FlowPage: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Global Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div>
+              <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
+              <Select
+                value={selectedPillarFilter}
+                onValueChange={setSelectedPillarFilter}
+                disabled={isLoadingAllPillars}
+              >
+                <SelectTrigger id="pillar-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Pilares" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pilares</SelectItem>
+                  {allPillars?.map((pillar) => (
+                    <SelectItem key={pillar.id} value={pillar.id}>
+                      {pillar.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="status-filter" className="text-foreground">Filtrar por Status</Label>
+              <Select
+                value={selectedStatusFilter}
+                onValueChange={setSelectedStatusFilter}
+                disabled={isLoadingAllDiagnosticStatuses}
+              >
+                <SelectTrigger id="status-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  {allDiagnosticStatuses?.map((status) => (
+                    <SelectItem key={status.id} value={status.id}>
+                      {status.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           {/* Visão Geral dos Diagnósticos */}
           <h3 className="text-lg font-semibold text-foreground mb-4">Visão Geral dos Diagnósticos</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -383,9 +462,9 @@ const FlowPage: React.FC = () => {
             {Object.keys(diagnosticStatusCounts).map(statusId => (
               <Card key={statusId} className="p-4 border border-border rounded-lg bg-muted/50">
                 <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  {statusId === diagnosticStatuses?.find(s => s.description === 'Concluído')?.id && <CheckCircle className="h-5 w-5 text-green-600" />}
-                  {statusId === diagnosticStatuses?.find(s => s.description === 'Em Andamento')?.id && <Clock className="h-5 w-5 text-yellow-600" />}
-                  {statusId === diagnosticStatuses?.find(s => s.description === 'Pendente')?.id && <XCircle className="h-5 w-5 text-red-600" />}
+                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Concluído')?.id && <CheckCircle className="h-5 w-5 text-green-600" />}
+                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Em Andamento')?.id && <Clock className="h-5 w-5 text-yellow-600" />}
+                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Pendente')?.id && <XCircle className="h-5 w-5 text-red-600" />}
                   {getStatusDescription(statusId)}
                 </h4>
                 <p className="text-2xl font-bold text-foreground">{diagnosticStatusCounts[statusId]}</p>
@@ -397,7 +476,7 @@ const FlowPage: React.FC = () => {
           <h3 className="text-lg font-semibold text-foreground mb-4">Performance por Pilar</h3>
           {pillarIndicators.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares.
+              Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares com os filtros aplicados.
               Certifique-se de que há diagnósticos criados e questionários respondidos.
             </p>
           ) : (
@@ -453,7 +532,7 @@ const FlowPage: React.FC = () => {
           <h3 className="text-lg font-semibold text-foreground mb-4">Diagnósticos Recentes</h3>
           {diagnostics && diagnostics.length > 0 ? (
             <div className="space-y-3">
-              {diagnostics.slice(0, 5).map(diagnostic => (
+              {diagnostics.map(diagnostic => (
                 <Card key={diagnostic.id} className="p-3 border border-border rounded-lg bg-muted/50">
                   <div className="flex items-center justify-between">
                     <div>
@@ -467,7 +546,7 @@ const FlowPage: React.FC = () => {
                         Criado em: {format(new Date(diagnostic.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                       </p>
                     </div>
-                    <Link to={`/ops/flow/diagnostic-results/${diagnostic.id}`}> {/* Link atualizado */}
+                    <Link to={`/ops/flow/diagnostic-results/${diagnostic.id}`}>
                       <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
                         Ver Detalhes
                       </Button>
@@ -475,18 +554,9 @@ const FlowPage: React.FC = () => {
                   </div>
                 </Card>
               ))}
-              {diagnostics.length > 5 && (
-                <div className="text-center mt-4">
-                  <Link to="/ops/diagnostics">
-                    <Button variant="outline" className="text-foreground border-border hover:bg-accent">
-                      Ver todos os diagnósticos
-                    </Button>
-                  </Link>
-                </div>
-              )}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-8">Nenhum diagnóstico recente encontrado.</p>
+            <p className="text-center text-muted-foreground py-8">Nenhum diagnóstico encontrado com os filtros aplicados.</p>
           )}
         </CardContent>
       </Card>
