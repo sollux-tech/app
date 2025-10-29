@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { HeartPulse, TrendingUp, Activity, Bell, Settings, Search, Briefcase, Users, Calendar, FileText, MessageSquareText, CheckCircle, Award, LayoutDashboard, Loader2 } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
@@ -19,6 +19,9 @@ import { ClassificationScale } from '@/types/classificationScale'; // Importar C
 import { DiagnosticQuestionnaire } from '@/types/diagnosticQuestionnaire'; // Importar DiagnosticQuestionnaire
 import { Badge } from '@/components/ui/badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import { usePageConfig } from '@/hooks/usePageConfig'; // Importar o novo hook
+import PageSettingsDialog from '@/components/PageSettingsDialog'; // Importar o novo componente
+import SectionWrapper from '@/components/SectionWrapper'; // Importar o novo componente
 
 // Helper to classify a percentage based on classification scales (duplicated for standalone page)
 const classifyPercentage = (
@@ -61,11 +64,30 @@ const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefine
   }
 };
 
+// Definição das seções disponíveis para a página Pulse
+const pulseSections = [
+  { id: 'pulse-of-the-day', label: 'PULSE do Dia' },
+  { id: 'indicator-dashboard', label: 'Dashboard de Indicadores' },
+  { id: 'jobs-dashboard', label: 'Dashboard de Vagas Publicadas' },
+  { id: 'forms-dashboard', label: 'Dashboard de Formulários' },
+];
+
 const PulsePage: React.FC = () => {
   const { selectedCompany } = useCompany();
-  const navigate = useNavigate(); // Inicializar useNavigate
+  const navigate = useNavigate();
   const today = format(new Date(), 'yyyy-MM-dd');
   const thirtyDaysAgo = format(subDays(new Date(), 30), 'yyyy-MM-dd');
+
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+
+  // Usar o hook usePageConfig para gerenciar a visibilidade das seções
+  const {
+    visibleSections,
+    isLoadingConfig,
+    isSavingConfig,
+    toggleSectionVisibility,
+    setAllVisibleSections,
+  } = usePageConfig('pulse', pulseSections);
 
   // Query para o informativo do dia
   const { data: informativeToday, isLoading: isLoadingInformative, error: errorInformative } = useQuery<PulseInformative | null, Error>({
@@ -76,18 +98,18 @@ const PulsePage: React.FC = () => {
           .from('pulse_informatives')
           .select('*')
           .eq('publication_date', today)
-          .order('created_at', { ascending: false }) // Ordenar por data de criação para pegar o mais recente
-          .limit(1); // Limitar a um resultado
+          .order('created_at', { ascending: false })
+          .limit(1);
         
         if (error) {
-          console.error("PulsePage: Erro na consulta de informativo:", error); // Log de erro
-          console.error("PulsePage: Detalhes do erro:", JSON.stringify(error, null, 2)); // Log detalhado do erro
-          throw error; // Re-lança quaisquer erros reais
+          console.error("PulsePage: Erro na consulta de informativo:", error);
+          console.error("PulsePage: Detalhes do erro:", JSON.stringify(error, null, 2));
+          throw error;
         }
-        return data.length > 0 ? data[0] : null; // Retorna o primeiro item do array ou null
+        return data.length > 0 ? data[0] : null;
       } catch (e: any) {
-        console.error("PulsePage: Erro inesperado ao buscar informativo:", e); // Log de erro inesperado
-        console.error("PulsePage: Detalhes do erro inesperado:", JSON.stringify(e, null, 2)); // Log detalhado do erro inesperado
+        console.error("PulsePage: Erro inesperado ao buscar informativo:", e);
+        console.error("PulsePage: Detalhes do erro inesperado:", JSON.stringify(e, null, 2));
         throw e;
       }
     },
@@ -375,295 +397,304 @@ const PulsePage: React.FC = () => {
 
   const isLoadingIndicators = isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales;
 
+  if (isLoadingConfig) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-sollux-red" />
+        <span className="ml-2 text-muted-foreground">Carregando configurações da página...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSettingsDialogOpen(true)}
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg"
+          title="Configurar seções da página"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
+
       {/* Informativo PULSE do Dia */}
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-foreground uppercase font-bold">PULSE do Dia</CardTitle>
+      <SectionWrapper
+        id="pulse-of-the-day"
+        title="PULSE do Dia"
+        isVisible={visibleSections.includes('pulse-of-the-day')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {isLoadingInformative ? (
+          <p className="text-muted-foreground text-center">Carregando informativo...</p>
+        ) : errorInformative ? (
+          <p className="text-destructive text-center">Erro ao carregar informativo: {errorInformative.message}</p>
+        ) : informativeToday ? (
+          <div className="space-y-4">
+            {informativeToday.short_summary && (
+              <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
+            )}
+            <div className="mt-4 text-right">
+              <Link to={`/informative/${informativeToday.id}`}>
+                <Button variant="link" className="text-sollux-red hover:underline">
+                  Ler na Íntegra
+                </Button>
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</p>
+        )}
+        <div className="mt-6 text-right">
           <Link to="/pulse/informatives">
             <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
-              Ver Todos
+              Ver Todos os Informativos
             </Button>
           </Link>
-        </CardHeader>
-        <CardContent>
-          {isLoadingInformative ? (
-            <p className="text-muted-foreground text-center">Carregando informativo...</p>
-          ) : errorInformative ? (
-            <p className="text-destructive text-center">Erro ao carregar informativo: {errorInformative.message}</p>
-          ) : informativeToday ? (
-            <div className="space-y-4">
-              {informativeToday.short_summary && (
-                <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
-              )}
-              <div className="mt-4 text-right">
-                <Link to={`/informative/${informativeToday.id}`}>
-                  <Button variant="link" className="text-sollux-red hover:underline">
-                    Ler na Íntegra
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <p className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</p>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+      </SectionWrapper>
 
       {/* Dashboard de Indicadores */}
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Indicadores</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {selectedCompany ? `Visão consolidada para: ${selectedCompany.name}` : 'Selecione uma empresa para ver os indicadores.'}
-            </CardDescription>
+      <SectionWrapper
+        id="indicator-dashboard"
+        title="Dashboard de Indicadores"
+        description={selectedCompany ? `Visão consolidada para: ${selectedCompany.name}` : 'Selecione uma empresa para ver os indicadores.'}
+        isVisible={visibleSections.includes('indicator-dashboard')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {!selectedCompany ? (
+          <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver os indicadores.</p>
+        ) : isLoadingIndicators ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin text-sollux-red" />
+            <span className="ml-2 text-muted-foreground">Carregando indicadores...</span>
           </div>
-          {selectedCompany && (
+        ) : pillarIndicators.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares.
+            Certifique-se de que há diagnósticos criados e questionários respondidos para esta empresa.
+          </p>
+        ) : (
+          <div className="space-y-6">
+            {/* Performance por Pilar */}
+            <h3 className="text-lg font-semibold text-foreground mb-4">Performance por Pilar</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {pillarIndicators.map(pillar => (
+                <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
+                  <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
+                  </h4>
+                  <p className="text-2xl font-bold text-foreground">
+                    {pillar.percentage.toFixed(2)}%
+                    {pillar.classification && (
+                      <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
+                        {pillar.classification.classification_label}
+                      </Badge>
+                    )}
+                  </p>
+                </Card>
+              ))}
+            </div>
+
+            {/* Gráfico de Distribuição de Classificação */}
+            {classificationDistribution.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Distribuição de Classificação dos Pilares</h3>
+                <Card className="p-4 border border-border rounded-lg bg-muted/50 h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={classificationDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                      >
+                        {classificationDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip formatter={(value: number, name: string) => [`${value} Pilares`, name]} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Card>
+              </div>
+            )}
+          </div>
+        )}
+        {selectedCompany && (
+          <div className="mt-6 text-right">
             <Button variant="outline" size="sm" onClick={() => navigate('/ops/flow')} className="rounded-lg text-foreground border-border hover:bg-accent">
               Ver Detalhes no Flow
             </Button>
-          )}
-        </CardHeader>
-        <CardContent>
-          {!selectedCompany ? (
-            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver os indicadores.</p>
-          ) : isLoadingIndicators ? (
-            <div className="flex items-center justify-center h-48">
-              <Loader2 className="h-8 w-8 animate-spin text-sollux-red" />
-              <span className="ml-2 text-muted-foreground">Carregando indicadores...</span>
-            </div>
-          ) : pillarIndicators.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares.
-              Certifique-se de que há diagnósticos criados e questionários respondidos para esta empresa.
-            </p>
-          ) : (
-            <div className="space-y-6">
-              {/* Performance por Pilar */}
-              <h3 className="text-lg font-semibold text-foreground mb-4">Performance por Pilar</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                {pillarIndicators.map(pillar => (
-                  <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
-                    <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
-                    </h4>
-                    <p className="text-2xl font-bold text-foreground">
-                      {pillar.percentage.toFixed(2)}%
-                      {pillar.classification && (
-                        <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
-                          {pillar.classification.classification_label}
-                        </Badge>
-                      )}
-                    </p>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Gráfico de Distribuição de Classificação */}
-              {classificationDistribution.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Distribuição de Classificação dos Pilares</h3>
-                  <Card className="p-4 border border-border rounded-lg bg-muted/50 h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={classificationDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          nameKey="name"
-                        >
-                          {classificationDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <RechartsTooltip formatter={(value: number, name: string) => [`${value} Pilares`, name]} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </SectionWrapper>
 
       {/* Dashboard de Vagas Publicadas */}
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Vagas Publicadas</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
-            </CardDescription>
+      <SectionWrapper
+        id="jobs-dashboard"
+        title="Dashboard de Vagas Publicadas"
+        description={selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
+        isVisible={visibleSections.includes('jobs-dashboard')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {!selectedCompany ? (
+          <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de vagas.</p>
+        ) : isLoadingJobs ? (
+          <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
+        ) : (
+          <div className="space-y-6">
+            {/* Estatísticas Principais */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Briefcase className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">Total de Vagas</span>
+                </div>
+                <div className="2xl font-bold text-blue-900">{totalJobs}</div>
+                <p className="text-xs text-blue-700">Últimos 30 dias</p>
+              </div>
+              
+              <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Activity className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Vagas Ativas</span>
+                </div>
+                <div className="2xl font-bold text-green-900">{activeJobs}</div>
+                <p className="text-xs text-green-700">Disponíveis para candidatos</p>
+              </div>
+              
+              <div className="bg-muted p-4 rounded-lg border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Vagas Inativas</span>
+                </div>
+                <div className="2xl font-bold text-foreground">{inactiveJobs}</div>
+                <p className="text-xs text-muted-foreground">Pausadas ou encerradas</p>
+              </div>
+              
+              <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-900">Média Salarial</span>
+                </div>
+                <div className="2xl font-bold text-purple-900">
+                  {avgSalary > 0 ? `R$ ${avgSalary.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : 'N/A'}
+                </div>
+                <p className="text-xs text-purple-700">Baseado nas vagas publicadas</p>
+              </div>
+            </div>
+
+            {/* Vagas Recentes */}
+            {recentJobs && recentJobs.length > 0 && (
+              <div>
+                <h4 className="text-lg font-semibold text-foreground mb-4">Vagas Recentes</h4>
+                <div className="space-y-3">
+                  {recentJobs.slice(0, 5).map((job) => (
+                    <div key={job.id} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
+                      <div className="flex-1">
+                        <h5 className="font-medium text-foreground">{job.title}</h5>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(job.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 text-xs rounded-full ${
+                          job.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {job.status === 'active' ? 'Ativa' : 'Inativa'}
+                        </span>
+                        <Link to={`/jobs/${job.id}`}>
+                          <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 rounded-lg">
+                            Ver
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {recentJobs.length > 5 && (
+                  <div className="text-center mt-4">
+                    <Link to="/connect/jobs">
+                      <Button variant="outline" className="text-foreground border-border hover:bg-accent">
+                        Ver todas as vagas
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          {selectedCompany && (
+        )}
+        {selectedCompany && (
+          <div className="mt-6 text-right">
             <Link to="/connect/jobs">
               <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
                 Gerenciar Vagas
               </Button>
             </Link>
-          )}
-        </CardHeader>
-        <CardContent>
-          {!selectedCompany ? (
-            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de vagas.</p>
-          ) : isLoadingJobs ? (
-            <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
-          ) : (
-            <div className="space-y-6">
-              {/* Estatísticas Principais */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-900">Total de Vagas</span>
-                  </div>
-                  <div className="2xl font-bold text-blue-900">{totalJobs}</div>
-                  <p className="text-xs text-blue-700">Últimos 30 dias</p>
-                </div>
-                
-                <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Activity className="h-5 w-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-900">Vagas Ativas</span>
-                  </div>
-                  <div className="2xl font-bold text-green-900">{activeJobs}</div>
-                  <p className="text-xs text-green-700">Disponíveis para candidatos</p>
-                </div>
-                
-                <div className="bg-muted p-4 rounded-lg border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Vagas Inativas</span>
-                  </div>
-                  <div className="2xl font-bold text-foreground">{inactiveJobs}</div>
-                  <p className="text-xs text-muted-foreground">Pausadas ou encerradas</p>
-                </div>
-                
-                <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-5 w-5 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-900">Média Salarial</span>
-                  </div>
-                  <div className="2xl font-bold text-purple-900">
-                    {avgSalary > 0 ? `R$ ${avgSalary.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : 'N/A'}
-                  </div>
-                  <p className="text-xs text-purple-700">Baseado nas vagas publicadas</p>
-                </div>
-              </div>
-
-              {/* Vagas Recentes */}
-              {recentJobs && recentJobs.length > 0 && (
-                <div>
-                  <h4 className="text-lg font-semibold text-foreground mb-4">Vagas Recentes</h4>
-                  <div className="space-y-3">
-                    {recentJobs.slice(0, 5).map((job) => (
-                      <div key={job.id} className="flex items-center justify-between p-3 bg-muted rounded-lg border border-border">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-foreground">{job.title}</h5>
-                          <p className="text-sm text-muted-foreground">
-                            {format(new Date(job.created_at), 'dd/MM/yyyy', { locale: ptBR })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            job.status === 'active' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {job.status === 'active' ? 'Ativa' : 'Inativa'}
-                          </span>
-                          <Link to={`/jobs/${job.id}`}>
-                            <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 rounded-lg">
-                              Ver
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {recentJobs.length > 5 && (
-                    <div className="text-center mt-4">
-                      <Link to="/connect/jobs">
-                        <Button variant="outline" className="text-foreground border-border hover:bg-accent">
-                          Ver todas as vagas
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </SectionWrapper>
 
       {/* Novo Dashboard de Formulários */}
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-foreground uppercase font-bold">Dashboard de Formulários</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              {selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
-            </CardDescription>
-          </div>
-          {selectedCompany && (
-            <Link to="/connect/forms">
-              <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
-                Gerenciar Formulários
-              </Button>
-            </Link>
-          )}
-        </CardHeader>
-        <CardContent>
-          {!selectedCompany ? (
-            <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de formulários.</p>
-          ) : isLoadingForms ? (
-            <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
-          ) : (
-            <div className="space-y-6">
-              {/* Estatísticas Principais de Formulários */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-900">Total de Formulários</span>
-                  </div>
-                  <div className="2xl font-bold text-blue-900">{totalForms}</div>
-                  <p className="text-xs text-blue-700">Últimos 30 dias</p>
+      <SectionWrapper
+        id="forms-dashboard"
+        title="Dashboard de Formulários"
+        description={selectedCompany ? `Últimos 30 dias - ${selectedCompany.name}` : 'Selecione uma empresa para ver as estatísticas'}
+        isVisible={visibleSections.includes('forms-dashboard')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {!selectedCompany ? (
+          <p className="text-center text-muted-foreground py-8">Por favor, selecione uma empresa na barra lateral para ver as estatísticas de formulários.</p>
+        ) : isLoadingForms ? (
+          <p className="text-center text-muted-foreground">Carregando estatísticas...</p>
+        ) : (
+          <div className="space-y-6">
+            {/* Estatísticas Principais de Formulários */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">Total de Formulários</span>
                 </div>
-                
-                <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-900">Formulários Publicados</span>
-                  </div>
-                  <div className="2xl font-bold text-green-900">{publishedForms}</div>
-                  <p className="text-xs text-green-700">Disponíveis para respostas</p>
+                <div className="2xl font-bold text-blue-900">{totalForms}</div>
+                <p className="text-xs text-blue-700">Últimos 30 dias</p>
+              </div>
+              
+              <div className="bg-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Formulários Publicados</span>
                 </div>
-                
-                <div className="bg-muted p-4 rounded-lg border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Formulários em Rascunho</span>
-                  </div>
-                  <div className="2xl font-bold text-foreground">{draftForms}</div>
-                  <p className="text-xs text-muted-foreground">Aguardando edição</p>
+                <div className="2xl font-bold text-green-900">{publishedForms}</div>
+                <p className="text-xs text-green-700">Disponíveis para respostas</p>
+              </div>
+              
+              <div className="bg-muted p-4 rounded-lg border border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">Formulários em Rascunho</span>
                 </div>
-                
-                <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MessageSquareText className="h-5 w-5 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-900">Total de Respostas</span>
-                  </div>
-                  <div className="2xl font-bold text-purple-900">{totalFormResponses}</div>
+                <div className="2xl font-bold text-foreground">{draftForms}</div>
+                <p className="text-xs text-muted-foreground">Aguardando edição</p>
+              </div>
+              
+              <div className="bg-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquareText className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-900">Total de Respostas</span>
+                </div>
+                <div className="2xl font-bold text-purple-900">{totalFormResponses}</div>
                   <p className="text-xs text-purple-700">Recebidas nos formulários</p>
                 </div>
               </div>
@@ -711,8 +742,25 @@ const PulsePage: React.FC = () => {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+          {selectedCompany && (
+            <div className="mt-6 text-right">
+              <Link to="/connect/forms">
+                <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
+                  Gerenciar Formulários
+                </Button>
+              </Link>
+            </div>
+          )}
+      </SectionWrapper>
+
+      <PageSettingsDialog
+        open={isSettingsDialogOpen}
+        onOpenChange={setIsSettingsDialogOpen}
+        availableSections={pulseSections}
+        currentVisibleSections={visibleSections}
+        onSave={setAllVisibleSections}
+        isSaving={isSavingConfig}
+      />
     </div>
   );
 };

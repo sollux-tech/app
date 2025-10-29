@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Award, CheckCircle, Clock, XCircle, TrendingUp, LayoutDashboard } from 'lucide-react';
+import { Loader2, Award, CheckCircle, Clock, XCircle, TrendingUp, LayoutDashboard, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useQuery } from '@tanstack/react-query';
@@ -20,6 +20,9 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { usePageConfig } from '@/hooks/usePageConfig'; // Importar o novo hook
+import PageSettingsDialog from '@/components/PageSettingsDialog'; // Importar o novo componente
+import SectionWrapper from '@/components/SectionWrapper'; // Importar o novo componente
 
 // Helper to classify a percentage based on classification scales
 const classifyPercentage = (
@@ -62,6 +65,14 @@ const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefine
   }
 };
 
+// Definição das seções disponíveis para a página Flow
+const flowSections = [
+  { id: 'overview-diagnostics', label: 'Visão Geral dos Diagnósticos' },
+  { id: 'pillar-performance', label: 'Performance por Pilar' },
+  { id: 'classification-distribution', label: 'Distribuição de Classificação dos Pilares' },
+  { id: 'recent-diagnostics', label: 'Diagnósticos Recentes' },
+];
+
 const FlowPage: React.FC = () => {
   const { user } = useSession();
   const { selectedCompany } = useCompany();
@@ -69,6 +80,16 @@ const FlowPage: React.FC = () => {
   // Global filter states
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
+
+  // Usar o hook usePageConfig para gerenciar a visibilidade das seções
+  const {
+    visibleSections,
+    isLoadingConfig,
+    isSavingConfig,
+    toggleSectionVisibility,
+    setAllVisibleSections,
+  } = usePageConfig('flow', flowSections);
 
   // Fetch all pillars for the current user (for filter dropdown)
   const { data: allPillars, isLoading: isLoadingAllPillars } = useQuery<Pillar[], Error>({
@@ -231,7 +252,7 @@ const FlowPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const isLoadingPage = isLoadingDiagnostics || isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales || isLoadingAllDiagnosticStatuses;
+  const isLoadingPage = isLoadingDiagnostics || isLoadingAllPillars || isLoadingAllPillarBlocks || isLoadingAllCompanyQuestionnaireEntries || isLoadingClassificationScales || isLoadingAllDiagnosticStatuses || isLoadingConfig;
 
   // --- Lógica de Cálculo de Indicadores Agregados por Pilar ---
   const { pillarIndicators, classificationDistribution } = useMemo(() => {
@@ -289,7 +310,7 @@ const FlowPage: React.FC = () => {
       }
     });
 
-    // Aggregate scores for each block from ALL questionnaire entries
+    // Aggregate scores for each block from ALL answered questionnaire entries
     allCompanyQuestionnaireEntries
       .filter(entry => entry.score_id !== null) // ONLY process answered questions
       .forEach(entry => {
@@ -399,16 +420,28 @@ const FlowPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSettingsDialogOpen(true)}
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-lg"
+          title="Configurar seções da página"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
+
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-foreground uppercase font-bold">SOLLUX FLOW™ - Dashboard de Operações</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">Filtros Globais</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Visão consolidada dos diagnósticos para a empresa: <span className="font-semibold">{selectedCompany.name}</span>
+            Aplique filtros para refinar os dados exibidos no dashboard.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Global Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Filtro por Pilar */}
             <div>
               <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
               <Select
@@ -430,6 +463,7 @@ const FlowPage: React.FC = () => {
               </Select>
             </div>
 
+            {/* Filtro por Status */}
             <div>
               <Label htmlFor="status-filter" className="text-foreground">Filtrar por Status</Label>
               <Select
@@ -451,117 +485,152 @@ const FlowPage: React.FC = () => {
               </Select>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Visão Geral dos Diagnósticos */}
-          <h3 className="text-lg font-semibold text-foreground mb-4">Visão Geral dos Diagnósticos</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card className="p-4 border border-border rounded-lg bg-muted/50">
+      {/* Visão Geral dos Diagnósticos */}
+      <SectionWrapper
+        id="overview-diagnostics"
+        title="Visão Geral dos Diagnósticos"
+        isVisible={visibleSections.includes('overview-diagnostics')}
+        onDismiss={toggleSectionVisibility}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-4 border border-border rounded-lg bg-muted/50">
+            <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+              <LayoutDashboard className="h-5 w-5 text-blue-600" /> Total de Diagnósticos
+            </h4>
+            <p className="text-2xl font-bold text-foreground">{diagnostics?.length || 0}</p>
+          </Card>
+          {Object.keys(diagnosticStatusCounts).map(statusId => (
+            <Card key={statusId} className="p-4 border border-border rounded-lg bg-muted/50">
               <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                <LayoutDashboard className="h-5 w-5 text-blue-600" /> Total de Diagnósticos
+                {statusId === allDiagnosticStatuses?.find(s => s.description === 'Concluído')?.id && <CheckCircle className="h-5 w-5 text-green-600" />}
+                {statusId === allDiagnosticStatuses?.find(s => s.description === 'Em Andamento')?.id && <Clock className="h-5 w-5 text-yellow-600" />}
+                {statusId === allDiagnosticStatuses?.find(s => s.description === 'Pendente')?.id && <XCircle className="h-5 w-5 text-red-600" />}
+                {getStatusDescription(statusId)}
               </h4>
-              <p className="text-2xl font-bold text-foreground">{diagnostics?.length || 0}</p>
+              <p className="text-2xl font-bold text-foreground">{diagnosticStatusCounts[statusId]}</p>
             </Card>
-            {Object.keys(diagnosticStatusCounts).map(statusId => (
-              <Card key={statusId} className="p-4 border border-border rounded-lg bg-muted/50">
+          ))}
+        </div>
+      </SectionWrapper>
+
+      {/* Performance por Pilar */}
+      <SectionWrapper
+        id="pillar-performance"
+        title="Performance por Pilar"
+        isVisible={visibleSections.includes('pillar-performance')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {pillarIndicators.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares com os filtros aplicados.
+            Certifique-se de que há diagnósticos criados e questionários respondidos.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {pillarIndicators.map(pillar => (
+              <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
                 <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Concluído')?.id && <CheckCircle className="h-5 w-5 text-green-600" />}
-                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Em Andamento')?.id && <Clock className="h-5 w-5 text-yellow-600" />}
-                  {statusId === allDiagnosticStatuses?.find(s => s.description === 'Pendente')?.id && <XCircle className="h-5 w-5 text-red-600" />}
-                  {getStatusDescription(statusId)}
+                  <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
                 </h4>
-                <p className="text-2xl font-bold text-foreground">{diagnosticStatusCounts[statusId]}</p>
+                <p className="text-2xl font-bold text-foreground">
+                  {pillar.percentage.toFixed(2)}%
+                  {pillar.classification && (
+                    <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
+                      {pillar.classification.classification_label}
+                    </Badge>
+                  )}
+                </p>
               </Card>
             ))}
           </div>
+        )}
+      </SectionWrapper>
 
-          {/* Performance por Pilar */}
-          <h3 className="text-lg font-semibold text-foreground mb-4">Performance por Pilar</h3>
-          {pillarIndicators.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhum dado de diagnóstico encontrado para calcular a performance dos pilares com os filtros aplicados.
-              Certifique-se de que há diagnósticos criados e questionários respondidos.
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-              {pillarIndicators.map(pillar => (
-                <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
-                  <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
-                  </h4>
-                  <p className="text-2xl font-bold text-foreground">
-                    {pillar.percentage.toFixed(2)}%
-                    {pillar.classification && (
-                      <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
-                        {pillar.classification.classification_label}
-                      </Badge>
-                    )}
-                  </p>
-                </Card>
-              ))}
-            </div>
-          )}
+      {/* Gráfico de Distribuição de Classificação */}
+      <SectionWrapper
+        id="classification-distribution"
+        title="Distribuição de Classificação dos Pilares"
+        isVisible={visibleSections.includes('classification-distribution')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {classificationDistribution.length > 0 ? (
+          <Card className="p-4 border border-border rounded-lg bg-muted/50 h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={classificationDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                >
+                  {classificationDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip formatter={(value: number, name: string) => [`${value} Pilares`, name]} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+        ) : (
+          <p className="text-center text-muted-foreground py-8">
+            Nenhum dado de diagnóstico encontrado para calcular a distribuição de classificação dos pilares com os filtros aplicados.
+          </p>
+        )}
+      </SectionWrapper>
 
-          {/* Gráfico de Distribuição de Classificação */}
-          {classificationDistribution.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-foreground mb-4">Distribuição de Classificação dos Pilares</h3>
-              <Card className="p-4 border border-border rounded-lg bg-muted/50 h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={classificationDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      nameKey="name"
-                    >
-                      {classificationDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip formatter={(value: number, name: string) => [`${value} Pilares`, name]} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-            </div>
-          )}
-
-          {/* Diagnósticos Recentes */}
-          <h3 className="text-lg font-semibold text-foreground mb-4">Diagnósticos Recentes</h3>
-          {diagnostics && diagnostics.length > 0 ? (
-            <div className="space-y-3">
-              {diagnostics.map(diagnostic => (
-                <Card key={diagnostic.id} className="p-3 border border-border rounded-lg bg-muted/50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-foreground">
-                        {diagnostic.pillars?.description || 'Pilar Desconhecido'} - {diagnostic.pillar_blocks?.name || 'Bloco Desconhecido'}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        Status: {diagnostic.diagnostic_statuses?.description || 'N/A'}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Criado em: {format(new Date(diagnostic.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                      </p>
-                    </div>
-                    <Link to={`/ops/flow/diagnostic-results/${diagnostic.id}`}>
-                      <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
-                        Ver Detalhes
-                      </Button>
-                    </Link>
+      {/* Diagnósticos Recentes */}
+      <SectionWrapper
+        id="recent-diagnostics"
+        title="Diagnósticos Recentes"
+        isVisible={visibleSections.includes('recent-diagnostics')}
+        onDismiss={toggleSectionVisibility}
+      >
+        {diagnostics && diagnostics.length > 0 ? (
+          <div className="space-y-3">
+            {diagnostics.map(diagnostic => (
+              <Card key={diagnostic.id} className="p-3 border border-border rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold text-foreground">
+                      {diagnostic.pillars?.description || 'Pilar Desconhecido'} - {diagnostic.pillar_blocks?.name || 'Bloco Desconhecido'}
+                    </h4>
+                    <p className="text-sm text-muted-foreground">
+                      Status: {diagnostic.diagnostic_statuses?.description || 'N/A'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Criado em: {format(new Date(diagnostic.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                    </p>
                   </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground py-8">Nenhum diagnóstico encontrado com os filtros aplicados.</p>
-          )}
-        </CardContent>
-      </Card>
+                  <Link to={`/ops/flow/diagnostic-results/${diagnostic.id}`}>
+                    <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
+                      Ver Detalhes
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-muted-foreground py-8">Nenhum diagnóstico encontrado com os filtros aplicados.</p>
+        )}
+      </SectionWrapper>
+
+      <PageSettingsDialog
+        open={isSettingsDialogOpen}
+        onOpenChange={setIsSettingsDialogOpen}
+        availableSections={flowSections}
+        currentVisibleSections={visibleSections}
+        onSave={setAllVisibleSections}
+        isSaving={isSavingConfig}
+      />
     </div>
   );
 };
