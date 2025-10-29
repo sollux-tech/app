@@ -97,7 +97,34 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (!isLoadingProfile && profile?.theme) {
+      console.log("AppContent: Setting theme from profile:", profile.theme); // Log para depuração
       setTheme(profile.theme); // Definir o tema do perfil assim que ele for carregado
+      
+      // Forçar a atualização do atributo data-theme e color-scheme no elemento <html>
+      const htmlElement = document.documentElement;
+      if (profile.theme === 'dark') {
+        htmlElement.classList.add('dark');
+        htmlElement.setAttribute('data-theme', 'dark');
+        htmlElement.style.colorScheme = 'dark';
+      } else {
+        htmlElement.classList.remove('dark');
+        htmlElement.setAttribute('data-theme', 'light');
+        htmlElement.style.colorScheme = 'light';
+      }
+    } else if (!isLoadingProfile && !profile?.theme) {
+      console.log("AppContent: Profile loaded, but no theme found. Defaulting to system.");
+      setTheme("system"); // Garante que um tema seja definido mesmo se o perfil não tiver um
+      // Aplicar tema 'system' ao <html> se não houver tema no perfil
+      const htmlElement = document.documentElement;
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        htmlElement.classList.add('dark');
+        htmlElement.setAttribute('data-theme', 'dark');
+        htmlElement.style.colorScheme = 'dark';
+      } else {
+        htmlElement.classList.remove('dark');
+        htmlElement.setAttribute('data-theme', 'light');
+        htmlElement.style.colorScheme = 'light';
+      }
     }
   }, [profile?.theme, isLoadingProfile, setTheme]);
 
