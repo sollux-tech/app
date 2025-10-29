@@ -1,34 +1,39 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
-import { useSession } from '@/components/SessionContextProvider';
-import { showSuccess, showError } from '@/utils/toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { ProfileFormData } from '@/types/profile';
-import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns';
-import { useQueryClient } from '@tanstack/react-query';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // Importar Select
-import { useTheme } from 'next-themes'; // Importar useTheme
+import { showSuccess, showError } from '@/utils/toast';
+import { Profile, ProfileFormData } from '@/types/profile';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from '@/components/SessionContextProvider';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { MultiSelectOption } from '@/components/MultiSelect'; // Importar o tipo MultiSelectOption
 
 const formSchema = z.object({
   first_name: z.string().min(1, { message: 'O primeiro nome é obrigatório.' }),
   last_name: z.string().min(1, { message: 'O sobrenome é obrigatório.' }),
-  birthdate: z.date().optional().nullable(),
+  birthdate: z.date({ required_error: 'A data de nascimento é obrigatória.' }).nullable(),
   city: z.string().optional(),
   state: z.string().optional(),
-  avatar_url: z.string().url({ message: 'URL de avatar inválida.' }).optional().or(z.literal('')),
+  avatar_url: z.string().url({ message: 'URL de avatar inválida.' }).optional(),
+  theme: z.enum(['light', 'dark', 'system'], { required_error: 'O tema é obrigatório.' }).default('system'),
 });
 
 const UserManagementPage: React.FC = () => {
-  const { user, profile, isLoading, refetchProfile } = useSession();
   const queryClient = useQueryClient();
-  const { setTheme, theme } = useTheme(); // Obter setTheme e theme do hook useTheme
+  const { user } = useSession();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(formSchema),
@@ -39,197 +44,301 @@ const UserManagementPage: React.FC = () => {
       city: '',
       state: '',
       avatar_url: '',
+      theme: 'system',
     },
   });
 
   useEffect(() => {
-    if (profile) {
-      // Corrige o problema de fuso horário ao carregar a data do banco de dados.
-      // A string 'YYYY-MM-DD' é convertida para uma data no fuso horário local.
-      const birthdateString = profile.birthdate;
-      const localBirthdate = birthdateString ? new Date(birthdateString + 'T00:00:00') : undefined;
-
+    if (editingProfile) {
       form.reset({
-        first_name: profile.first_name || '',
-        last_name: profile.last_name || '',
-        birthdate: localBirthdate,
-        city: profile.city || '',
-        state: profile.state || '',
-        avatar_url: profile.avatar_url || '',
+        first_name: editingProfile.first_name || '',
+        last_name: editingProfile.last_name || '',
+        birthdate: editingProfile.birthdate ? new Date(editingProfile.birthdate) : undefined,
+        city: editingProfile.city || '',
+        state: editingProfile.state || '',
+        avatar_url: editingProfile.avatar_url || '',
+        theme: editingProfile.theme || 'system',
+      });
+    } else {
+      form.reset({
+        first_name: '',
+        last_name: '',
+        birthdate: undefined,
+        city: '',
+        state: '',
+        avatar_url: '',
+        theme: 'system',
       });
     }
-  }, [profile, form]);
+  }, [editingProfile, form, isDialogOpen]);
 
-  const onSubmit = async (data: ProfileFormData) => {
-    if (!user) {
-      showError('Usuário não autenticado.');
-      return;
-    }
-
-    try {
-      const { error } = await supabase
+  const { data: profiles, isLoading: isLoadingProfiles, error: errorProfiles } = useQuery<Profile[], Error>({
+    queryKey: ['profiles', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
         .from('profiles')
-        .upsert(
-          {
-            id: user.id,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            birthdate: data.birthdate ? format(data.birthdate, 'yyyy-MM-dd') : null,
-            city: data.city || null,
-            state: data.state || null,
-            avatar_url: data.avatar_url || null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' } // Use upsert to insert if not exists, update if exists
-        );
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
+  const mutationOptions = {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profiles', user?.id] });
+      setIsDialogOpen(false);
+      setEditingProfile(null);
+    },
+    onError: (error: Error) => {
+      showError(`Erro: ${error.message}`);
+    },
+  };
+
+  const createProfileMutation = useMutation({
+    mutationFn: async (data: ProfileFormData) => {
+      if (!user?.id) throw new Error("Usuário não autenticado.");
+      const { data: newProfile, error } = await supabase
+        .from('profiles')
+        .insert({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          birthdate: data.birthdate ? data.birthdate.toISOString() : null,
+          city: data.city,
+          state: data.state,
+          avatar_url: data.avatar_url || null,
+          theme: data.theme,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return newProfile;
+    },
+    ...mutationOptions,
+    onSuccess: () => {
+      mutationOptions.onSuccess();
+      showSuccess('Perfil criado com sucesso!');
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: ProfileFormData) => {
+      if (!editingProfile?.id) throw new Error("ID do perfil está faltando.");
+      if (!user?.id) throw new Error("Usuário não autenticado.");
+      const { data: updatedProfile, error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: data.first_name,
+          last_name: data.last_name,
+          birthdate: data.birthdate ? data.birthdate.toISOString() : null,
+          city: data.city,
+          state: data.state,
+          avatar_url: data.avatar_url || null,
+          theme: data.theme,
+        })
+        .eq('id', editingProfile.id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return updatedProfile;
+    },
+    ...mutationOptions,
+    onSuccess: () => {
+      mutationOptions.onSuccess();
+      showSuccess('Perfil atualizado com sucesso!');
+    },
+  });
+
+  const deleteProfileMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error("Usuário não autenticado.");
+      const { error, count } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+      
       if (error) {
         throw error;
       }
+      if (count === 0) {
+        throw new Error("Perfil não encontrado ou você não tem permissão para excluí-lo.");
+      }
+    },
+    ...mutationOptions,
+    onSuccess: () => {
+      mutationOptions.onSuccess();
+      showSuccess('Perfil excluído com sucesso!');
+    },
+  });
 
-      showSuccess('Perfil atualizado com sucesso!');
-      refetchProfile(); // Recarregar o perfil para atualizar o contexto
-      queryClient.invalidateQueries({ queryKey: ['profiles'] }); // Invalida a query de perfis para atualizar em outros componentes
-      queryClient.invalidateQueries({ queryKey: ['companyShares'] }); // Invalida queries de compartilhamento de empresas
-      queryClient.invalidateQueries({ queryKey: ['sharedWithMe'] }); // Invalida queries de empresas compartilhadas comigo
-    } catch (error: any) {
-      showError(`Erro ao atualizar perfil: ${error.message}`);
-      console.error('Erro ao atualizar perfil:', error);
+  const onSubmit = (data: ProfileFormData) => {
+    if (editingProfile) {
+      updateProfileMutation.mutate(data);
+    } else {
+      createProfileMutation.mutate(data);
     }
   };
 
-  if (isLoading) {
-    return <div className="text-center text-gray-600">Carregando perfil...</div>;
+  const handleAddClick = () => {
+    setEditingProfile(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditClick = (profile: Profile) => {
+    setEditingProfile(profile);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este perfil?')) {
+      deleteProfileMutation.mutate(id);
+    }
+  };
+
+  const isMutating = createProfileMutation.isPending || updateProfileMutation.isPending || deleteProfileMutation.isPending;
+  const isLoadingPage = isLoadingProfiles;
+
+  if (isLoadingPage) {
+    return <div className="text-center text-gray-600">Carregando perfis...</div>;
+  }
+
+  if (errorProfiles) {
+    return <div className="text-center text-red-600">Erro ao carregar perfis: {errorProfiles.message}</div>;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-2xl bg-sollux-card-bg backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-sollux-card-border">
+    <div className="space-y-6">
+      <Card className="bg-sollux-card-bg backdrop-blur-md border border-sollux-card-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold mb-4 text-sollux-black">Gerenciar Perfil</CardTitle>
-          <p className="text-lg text-gray-600">
-            Atualize suas informações pessoais.
-          </p>
+          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Perfis do Usuário</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Gerencie os perfis associados à sua conta.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="mt-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sollux-black">Primeiro Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu primeiro nome" {...field} className="rounded-lg" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sollux-black">Sobrenome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu sobrenome" {...field} className="rounded-lg" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="birthdate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-sollux-black text-left">Data de Nascimento</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        date={field.value}
-                        setDate={field.onChange}
-                        placeholder="Selecione sua data de nascimento"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <Label htmlFor="first-name" className="text-foreground">Primeiro Nome</Label>
+              <Input
+                id="first-name"
+                placeholder="Ex: João"
+                className="rounded-lg"
+                {...form.register('first_name')}
               />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sollux-black">Cidade</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Sua cidade" {...field} className="rounded-lg" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sollux-black">Estado</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Seu estado" {...field} className="rounded-lg" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={form.control}
-                name="avatar_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sollux-black">URL do Avatar</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://exemplo.com/avatar.jpg" {...field} className="rounded-lg" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FormMessage />
+            </div>
+            <div>
+              <Label htmlFor="last-name" className="text-foreground">Sobrenome</Label>
+              <Input
+                id="last-name"
+                placeholder="Ex: Silva"
+                className="rounded-lg"
+                {...form.register('last_name')}
               />
+              <FormMessage />
+            </div>
+          </div>
 
-              {/* Theme Selector */}
+          <FormField
+            control={form.control}
+            name="birthdate"
+            render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sollux-black text-left">Tema da Interface</FormLabel>
-                <Select value={theme} onValueChange={(value) => setTheme(value)}>
+                <FormLabel className="text-foreground">Data de Nascimento</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    placeholder="Selecione a data de nascimento"
+                    {...field}
+                    className="rounded-lg"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-foreground">Cidade</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ex: São Paulo"
+                    className="rounded-lg"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="state"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-foreground">Estado/Província</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ex: SP"
+                    className="rounded-lg"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="avatar_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-foreground">URL do Avatar</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://exemplo.com/avatar.jpg"
+                    className="rounded-lg"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="theme"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-foreground">Tema da Interface</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value} disabled={isMutating}>
                   <FormControl>
                     <SelectTrigger className="rounded-lg">
-                      <SelectValue placeholder="Selecionar tema" />
+                      <SelectValue placeholder="Selecione um tema" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="light">Claro</SelectItem>
                     <SelectItem value="dark">Escuro</SelectItem>
-                    <SelectItem value="system">Sistema</SelectItem>
+                    <SelectItem value="system" disabled={true}>Baseado no Sistema</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription className="text-left">
-                  Selecione o tema da interface: claro, escuro ou baseado nas configurações do seu sistema.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
-
-              <Button type="submit" className="w-full rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                Salvar Alterações
-              </Button>
-            </form>
-          </Form>
+            )}
+          />
+          <Button type="button" onClick={() => onSubmit(form.getValues())} disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange mt-4">
+            Salvar Alterações
+          </Button>
         </CardContent>
       </Card>
     </div>
