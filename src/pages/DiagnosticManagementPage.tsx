@@ -21,6 +21,7 @@ import { useCompany } from '@/components/CompanyContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Label } from '@/components/ui/label'; // Importar Label
 
 const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
@@ -33,6 +34,10 @@ const DiagnosticManagementPage: React.FC = () => {
   const { selectedCompany } = useCompany();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDiagnostic, setEditingDiagnostic] = useState<Diagnostic | null>(null);
+
+  // Estados para os filtros
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
   const form = useForm<DiagnosticFormData>({
     resolver: zodResolver(formSchema),
@@ -60,15 +65,26 @@ const DiagnosticManagementPage: React.FC = () => {
   }, [editingDiagnostic, form, isDialogOpen]);
 
   const { data: diagnostics, isLoading: isLoadingDiagnostics, error: errorDiagnostics } = useQuery<Diagnostic[], Error>({
-    queryKey: ['diagnostics', user?.id, selectedCompany?.id],
+    queryKey: ['diagnostics', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter], // Adicionado filtros ao queryKey
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('diagnostics')
         .select('*, companies(name), pillars(description), pillar_blocks(name), diagnostic_statuses(description)')
         .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
-        .order('created_at', { ascending: false });
+        .eq('company_id', selectedCompany.id);
+      
+      // Aplicar filtros
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedStatusFilter !== 'all') {
+        query = query.eq('diagnostic_status_id', selectedStatusFilter);
+      }
+
+      query = query.order('created_at', { ascending: false });
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -260,6 +276,52 @@ const DiagnosticManagementPage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Filtro por Pilar */}
+            <div>
+              <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
+              <Select
+                value={selectedPillarFilter}
+                onValueChange={setSelectedPillarFilter}
+                disabled={isLoadingPillars}
+              >
+                <SelectTrigger id="pillar-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Pilares" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pilares</SelectItem>
+                  {pillars?.map((pillar) => (
+                    <SelectItem key={pillar.id} value={pillar.id}>
+                      {pillar.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por Status */}
+            <div>
+              <Label htmlFor="status-filter" className="text-foreground">Filtrar por Status</Label>
+              <Select
+                value={selectedStatusFilter}
+                onValueChange={setSelectedStatusFilter}
+                disabled={isLoadingDiagnosticStatuses}
+              >
+                <SelectTrigger id="status-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  {diagnosticStatuses?.map((status) => (
+                    <SelectItem key={status.id} value={status.id}>
+                      {status.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -274,7 +336,7 @@ const DiagnosticManagementPage: React.FC = () => {
               {diagnostics?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhum diagnóstico encontrado para esta empresa.
+                    Nenhum diagnóstico encontrado para esta empresa com os filtros aplicados.
                   </TableCell>
                 </TableRow>
               ) : (
