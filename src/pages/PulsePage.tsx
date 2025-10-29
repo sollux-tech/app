@@ -541,11 +541,12 @@ const PulsePage: React.FC = () => {
         )}
         {selectedCompany && (
           <div className="mt-6 text-right">
-            <Button variant="outline" size="sm" onClick={() => navigate('/ops/flow')} className="rounded-lg text-foreground border-border hover:bg-accent">
-              Ver Detalhes no Flow
-            </Button>
-          </Link>
-        </div>
+            <Link to="/ops/flow">
+              <Button variant="outline" size="sm" className="rounded-lg text-foreground border-border hover:bg-accent">
+                Ver Detalhes no Flow
+              </Button>
+            </Link>
+          </div>
         )}
       </SectionWrapper>
 
