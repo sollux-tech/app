@@ -32,7 +32,7 @@ const formSchema = z.object({
 
 const UserManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const { user } = useSession();
+  const { user, refetchProfile } = useSession(); // Obter refetchProfile
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
@@ -89,10 +89,11 @@ const UserManagementPage: React.FC = () => {
   });
 
   const mutationOptions = {
-    onSuccess: () => {
+    onSuccess: async () => { // Adicionado async aqui
       queryClient.invalidateQueries({ queryKey: ['profiles', user?.id] });
       setIsDialogOpen(false);
       setEditingProfile(null);
+      await refetchProfile(); // Chamar refetchProfile para atualizar o contexto da sessão
     },
     onError: (error: Error) => {
       showError(`Erro: ${error.message}`);
@@ -120,8 +121,8 @@ const UserManagementPage: React.FC = () => {
       return newProfile;
     },
     ...mutationOptions,
-    onSuccess: () => {
-      mutationOptions.onSuccess();
+    onSuccess: async () => { // Adicionado async aqui
+      await mutationOptions.onSuccess(); // Chamar o onSuccess original
       showSuccess('Perfil criado com sucesso!');
     },
   });
@@ -147,8 +148,8 @@ const UserManagementPage: React.FC = () => {
       return updatedProfile;
     },
     ...mutationOptions,
-    onSuccess: () => {
-      mutationOptions.onSuccess();
+    onSuccess: async () => { // Adicionado async aqui
+      await mutationOptions.onSuccess(); // Chamar o onSuccess original
       showSuccess('Perfil atualizado com sucesso!');
     },
   });
@@ -170,8 +171,8 @@ const UserManagementPage: React.FC = () => {
       }
     },
     ...mutationOptions,
-    onSuccess: () => {
-      mutationOptions.onSuccess();
+    onSuccess: async () => { // Adicionado async aqui
+      await mutationOptions.onSuccess(); // Chamar o onSuccess original
       showSuccess('Perfil excluído com sucesso!');
     },
   });
