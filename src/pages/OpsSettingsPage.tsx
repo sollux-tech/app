@@ -55,6 +55,10 @@ const OpsSettingsPage: React.FC = () => {
     navigate('/core/global-settings/ops/kpi-smart-statuses'); // Nova rota para Status KPI Smart
   };
 
+  const handleKpiSmartFocusClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-focuses'); // Nova rota para Foco KPI Smart
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
@@ -140,6 +144,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie os status para os KPIs Smart (Ex: Em Andamento, Concluído)."
               icon={CheckCircle} 
               onClick={handleKpiSmartStatusClick}
+            />
+            <FeatureCard
+              title="Foco KPI Smart"
+              description="Cadastre e gerencie os focos para os KPIs Smart (Ex: Crescimento, Eficiência)."
+              icon={Target} 
+              onClick={handleKpiSmartFocusClick}
             />
           </div>
         </CardContent>

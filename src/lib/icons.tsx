@@ -34,7 +34,7 @@ export const iconMap: IconMap = {
   Lightbulb,
   Ruler,
   Repeat,
-  CheckCircle, // Novo ícone
+  CheckCircle,
 };
 
 export const iconNames = Object.keys(iconMap).sort();

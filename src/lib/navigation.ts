@@ -53,7 +53,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/kpi-smart-types': { name: 'OPS - Tipo KPI Smart', parent: '/core/global-settings/ops', icon: Lightbulb },
   '/core/global-settings/ops/kpi-smart-units': { name: 'OPS - Unidades de Medida KPI Smart', parent: '/core/global-settings/ops', icon: Ruler },
   '/core/global-settings/ops/kpi-smart-frequencies': { name: 'OPS - Frequência de Monitoramento', parent: '/core/global-settings/ops', icon: Repeat },
-  '/core/global-settings/ops/kpi-smart-statuses': { name: 'OPS - Status KPI Smart', parent: '/core/global-settings/ops', icon: CheckCircle }, // Nova rota
+  '/core/global-settings/ops/kpi-smart-statuses': { name: 'OPS - Status KPI Smart', parent: '/core/global-settings/ops', icon: CheckCircle },
+  '/core/global-settings/ops/kpi-smart-focuses': { name: 'OPS - Foco KPI Smart', parent: '/core/global-settings/ops', icon: Target }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
