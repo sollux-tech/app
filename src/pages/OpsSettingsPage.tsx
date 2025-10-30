@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat, CheckCircle } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat, CheckCircle, Zap } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -57,6 +57,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleKpiSmartFocusClick = () => {
     navigate('/core/global-settings/ops/kpi-smart-focuses'); // Nova rota para Foco KPI Smart
+  };
+
+  const handleKpiSmartActionVerbClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-action-verbs'); // Nova rota para Verbo de Ação KPI Smart
   };
 
   return (
@@ -150,6 +154,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie os focos para os KPIs Smart (Ex: Crescimento, Eficiência)."
               icon={Target} 
               onClick={handleKpiSmartFocusClick}
+            />
+            <FeatureCard
+              title="Verbo de Ação KPI Smart"
+              description="Cadastre e gerencie os verbos de ação para os KPIs Smart (Ex: Aumentar, Reduzir)."
+              icon={Zap} 
+              onClick={handleKpiSmartActionVerbClick}
             />
           </div>
         </CardContent>
