@@ -12,7 +12,7 @@ const OpsPage: React.FC = () => {
   };
 
   const handleShiftClick = () => {
-    // navigate('/ops/shift'); // Rota futura
+    navigate('/ops/shift'); // Rota para a nova ShiftPage
   };
 
   const handleFlowClick = () => {
@@ -32,7 +32,7 @@ const OpsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               title="SOLLUX INSIGHT™"
-              description="Avaliação do momento atual."
+              description="Avaliação do momento atual da sua empresa."
               icon={Brain}
               onClick={handleInsightClick}
             />

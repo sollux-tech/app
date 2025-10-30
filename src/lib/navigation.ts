@@ -30,6 +30,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/insight/evaluation': { name: 'Avaliação do Diagnóstico', parent: '/ops/insight', icon: Award },
   '/ops/flow': { name: 'SOLLUX FLOW™', parent: '/ops', icon: TrendingUp },
   '/ops/flow/diagnostic-results/:id': { name: 'Resultados do Diagnóstico', parent: '/ops/flow' }, // Nova rota
+  '/ops/shift': { name: 'SOLLUX SHIFT™', parent: '/ops', icon: Target }, // Nova rota
+  '/ops/shift/kpi-smarts-liberated': { name: 'Gerenciar KPIs Smart Liberados', parent: '/ops/shift', icon: ListChecks }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
@@ -56,7 +58,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/kpi-smart-statuses': { name: 'OPS - Status KPI Smart', parent: '/core/global-settings/ops', icon: CheckCircle },
   '/core/global-settings/ops/kpi-smart-focuses': { name: 'OPS - Foco KPI Smart', parent: '/core/global-settings/ops', icon: Target },
   '/core/global-settings/ops/kpi-smart-action-verbs': { name: 'OPS - Verbo de Ação KPI Smart', parent: '/core/global-settings/ops', icon: Zap },
-  '/core/global-settings/ops/kpi-smarts': { name: 'OPS - KPI Smart', parent: '/core/global-settings/ops', icon: Target }, // Nova rota
+  '/core/global-settings/ops/kpi-smarts': { name: 'OPS - KPI Smart', parent: '/core/global-settings/ops', icon: Target },
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },
