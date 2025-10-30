@@ -36,24 +36,24 @@ const formSchema = z.object({
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
 
   // Campos para tipo 'Quantitativo'
-  logical_comparator: z.string().optional(),
-  base_value: emptyStringToUndefined.pipe(z.coerce.number().optional()),
-  target_value: emptyStringToUndefined.pipe(z.coerce.number().optional()),
+  logical_comparator: z.string().optional().nullable(),
+  base_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
+  target_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
 
   // Campos para tipo 'Marco'
-  planned_delivery_date: z.date().optional(),
-  actual_delivery_date: z.date().optional(),
-  progress_percentage: emptyStringToUndefined.pipe(z.coerce.number().min(0).max(100).optional()),
+  planned_delivery_date: z.date().optional().nullable(),
+  actual_delivery_date: z.date().optional().nullable(),
+  progress_percentage: emptyStringToUndefined.pipe(z.coerce.number().min(0).max(100).optional().nullable()),
 
   // Campos para tipo 'Frequência'
-  planned_frequency: z.string().optional(),
-  planned_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional()),
-  performed_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional()),
+  planned_frequency: z.string().optional().nullable(),
+  planned_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
+  performed_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
 
   // Campos para tipo 'Intervalo'
-  min_value: emptyStringToUndefined.pipe(z.coerce.number().optional()),
-  max_value: emptyStringToUndefined.pipe(z.coerce.number().optional()),
-  current_value: emptyStringToUndefined.pipe(z.coerce.number().optional()),
+  min_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
+  max_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
+  current_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
 });
 
 const KpiSmartLiberatedFormPage: React.FC = () => {
@@ -496,7 +496,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-foreground">Comparador Lógico</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingForm}>
+                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
                               <SelectValue placeholder="Selecione um comparador" />
@@ -521,7 +521,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Valor Base</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -534,7 +534,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Valor Meta</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 120.00" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 120.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -553,7 +553,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         <FormLabel className="text-foreground text-left">Data Prevista Entrega</FormLabel>
                         <FormControl>
                           <DatePicker
-                            date={field.value}
+                            date={field.value ?? undefined}
                             setDate={field.onChange}
                             placeholder="Selecione a data prevista"
                             disabled={isLoadingForm}
@@ -571,7 +571,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         <FormLabel className="text-foreground text-left">Data Real Entrega</FormLabel>
                         <FormControl>
                           <DatePicker
-                            date={field.value}
+                            date={field.value ?? undefined}
                             setDate={field.onChange}
                             placeholder="Selecione a data real"
                             disabled={isLoadingForm}
@@ -588,7 +588,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Percentual de Progresso (0-100)</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 75.50" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 75.50" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -606,7 +606,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Frequência Planejada</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Semanal, Mensal" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input placeholder="Ex: Semanal, Mensal" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -619,7 +619,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Execuções Previstas</FormLabel>
                         <FormControl>
-                          <Input type="number" step="1" placeholder="Ex: 4" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="1" placeholder="Ex: 4" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -632,7 +632,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Execuções Realizadas</FormLabel>
                         <FormControl>
-                          <Input type="number" step="1" placeholder="Ex: 3" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="1" placeholder="Ex: 3" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -650,7 +650,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 0.00" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 0.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -663,7 +663,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Valor Máximo</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -676,7 +676,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <FormItem>
                         <FormLabel className="text-foreground">Valor Atual</FormLabel>
                         <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 50.00" {...field} className="rounded-lg" disabled={isLoadingForm} />
+                          <Input type="number" step="0.01" placeholder="Ex: 50.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
