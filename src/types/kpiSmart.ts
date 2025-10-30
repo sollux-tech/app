@@ -13,7 +13,7 @@ export interface KpiSmart {
 
   // Propriedades para exibição com joins
   pillars?: { description: string } | null;
-  kpi_smart_types?: { description: string } | null;
+  kpi_smart_types?: { description: string; code: number } | null; // Adicionado 'code: number'
   kpi_smart_action_verbs?: { description: string } | null;
   kpi_smart_focuses?: { description: string } | null;
   kpi_smart_units?: { description: string } | null;
