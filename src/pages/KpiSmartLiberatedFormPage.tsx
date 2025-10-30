@@ -39,6 +39,7 @@ const formSchema = z.object({
   logical_comparator: z.string().optional().nullable(),
   base_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   target_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
+  deadline_date: z.date().optional().nullable(), // Novo campo para prazo
 
   // Campos para tipo 'Marco'
   planned_delivery_date: z.date().optional().nullable(),
@@ -76,6 +77,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       logical_comparator: '',
       base_value: undefined,
       target_value: undefined,
+      deadline_date: undefined, // Novo campo
       planned_delivery_date: undefined,
       actual_delivery_date: undefined,
       progress_percentage: undefined,
@@ -128,6 +130,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         logical_comparator: editingKpiSmartLiberated.logical_comparator || '',
         base_value: editingKpiSmartLiberated.base_value || undefined,
         target_value: editingKpiSmartLiberated.target_value || undefined,
+        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : undefined, // Novo campo
 
         // Campos Marco
         planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : undefined,
@@ -155,6 +158,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         logical_comparator: '',
         base_value: undefined,
         target_value: undefined,
+        deadline_date: undefined, // Novo campo
         planned_delivery_date: undefined,
         actual_delivery_date: undefined,
         progress_percentage: undefined,
@@ -266,6 +270,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           logical_comparator: data.logical_comparator,
           base_value: data.base_value,
           target_value: data.target_value,
+          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null, // Novo campo
 
           // Campos Marco
           planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
@@ -306,6 +311,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           logical_comparator: data.logical_comparator,
           base_value: data.base_value,
           target_value: data.target_value,
+          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null, // Novo campo
 
           // Campos Marco
           planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
@@ -343,6 +349,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       logical_comparator: data.logical_comparator,
       base_value: data.base_value,
       target_value: data.target_value,
+      deadline_date: data.deadline_date, // Novo campo
 
       // Campos Marco
       planned_delivery_date: data.planned_delivery_date,
@@ -535,6 +542,24 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         <FormLabel className="text-foreground">Valor Meta</FormLabel>
                         <FormControl>
                           <Input type="number" step="0.01" placeholder="Ex: 120.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="deadline_date"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel className="text-foreground text-left">Prazo</FormLabel>
+                        <FormControl>
+                          <DatePicker
+                            date={field.value ?? undefined}
+                            setDate={field.onChange}
+                            placeholder="Selecione o prazo"
+                            disabled={isLoadingForm}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

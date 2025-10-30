@@ -12,6 +12,7 @@ export interface KpiSmartLiberated {
   logical_comparator: string | null; // Ex: '>=', '<=', '='
   base_value: number | null;
   target_value: number | null;
+  deadline_date: string | null; // Novo campo para prazo
 
   // Campos para tipo 'Marco'
   planned_delivery_date: string | null; // ISO date string
@@ -48,6 +49,7 @@ export interface KpiSmartLiberatedFormData {
   logical_comparator?: string;
   base_value?: number | string;
   target_value?: number | string;
+  deadline_date?: Date; // Novo campo para prazo
 
   // Campos para tipo 'Marco'
   planned_delivery_date?: Date;
