@@ -32,6 +32,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/flow/diagnostic-results/:id': { name: 'Resultados do Diagnóstico', parent: '/ops/flow' }, // Nova rota
   '/ops/shift': { name: 'SOLLUX SHIFT™', parent: '/ops', icon: Target }, // Nova rota
   '/ops/shift/kpi-smarts-liberated': { name: 'Gerenciar KPIs Smart Liberados', parent: '/ops/shift', icon: ListChecks }, // Nova rota
+  '/ops/shift/kpi-smarts-liberated/new': { name: 'Liberar Novo KPI Smart', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
+  '/ops/shift/kpi-smarts-liberated/:id': { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
@@ -99,6 +101,11 @@ export const getDynamicRouteInfo = (path: string): RouteInfo | null => {
   const diagnosticResultsMatch = path.match(/^\/ops\/flow\/diagnostic-results\/([^/]+)$/);
   if (diagnosticResultsMatch) {
     return { name: 'Resultados do Diagnóstico', parent: '/ops/flow' };
+  }
+
+  const kpiSmartLiberatedEditMatch = path.match(/^\/ops\/shift\/kpi-smarts-liberated\/([^/]+)$/);
+  if (kpiSmartLiberatedEditMatch && kpiSmartLiberatedEditMatch[1] !== 'new') {
+    return { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' };
   }
 
   return null;

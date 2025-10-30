@@ -17,48 +17,16 @@ import { Pillar } from '@/types/pillar'; // Importar Pillar
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
-  pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }), // Adicionado ao schema
 });
 
 const KpiSmartLiberatedManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
-  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>(''); // Novo estado para o pilar selecionado no formulário
-
-  const form = useForm<KpiSmartLiberatedFormData & { pillar_id: string }>({ // Adicionado pillar_id ao tipo do form
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      kpi_smart_id: '',
-      pillar_id: '', // Valor padrão para o novo campo
-    },
-  });
-
-  useEffect(() => {
-    if (editingKpiSmartLiberated) {
-      // Ao editar, precisamos buscar o pilar do KPI Smart para preencher o select
-      // Isso exigiria uma query adicional ou que o kpi_smarts já viesse com o pillar_id
-      // Por enquanto, como não há edição direta de kpi_smart_id, este bloco pode ser simplificado
-      // ou exigir uma lógica mais complexa para preencher o pilar.
-      // Para este caso, como é apenas "liberar", não há edição de um item liberado, apenas exclusão.
-      // Então, o `editingKpiSmartLiberated` não será usado para preencher o formulário de adição.
-      form.reset({
-        kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-        pillar_id: '', // Não temos o pillar_id diretamente aqui, então resetamos
-      });
-      setSelectedPillarIdForKpiSmart('');
-    } else {
-      form.reset({
-        kpi_smart_id: '',
-        pillar_id: '',
-      });
-      setSelectedPillarIdForKpiSmart('');
-    }
-  }, [editingKpiSmartLiberated, form, isDialogOpen]);
+  const navigate = useNavigate(); // Inicializar useNavigate
 
   const { data: kpiSmartsLiberated, isLoading: isLoadingKpiSmartsLiberated, error: errorKpiSmartsLiberated } = useQuery<KpiSmartLiberated[], Error>({
     queryKey: ['kpiSmartsLiberated', user?.id],
@@ -73,75 +41,6 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       return data;
     },
     enabled: !!user?.id,
-  });
-
-  const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmartsListForLiberated', user?.id, selectedPillarIdForKpiSmart], // Adicionado selectedPillarIdForKpiSmart
-    queryFn: async () => {
-      if (!user?.id) return [];
-      let query = supabase
-        .from('kpi_smarts')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'active'); // Apenas KPIs Smart ativos podem ser liberados
-      
-      if (selectedPillarIdForKpiSmart) {
-        query = query.eq('pillar_id', selectedPillarIdForKpiSmart);
-      }
-
-      const { data, error } = await query.order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['pillarsListForKpiSmartLiberated', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('pillars')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const mutationOptions = {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id] });
-      setIsDialogOpen(false);
-      setEditingKpiSmartLiberated(null);
-      setSelectedPillarIdForKpiSmart(''); // Resetar o filtro do pilar no formulário
-    },
-    onError: (error: Error) => {
-      showError(`Erro: ${error.message}`);
-    },
-  };
-
-  const createKpiSmartLiberatedMutation = useMutation({
-    mutationFn: async (data: KpiSmartLiberatedFormData) => {
-      if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { data: newKpiSmartLiberated, error } = await supabase
-        .from('kpi_smarts_liberated')
-        .insert({
-          kpi_smart_id: data.kpi_smart_id,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-      return newKpiSmartLiberated;
-    },
-    ...mutationOptions,
-    onSuccess: () => {
-      mutationOptions.onSuccess();
-      showSuccess('KPI Smart liberado com sucesso!');
-    },
   });
 
   const deleteKpiSmartLiberatedMutation = useMutation({
@@ -160,23 +59,21 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         throw new Error("KPI Smart liberado não encontrado ou você não tem permissão para excluí-lo.");
       }
     },
-    ...mutationOptions,
     onSuccess: () => {
-      mutationOptions.onSuccess();
+      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id] });
       showSuccess('KPI Smart liberado excluído com sucesso!');
+    },
+    onError: (error: Error) => {
+      showError(`Erro: ${error.message}`);
     },
   });
 
-  const onSubmit = (data: KpiSmartLiberatedFormData) => {
-    // Não há edição para este item, apenas criação e exclusão
-    createKpiSmartLiberatedMutation.mutate(data);
+  const handleAddClick = () => {
+    navigate('/ops/shift/kpi-smarts-liberated/new');
   };
 
-  const handleAddClick = () => {
-    setEditingKpiSmartLiberated(null); // Sempre nulo para adicionar
-    setIsDialogOpen(true);
-    setSelectedPillarIdForKpiSmart(''); // Resetar o filtro do pilar no formulário ao abrir
-    form.reset({ kpi_smart_id: '', pillar_id: '' }); // Resetar o formulário
+  const handleEditClick = (kpiSmartLiberated: KpiSmartLiberated) => {
+    navigate(`/ops/shift/kpi-smarts-liberated/${kpiSmartLiberated.id}`);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -185,8 +82,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     }
   };
 
-  const isMutating = createKpiSmartLiberatedMutation.isPending || deleteKpiSmartLiberatedMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmarts || isLoadingPillars;
+  const isMutating = deleteKpiSmartLiberatedMutation.isPending;
+  const isLoadingPage = isLoadingKpiSmartsLiberated;
 
   if (isLoadingPage) {
     return <div className="text-center text-muted-foreground">Carregando KPIs Smart liberados...</div>;
@@ -228,6 +125,15 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
                     <TableCell className="text-muted-foreground">{item.kpi_smarts?.description || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(item)}
+                        className="mr-2 text-foreground hover:bg-accent rounded-lg"
+                        disabled={isMutating}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
                         variant="destructive"
                         size="sm"
                         onClick={() => handleDeleteClick(item.id)}
@@ -244,94 +150,6 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Liberar Novo KPI Smart</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="pillar_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">Pilar</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      setSelectedPillarIdForKpiSmart(value); // Atualiza o estado para filtrar os KPIs
-                      form.setValue('kpi_smart_id', ''); // Limpa o KPI Smart selecionado
-                    }} value={field.value} disabled={isLoadingPillars}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione um pilar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {pillars?.length === 0 ? (
-                          <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
-                        ) : (
-                          pillars?.map((pillar) => (
-                            pillar.id && pillar.id !== '' ? (
-                              <SelectItem key={pillar.id} value={pillar.id}>
-                                {pillar.description}
-                              </SelectItem>
-                            ) : null
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="kpi_smart_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground">KPI Smart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || kpiSmarts?.length === 0}>
-                      <FormControl>
-                        <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione um KPI Smart" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {!selectedPillarIdForKpiSmart ? (
-                          <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
-                        ) : isLoadingKpiSmarts ? (
-                          <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
-                        ) : kpiSmarts?.length === 0 ? (
-                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo para este pilar</SelectItem>
-                        ) : (
-                          kpiSmarts?.map((kpi) => (
-                            kpi.id && kpi.id !== '' ? (
-                              <SelectItem key={kpi.id} value={kpi.id}>
-                                {kpi.description}
-                              </SelectItem>
-                            ) : null
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <DialogFooter className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isMutating} className="rounded-lg">
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isMutating || !form.formState.isValid} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  Liberar KPI Smart
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
