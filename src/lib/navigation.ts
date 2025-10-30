@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb } from 'lucide-react';
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb, Ruler } from 'lucide-react';
 
 interface RouteInfo {
   name: string;
@@ -50,7 +50,8 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/tags': { name: 'OPS - Tags', parent: '/core/global-settings/ops', icon: Tag },
   '/core/global-settings/ops/diagnostic-statuses': { name: 'OPS - Status do Diagnósticos', parent: '/core/global-settings/ops', icon: ClipboardCheck },
   '/core/global-settings/ops/classification-scale': { name: 'OPS - Régua de Classificação', parent: '/core/global-settings/ops', icon: Award },
-  '/core/global-settings/ops/kpi-smart-types': { name: 'OPS - Tipo KPI Smart', parent: '/core/global-settings/ops', icon: Lightbulb }, // Nova rota
+  '/core/global-settings/ops/kpi-smart-types': { name: 'OPS - Tipo KPI Smart', parent: '/core/global-settings/ops', icon: Lightbulb },
+  '/core/global-settings/ops/kpi-smart-units': { name: 'OPS - Unidades de Medida KPI Smart', parent: '/core/global-settings/ops', icon: Ruler }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,6 +41,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleKpiSmartTypeClick = () => {
     navigate('/core/global-settings/ops/kpi-smart-types'); // Nova rota para Tipo KPI Smart
+  };
+
+  const handleKpiSmartUnitClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-units'); // Nova rota para Unidade de Medida KPI Smart
   };
 
   return (
@@ -110,6 +114,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie os tipos de KPI Smart (Ex: Específico, Mensurável)."
               icon={Lightbulb} 
               onClick={handleKpiSmartTypeClick}
+            />
+            <FeatureCard
+              title="Unidades de Medida KPI Smart"
+              description="Cadastre e gerencie as unidades de medida para os KPIs Smart (Ex: %, R$, #)."
+              icon={Ruler} 
+              onClick={handleKpiSmartUnitClick}
             />
           </div>
         </CardContent>
