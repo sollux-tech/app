@@ -63,6 +63,7 @@ import PublicDiagnosticResultsPage from './pages/PublicDiagnosticResultsPage'; /
 import ShopPage from './pages/ShopPage'; // Importar a nova página ShopPage
 import KpiSmartTypeManagementPage from './pages/KpiSmartTypeManagementPage'; // Importar a nova página
 import KpiSmartUnitManagementPage from './pages/KpiSmartUnitManagementPage'; // Importar a nova página
+import KpiSmartFrequencyManagementPage from './pages/KpiSmartFrequencyManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -199,7 +200,8 @@ const AppContent: React.FC = () => {
                   <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
                   <Route path="/core/global-settings/ops/classification-scale" element={<ClassificationScaleManagementPage />} />
                   <Route path="/core/global-settings/ops/kpi-smart-types" element={<KpiSmartTypeManagementPage />} />
-                  <Route path="/core/global-settings/ops/kpi-smart-units" element={<KpiSmartUnitManagementPage />} /> {/* Nova rota */}
+                  <Route path="/core/global-settings/ops/kpi-smart-units" element={<KpiSmartUnitManagementPage />} />
+                  <Route path="/core/global-settings/ops/kpi-smart-frequencies" element={<KpiSmartFrequencyManagementPage />} /> {/* Nova rota */}
                   <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                   <Route path="/core/notifications" element={<NotificationManagementPage />} />
                   <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />

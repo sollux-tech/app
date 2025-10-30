@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,6 +45,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleKpiSmartUnitClick = () => {
     navigate('/core/global-settings/ops/kpi-smart-units'); // Nova rota para Unidade de Medida KPI Smart
+  };
+
+  const handleKpiSmartFrequencyClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-frequencies'); // Nova rota para Frequência de Monitoramento
   };
 
   return (
@@ -120,6 +124,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie as unidades de medida para os KPIs Smart (Ex: %, R$, #)."
               icon={Ruler} 
               onClick={handleKpiSmartUnitClick}
+            />
+            <FeatureCard
+              title="Frequência de Monitoramento"
+              description="Cadastre e gerencie as frequências de monitoramento para os KPIs Smart (Ex: Diário, Mensal)."
+              icon={Repeat} 
+              onClick={handleKpiSmartFrequencyClick}
             />
           </div>
         </CardContent>
