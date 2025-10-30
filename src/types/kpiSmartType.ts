@@ -1,0 +1,11 @@
+export interface KpiSmartType {
+  id: string;
+  user_id: string;
+  code: number;
+  description: string;
+  created_at: string;
+}
+
+export interface KpiSmartTypeFormData {
+  description: string;
+}

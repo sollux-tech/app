@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag } from 'lucide-react';
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb } from 'lucide-react';
 
 interface RouteInfo {
   name: string;
@@ -24,7 +24,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/connect/calc': { name: 'SOLLUX CALC™', parent: '/connect' },
   '/ops': { name: 'OPS' },
   '/ops/insight': { name: 'SOLLUX INSIGHT™', parent: '/ops', icon: Brain },
-  '/ops/diagnostics': { name: 'Diagnósticos', parent: '/ops/insight', icon: ClipboardCheck },
+  '/ops/diagnostics': { name: 'Gerenciar Diagnósticos', parent: '/ops/insight', icon: ClipboardCheck },
   '/ops/insight/questionnaires': { name: 'Gerenciar Perguntas do Diagnóstico', parent: '/ops/insight', icon: ClipboardList },
   '/ops/insight/answer-questionnaire': { name: 'Responder Questionário', parent: '/ops/insight', icon: MessageSquareText }, 
   '/ops/insight/evaluation': { name: 'Avaliação do Diagnóstico', parent: '/ops/insight', icon: Award },
@@ -50,6 +50,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/global-settings/ops/tags': { name: 'OPS - Tags', parent: '/core/global-settings/ops', icon: Tag },
   '/core/global-settings/ops/diagnostic-statuses': { name: 'OPS - Status do Diagnósticos', parent: '/core/global-settings/ops', icon: ClipboardCheck },
   '/core/global-settings/ops/classification-scale': { name: 'OPS - Régua de Classificação', parent: '/core/global-settings/ops', icon: Award },
+  '/core/global-settings/ops/kpi-smart-types': { name: 'OPS - Tipo KPI Smart', parent: '/core/global-settings/ops', icon: Lightbulb }, // Nova rota
   '/core/sidebar-settings': { name: 'Config. da Barra Lateral', parent: '/core/global-settings' },
   '/core/notifications': { name: 'Notificações', parent: '/core' },
   '/core/all-companies': { name: 'Todas as Empresas', parent: '/core' },

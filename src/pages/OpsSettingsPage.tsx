@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -37,6 +37,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleClassificationScaleClick = () => {
     navigate('/core/global-settings/ops/classification-scale'); // Nova rota para Régua de Classificação
+  };
+
+  const handleKpiSmartTypeClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-types'); // Nova rota para Tipo KPI Smart
   };
 
   return (
@@ -100,6 +104,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Defina níveis de classificação com base em percentuais para pilares/blocos."
               icon={Award} 
               onClick={handleClassificationScaleClick}
+            />
+            <FeatureCard
+              title="Tipo KPI Smart"
+              description="Cadastre e gerencie os tipos de KPI Smart (Ex: Específico, Mensurável)."
+              icon={Lightbulb} 
+              onClick={handleKpiSmartTypeClick}
             />
           </div>
         </CardContent>

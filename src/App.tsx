@@ -61,6 +61,7 @@ import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage';
 import FlowPage from './pages/FlowPage';
 import PublicDiagnosticResultsPage from './pages/PublicDiagnosticResultsPage'; // Importar a nova página
 import ShopPage from './pages/ShopPage'; // Importar a nova página ShopPage
+import KpiSmartTypeManagementPage from './pages/KpiSmartTypeManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -102,28 +103,32 @@ const AppContent: React.FC = () => {
       
       // Forçar a atualização do atributo data-theme e color-scheme no elemento <html>
       const htmlElement = document.documentElement;
-      if (profile.theme === 'dark') {
-        htmlElement.classList.add('dark');
-        htmlElement.setAttribute('data-theme', 'dark');
-        htmlElement.style.colorScheme = 'dark';
-      } else {
-        htmlElement.classList.remove('dark');
-        htmlElement.setAttribute('data-theme', 'light');
-        htmlElement.style.colorScheme = 'light';
+      if (htmlElement) { // Adicionar verificação para htmlElement
+        if (profile.theme === 'dark') {
+          htmlElement.classList.add('dark');
+          htmlElement.setAttribute('data-theme', 'dark');
+          htmlElement.style.colorScheme = 'dark';
+        } else {
+          htmlElement.classList.remove('dark');
+          htmlElement.setAttribute('data-theme', 'light');
+          htmlElement.style.colorScheme = 'light';
+        }
       }
     } else if (!isLoadingProfile && !profile?.theme) {
       console.log("AppContent: Profile loaded, but no theme found. Defaulting to system.");
       setTheme("system"); // Garante que um tema seja definido mesmo se o perfil não tiver um
       // Aplicar tema 'system' ao <html> se não houver tema no perfil
       const htmlElement = document.documentElement;
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        htmlElement.classList.add('dark');
-        htmlElement.setAttribute('data-theme', 'dark');
-        htmlElement.style.colorScheme = 'dark';
-      } else {
-        htmlElement.classList.remove('dark');
-        htmlElement.setAttribute('data-theme', 'light');
-        htmlElement.style.colorScheme = 'light';
+      if (htmlElement) { // Adicionar verificação para htmlElement
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          htmlElement.classList.add('dark');
+          htmlElement.setAttribute('data-theme', 'dark');
+          htmlElement.style.colorScheme = 'dark';
+        } else {
+          htmlElement.classList.remove('dark');
+          htmlElement.setAttribute('data-theme', 'light');
+          htmlElement.style.colorScheme = 'light';
+        }
       }
     }
   }, [profile?.theme, isLoadingProfile, setTheme]);
@@ -192,6 +197,7 @@ const AppContent: React.FC = () => {
                   <Route path="/core/global-settings/ops/tags" element={<TagManagementPage />} />
                   <Route path="/core/global-settings/ops/diagnostic-statuses" element={<DiagnosticStatusManagementPage />} />
                   <Route path="/core/global-settings/ops/classification-scale" element={<ClassificationScaleManagementPage />} />
+                  <Route path="/core/global-settings/ops/kpi-smart-types" element={<KpiSmartTypeManagementPage />} /> {/* Nova rota */}
                   <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                   <Route path="/core/notifications" element={<NotificationManagementPage />} />
                   <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
