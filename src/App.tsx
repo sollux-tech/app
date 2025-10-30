@@ -67,6 +67,7 @@ import KpiSmartFrequencyManagementPage from './pages/KpiSmartFrequencyManagement
 import KpiSmartStatusManagementPage from './pages/KpiSmartStatusManagementPage'; // Importar a nova página
 import KpiSmartFocusManagementPage from './pages/KpiSmartFocusManagementPage'; // Importar a nova página
 import KpiSmartActionVerbManagementPage from './pages/KpiSmartActionVerbManagementPage'; // Importar a nova página
+import KpiSmartManagementPage from './pages/KpiSmartManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -207,7 +208,8 @@ const AppContent: React.FC = () => {
                   <Route path="/core/global-settings/ops/kpi-smart-frequencies" element={<KpiSmartFrequencyManagementPage />} />
                   <Route path="/core/global-settings/ops/kpi-smart-statuses" element={<KpiSmartStatusManagementPage />} />
                   <Route path="/core/global-settings/ops/kpi-smart-focuses" element={<KpiSmartFocusManagementPage />} />
-                  <Route path="/core/global-settings/ops/kpi-smart-action-verbs" element={<KpiSmartActionVerbManagementPage />} /> {/* Nova rota */}
+                  <Route path="/core/global-settings/ops/kpi-smart-action-verbs" element={<KpiSmartActionVerbManagementPage />} />
+                  <Route path="/core/global-settings/ops/kpi-smarts" element={<KpiSmartManagementPage />} /> {/* Nova rota */}
                   <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                   <Route path="/core/notifications" element={<NotificationManagementPage />} />
                   <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />

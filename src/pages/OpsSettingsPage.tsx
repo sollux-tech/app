@@ -63,6 +63,10 @@ const OpsSettingsPage: React.FC = () => {
     navigate('/core/global-settings/ops/kpi-smart-action-verbs'); // Nova rota para Verbo de Ação KPI Smart
   };
 
+  const handleKpiSmartsClick = () => {
+    navigate('/core/global-settings/ops/kpi-smarts'); // Nova rota para KPI Smart
+  };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
@@ -160,6 +164,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie os verbos de ação para os KPIs Smart (Ex: Aumentar, Reduzir)."
               icon={Zap} 
               onClick={handleKpiSmartActionVerbClick}
+            />
+            <FeatureCard
+              title="KPI Smart"
+              description="Cadastre e gerencie os KPIs Smart ofertados."
+              icon={Target} 
+              onClick={handleKpiSmartsClick}
             />
           </div>
         </CardContent>

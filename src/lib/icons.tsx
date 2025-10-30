@@ -35,7 +35,7 @@ export const iconMap: IconMap = {
   Ruler,
   Repeat,
   CheckCircle,
-  Zap, // Novo ícone
+  Zap,
 };
 
 export const iconNames = Object.keys(iconMap).sort();
