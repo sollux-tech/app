@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat } from 'lucide-react'; 
+import { Settings, SlidersHorizontal, LayoutDashboard, Briefcase, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat, CheckCircle } from 'lucide-react'; 
 import FeatureCard from '@/components/FeatureCard';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,6 +49,10 @@ const OpsSettingsPage: React.FC = () => {
 
   const handleKpiSmartFrequencyClick = () => {
     navigate('/core/global-settings/ops/kpi-smart-frequencies'); // Nova rota para Frequência de Monitoramento
+  };
+
+  const handleKpiSmartStatusClick = () => {
+    navigate('/core/global-settings/ops/kpi-smart-statuses'); // Nova rota para Status KPI Smart
   };
 
   return (
@@ -130,6 +134,12 @@ const OpsSettingsPage: React.FC = () => {
               description="Cadastre e gerencie as frequências de monitoramento para os KPIs Smart (Ex: Diário, Mensal)."
               icon={Repeat} 
               onClick={handleKpiSmartFrequencyClick}
+            />
+            <FeatureCard
+              title="Status KPI Smart"
+              description="Cadastre e gerencie os status para os KPIs Smart (Ex: Em Andamento, Concluído)."
+              icon={CheckCircle} 
+              onClick={handleKpiSmartStatusClick}
             />
           </div>
         </CardContent>
