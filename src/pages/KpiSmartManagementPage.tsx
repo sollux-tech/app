@@ -17,12 +17,14 @@ import { KpiSmartType } from '@/types/kpiSmartType';
 import { KpiSmartActionVerb } from '@/types/kpiSmartActionVerb';
 import { KpiSmartFocus } from '@/types/kpiSmartFocus';
 import { KpiSmartUnit } from '@/types/kpiSmartUnit';
+import { KpiSmartStatus } from '@/types/kpiSmartStatus'; // Importar KpiSmartStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label'; // Importar Label
 
 const formSchema = z.object({
   description: z.string().min(1, { message: 'A descrição do KPI Smart é obrigatória.' }),
@@ -39,6 +41,11 @@ const KpiSmartManagementPage: React.FC = () => {
   const { user } = useSession();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpiSmart, setEditingKpiSmart] = useState<KpiSmart | null>(null);
+
+  // Estados para os filtros
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
   const form = useForm<KpiSmartFormData>({
     resolver: zodResolver(formSchema),
@@ -78,14 +85,27 @@ const KpiSmartManagementPage: React.FC = () => {
   }, [editingKpiSmart, form, isDialogOpen]);
 
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts, error: errorKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmarts', user?.id],
+    queryKey: ['kpiSmarts', user?.id, selectedPillarFilter, selectedTypeFilter, selectedStatusFilter], // Adicionado filtros ao queryKey
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('kpi_smarts')
         .select('*, pillars(description), kpi_smart_types(description), kpi_smart_action_verbs(description), kpi_smart_focuses(description), kpi_smart_units(description)')
-        .eq('user_id', user.id)
-        .order('code', { ascending: true });
+        .eq('user_id', user.id);
+      
+      // Aplicar filtros
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('pillar_id', selectedPillarFilter);
+      }
+      if (selectedTypeFilter !== 'all') {
+        query = query.eq('kpi_smart_type_id', selectedTypeFilter);
+      }
+      if (selectedStatusFilter !== 'all') {
+        query = query.eq('status', selectedStatusFilter);
+      }
+
+      query = query.order('code', { ascending: true });
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
@@ -158,6 +178,21 @@ const KpiSmartManagementPage: React.FC = () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('kpi_smart_units')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: kpiSmartStatuses, isLoading: isLoadingKpiSmartStatuses } = useQuery<KpiSmartStatus[], Error>({
+    queryKey: ['kpiSmartStatusesListForKpiSmart', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_statuses')
         .select('*')
         .eq('user_id', user.id)
         .order('description', { ascending: true });
@@ -281,7 +316,7 @@ const KpiSmartManagementPage: React.FC = () => {
   };
 
   const isMutating = createKpiSmartMutation.isPending || updateKpiSmartMutation.isPending || deleteKpiSmartMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmarts || isLoadingPillars || isLoadingKpiSmartTypes || isLoadingKpiSmartActionVerbs || isLoadingKpiSmartFocuses || isLoadingKpiSmartUnits;
+  const isLoadingPage = isLoadingKpiSmarts || isLoadingPillars || isLoadingKpiSmartTypes || isLoadingKpiSmartActionVerbs || isLoadingKpiSmartFocuses || isLoadingKpiSmartUnits || isLoadingKpiSmartStatuses;
 
   if (isLoadingPage) {
     return <div className="text-center text-muted-foreground">Carregando KPIs Smart...</div>;
@@ -301,6 +336,72 @@ const KpiSmartManagementPage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            {/* Filtro por Pilar */}
+            <div>
+              <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
+              <Select
+                value={selectedPillarFilter}
+                onValueChange={setSelectedPillarFilter}
+                disabled={isLoadingPillars}
+              >
+                <SelectTrigger id="pillar-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Pilares" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pilares</SelectItem>
+                  {pillars?.map((pillar) => (
+                    <SelectItem key={pillar.id} value={pillar.id}>
+                      {pillar.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por Tipo */}
+            <div>
+              <Label htmlFor="type-filter" className="text-foreground">Filtrar por Tipo</Label>
+              <Select
+                value={selectedTypeFilter}
+                onValueChange={setSelectedTypeFilter}
+                disabled={isLoadingKpiSmartTypes}
+              >
+                <SelectTrigger id="type-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Tipos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Tipos</SelectItem>
+                  {kpiSmartTypes?.map((type) => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por Status */}
+            <div>
+              <Label htmlFor="status-filter" className="text-foreground">Filtrar por Status</Label>
+              <Select
+                value={selectedStatusFilter}
+                onValueChange={setSelectedStatusFilter}
+                disabled={isLoadingKpiSmartStatuses}
+              >
+                <SelectTrigger id="status-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                  {/* Você pode adicionar os status dinamicamente se necessário */}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
