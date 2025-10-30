@@ -11,15 +11,21 @@ import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
+import { UserType } from '@/types/userType'; // Importar UserType
+import { KpiSmartFrequency } from '@/types/kpiSmartFrequency'; // Importar KpiSmartFrequency
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect'; // Importar MultiSelect
 
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
-  pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
+  pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }), // Adicionado ao schema para o select de filtro
+  execution_user_types: z.array(z.string()).optional(),
+  view_user_types: z.array(z.string()).optional(),
+  kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
 });
 
 const KpiSmartLiberatedFormPage: React.FC = () => {
@@ -36,6 +42,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     defaultValues: {
       kpi_smart_id: '',
       pillar_id: '',
+      execution_user_types: [],
+      view_user_types: [],
+      kpi_smart_frequency_id: '',
     },
   });
 
@@ -46,7 +55,11 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       const { data, error } = await supabase
         .from('kpi_smarts_liberated')
-        .select('*, kpi_smarts(pillar_id)') // Fetch pillar_id from kpi_smarts
+        .select(`
+          *,
+          kpi_smarts(pillar_id, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description)),
+          kpi_smart_frequencies(description)
+        `)
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user?.id)
         .single();
@@ -54,6 +67,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       return {
         ...data,
         kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
+        kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
       };
     },
     enabled: isEditing && !!user?.id,
@@ -66,12 +80,18 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       form.reset({
         kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
         pillar_id: kpiSmartPillarId,
+        execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
+        view_user_types: editingKpiSmartLiberated.view_user_types || [],
+        kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
       });
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
     } else if (!isEditing) {
       form.reset({
         kpi_smart_id: '',
         pillar_id: '',
+        execution_user_types: [],
+        view_user_types: [],
+        kpi_smart_frequency_id: '',
       });
       setSelectedPillarIdForKpiSmart('');
     }
@@ -83,7 +103,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       if (!user?.id) return [];
       let query = supabase
         .from('kpi_smarts')
-        .select('*')
+        .select('*, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description)')
         .eq('user_id', user.id)
         .eq('status', 'active');
       
@@ -113,6 +133,39 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
+  const { data: userTypes, isLoading: isLoadingUserTypes } = useQuery<UserType[], Error>({
+    queryKey: ['userTypesForKpiSmartLiberatedForm'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_types')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: kpiSmartFrequencies, isLoading: isLoadingKpiSmartFrequencies } = useQuery<KpiSmartFrequency[], Error>({
+    queryKey: ['kpiSmartFrequenciesForKpiSmartLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_frequencies')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const userTypeOptions: MultiSelectOption[] = useMemo(() => {
+    return userTypes?.map(ut => ({ value: ut.id, label: ut.name })) || [];
+  }, [userTypes]);
+
+  const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
+
   const mutationOptions = {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id] });
@@ -132,6 +185,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .insert({
           kpi_smart_id: data.kpi_smart_id,
           user_id: user.id,
+          execution_user_types: data.execution_user_types,
+          view_user_types: data.view_user_types,
+          kpi_smart_frequency_id: data.kpi_smart_frequency_id,
         })
         .select()
         .single();
@@ -149,6 +205,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
+          execution_user_types: data.execution_user_types,
+          view_user_types: data.view_user_types,
+          kpi_smart_frequency_id: data.kpi_smart_frequency_id,
         })
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
@@ -163,6 +222,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const onSubmit = (data: KpiSmartLiberatedFormData & { pillar_id: string }) => {
     const payload: KpiSmartLiberatedFormData = {
       kpi_smart_id: data.kpi_smart_id,
+      execution_user_types: data.execution_user_types || [],
+      view_user_types: data.view_user_types || [],
+      kpi_smart_frequency_id: data.kpi_smart_frequency_id,
     };
     if (isEditing) {
       updateKpiSmartLiberatedMutation.mutate(payload);
@@ -171,7 +233,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     }
   };
 
-  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending;
+  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingUserTypes || isLoadingKpiSmartFrequencies || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending;
 
   if (isEditing && isLoadingEditingKpiSmartLiberated) {
     return <div className="text-center text-muted-foreground">Carregando KPI Smart Liberado...</div>;
@@ -277,6 +339,92 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   </FormItem>
                 )}
               />
+
+              {selectedKpiSmart && (
+                <Card className="bg-muted/50 border border-border shadow-sm rounded-lg p-4 space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Tipo do KPI:</span> {selectedKpiSmart.kpi_smart_types?.description || 'N/A'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Foco:</span> {selectedKpiSmart.kpi_smart_focuses?.description || 'N/A'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">Unidade de Medida:</span> {selectedKpiSmart.kpi_smart_units?.description || 'N/A'}
+                  </p>
+                </Card>
+              )}
+
+              <FormField
+                control={form.control}
+                name="kpi_smart_frequency_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Frequência de Monitoramento</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmartFrequencies}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg">
+                          <SelectValue placeholder="Selecione a frequência" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {kpiSmartFrequencies?.length === 0 ? (
+                          <SelectItem value="no-frequencies" disabled>Nenhuma frequência cadastrada</SelectItem>
+                        ) : (
+                          kpiSmartFrequencies?.map((freq) => (
+                            freq.id && freq.id !== '' ? (
+                              <SelectItem key={freq.id} value={freq.id}>
+                                {freq.description}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="execution_user_types"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Nível de Execução (Tipos de Usuário)</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={userTypeOptions}
+                        selected={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Selecione os tipos de usuário para execução..."
+                        disabled={isLoadingUserTypes}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="view_user_types"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Nível de Visualização (Tipos de Usuário)</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={userTypeOptions}
+                        selected={field.value || []}
+                        onChange={field.onChange}
+                        placeholder="Selecione os tipos de usuário para visualização..."
+                        disabled={isLoadingUserTypes}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="flex justify-end gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => navigate('/ops/shift/kpi-smarts-liberated')} disabled={isLoadingForm} className="rounded-lg">
                   Cancelar

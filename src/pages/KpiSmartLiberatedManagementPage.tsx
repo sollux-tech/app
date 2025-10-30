@@ -34,11 +34,19 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('kpi_smarts_liberated')
-        .select('*, kpi_smarts(description)')
+        .select(`
+          *,
+          kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description)),
+          kpi_smart_frequencies(description)
+        `)
         .eq('user_id', user.id)
         .order('code', { ascending: true });
       if (error) throw error;
-      return data;
+      return data.map(item => ({
+        ...item,
+        kpi_smarts: Array.isArray(item.kpi_smarts) ? item.kpi_smarts[0] : item.kpi_smarts,
+        kpi_smart_frequencies: Array.isArray(item.kpi_smart_frequencies) ? item.kpi_smart_frequencies[0] : item.kpi_smart_frequencies,
+      }));
     },
     enabled: !!user?.id,
   });
@@ -108,13 +116,17 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
               <TableRow>
                 <TableHead className="text-foreground">Código</TableHead>
                 <TableHead className="text-foreground">KPI Smart</TableHead>
+                <TableHead className="text-foreground">Tipo</TableHead>
+                <TableHead className="text-foreground">Foco</TableHead>
+                <TableHead className="text-foreground">Unidade</TableHead>
+                <TableHead className="text-foreground">Frequência</TableHead>
                 <TableHead className="text-right text-foreground">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {kpiSmartsLiberated?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     Nenhum KPI Smart liberado encontrado.
                   </TableCell>
                 </TableRow>
@@ -123,6 +135,10 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
                   <TableRow key={item.id}>
                     <TableCell className="font-medium text-foreground">{item.code}</TableCell>
                     <TableCell className="text-muted-foreground">{item.kpi_smarts?.description || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kpi_smarts?.kpi_smart_types?.description || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kpi_smarts?.kpi_smart_focuses?.description || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kpi_smarts?.kpi_smart_units?.description || 'N/A'}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.kpi_smart_frequencies?.description || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
