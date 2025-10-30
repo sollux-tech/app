@@ -28,6 +28,7 @@ interface MultiSelectProps {
   onChange: (selected: string[]) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean; // Adicionado a propriedade disabled
 }
 
 const MultiSelect: React.FC<MultiSelectProps> = ({
@@ -36,6 +37,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   onChange,
   placeholder = 'Selecione...',
   className,
+  disabled, // Desestruturado a propriedade disabled
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -60,6 +62,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
           aria-expanded={open}
           className={cn("w-full justify-between rounded-lg text-foreground border-border hover:bg-accent", className)}
           onClick={() => setOpen(!open)}
+          disabled={disabled} // Aplicado a propriedade disabled
         >
           <div className="flex gap-1 flex-wrap">
             {selectedLabels.length > 0 ? (
