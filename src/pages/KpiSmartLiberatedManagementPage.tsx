@@ -26,6 +26,12 @@ const formSchema = z.object({
 
 const KpiSmartLiberatedManagementPage: React.FC = () => {
   // ... (restante do código)
+
+  return (
+    <div>
+      {/* Conteúdo do componente */}
+    </div>
+  );
 };
 
 export default KpiSmartLiberatedManagementPage;
