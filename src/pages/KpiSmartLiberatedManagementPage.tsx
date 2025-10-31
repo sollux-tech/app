@@ -28,6 +28,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   // ... (restante do código)
 
   return (
+    // Removendo o <p> que pode estar causando o problema
     <div>
       {/* Conteúdo do componente */}
     </div>
