@@ -18,7 +18,7 @@ import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCompany } from '@/components/CompanyContext';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -34,8 +34,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   const { user } = useSession();
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
+  const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
+  const isEditing = !!kpiSmartLiberatedId;
 
   // Estados para os filtros da tabela
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
@@ -198,7 +198,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     mutationFn: async (data: z.infer<typeof formSchema>) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { data: updatedKpiSmartLiberated, error } = await supabase
+      const { error } = await supabase
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
