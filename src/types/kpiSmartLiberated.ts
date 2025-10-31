@@ -6,6 +6,7 @@ export interface KpiSmartLiberated {
   execution_user_types: string[] | null;
   view_user_types: string[] | null;
   kpi_smart_frequency_id: string | null;
+  status: 'active' | 'inactive'; // Adicionado o campo status
   created_at: string;
 
   // Campos para tipo 'Quantitativo'

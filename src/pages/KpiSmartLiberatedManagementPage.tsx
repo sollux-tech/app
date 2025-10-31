@@ -34,8 +34,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   const { user } = useSession();
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
+  const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
+  const isEditing = !!kpiSmartLiberatedId;
 
   // Estados para os filtros da tabela
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
@@ -267,12 +267,19 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     // The formSchema only has kpi_smart_id, but the mutations expect KpiSmartLiberatedFormData.
     // This means the form is not correctly typed for all fields.
-    // For now, we'll cast `data` to `any` to avoid TS errors, but a proper fix would involve
-    // updating the form schema to include all fields from KpiSmartLiberatedFormData.
-    if (editingKpiSmartLiberated) {
-      updateKpiSmartLiberatedMutation.mutate(data as any);
+    // For now, we'll construct the payload explicitly.
+    const payload: KpiSmartLiberatedFormData = {
+      kpi_smart_id: data.kpi_smart_id,
+      // Default or empty values for other fields if not part of this form
+      execution_user_types: [],
+      view_user_types: [],
+      kpi_smart_frequency_id: '',
+    };
+
+    if (isEditing) {
+      updateKpiSmartLiberatedMutation.mutate(payload);
     } else {
-      createKpiSmartLiberatedMutation.mutate(data as any);
+      createKpiSmartLiberatedMutation.mutate(payload);
     }
   };
 
@@ -307,7 +314,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     return <div className="text-center text-muted-foreground">Carregando KPIs Smart Liberados...</div>;
   }
 
-  if (errorKpiSmartsLiberated) { // Changed from errorKpiSmartsAcquired
+  if (errorKpiSmartsLiberated) {
     return <div className="text-center text-destructive">Erro ao carregar KPIs Smart Liberados: {errorKpiSmartsLiberated.message}</div>;
   }
 
