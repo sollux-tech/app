@@ -6,7 +6,8 @@ export interface KpiSmartLiberated {
   execution_user_types: string[] | null;
   view_user_types: string[] | null;
   kpi_smart_frequency_id: string | null;
-  status: 'active' | 'inactive'; // Adicionado o campo status
+  kpi_smart_status_id: string | null; // Novo campo para o status do KPI Smart Liberado
+  status: 'active' | 'inactive';
   created_at: string;
 
   // Campos para tipo 'Quantitativo'
@@ -38,6 +39,7 @@ export interface KpiSmartLiberated {
     kpi_smart_units?: { description: string } | null;
   } | null;
   kpi_smart_frequencies?: { description: string } | null;
+  kpi_smart_statuses?: { description: string } | null; // Adicionado para o join
 }
 
 export interface KpiSmartLiberatedFormData {
@@ -45,6 +47,7 @@ export interface KpiSmartLiberatedFormData {
   execution_user_types: string[];
   view_user_types: string[];
   kpi_smart_frequency_id: string;
+  kpi_smart_status_id: string; // Novo campo para o status do KPI Smart Liberado
 
   // Campos para tipo 'Quantitativo'
   logical_comparator?: string;
