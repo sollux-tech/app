@@ -37,37 +37,36 @@ export interface KpiSmartLiberated {
     kpi_smart_types?: { description: string; code: number } | null; // Adicionado 'code'
     kpi_smart_focuses?: { description: string } | null;
     kpi_smart_units?: { description: string } | null;
-    pillar_id: string; // Adicionado pillar_id aqui
   } | null;
   kpi_smart_frequencies?: { description: string } | null;
-  kpi_smart_statuses?: { description: string; id: string } | null; // Adicionado 'id: string'
+  kpi_smart_statuses?: { description: string } | null; // Adicionado para o join
 }
 
 export interface KpiSmartLiberatedFormData {
   kpi_smart_id: string;
-  execution_user_types: string[] | null; // Changed to allow null
-  view_user_types: string[] | null; // Changed to allow null
+  execution_user_types: string[];
+  view_user_types: string[];
   kpi_smart_frequency_id: string;
   kpi_smart_status_id: string; // Novo campo para o status do KPI Smart Liberado
 
   // Campos para tipo 'Quantitativo'
-  logical_comparator?: string | null; // Changed to allow null
-  base_value?: number | null; // Changed to allow null
-  target_value?: number | null; // Changed to allow null
-  deadline_date?: Date | null; // Changed to allow null
+  logical_comparator?: string;
+  base_value?: number | string;
+  target_value?: number | string;
+  deadline_date?: Date; // Novo campo para prazo
 
   // Campos para tipo 'Marco'
-  planned_delivery_date?: Date | null; // Changed to allow null
-  actual_delivery_date?: Date | null; // Changed to allow null
-  progress_percentage?: number | null; // Changed to allow null
+  planned_delivery_date?: Date;
+  actual_delivery_date?: Date;
+  progress_percentage?: number | string;
 
   // Campos para tipo 'Frequência'
-  planned_frequency?: string | null; // Changed to allow null
-  planned_executions?: number | null; // Changed to allow null
-  performed_executions?: number | null; // Changed to allow null
+  planned_frequency?: string;
+  planned_executions?: number | string;
+  performed_executions?: number | string;
 
   // Campos para tipo 'Intervalo'
-  min_value?: number | null; // Changed to allow null
-  max_value?: number | null; // Changed to allow null
-  current_value?: number | null; // Changed to allow null
+  min_value?: number | string;
+  max_value?: number | string;
+  current_value?: number | string;
 }
