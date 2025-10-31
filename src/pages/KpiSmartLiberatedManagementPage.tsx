@@ -116,7 +116,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
         .from('kpi_smarts')
-        .select('id, description, pillar_id')
+        .select('*') // Changed to select all columns to match KpiSmart type
         .eq('user_id', user.id)
         .eq('status', 'active')
         .order('description', { ascending: true });
@@ -127,7 +127,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   });
 
   const filteredKpiSmartsForFilter = useMemo(() => {
-    if (!kpiSmarts) return [];
+    if (!kpiSmarts) return []; // Ensure kpiSmarts is an array
     if (selectedPillarFilter === 'all') return kpiSmarts;
     return kpiSmarts.filter(kpi => kpi.pillar_id === selectedPillarFilter);
   }, [kpiSmarts, selectedPillarFilter]);
