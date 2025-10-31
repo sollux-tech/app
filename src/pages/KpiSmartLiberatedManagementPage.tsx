@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,11 +13,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
 import { KpiSmart } from '@/types/kpiSmart';
-import { Pillar } from '@/types/pillar'; // Importar Pillar
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useCompany } from '@/components/CompanyContext';
 
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
@@ -26,8 +26,26 @@ const formSchema = z.object({
 const KpiSmartLiberatedManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const { selectedCompany } = useCompany();
   const navigate = useNavigate(); // Inicializar useNavigate
 
+  // Fetch KPIs Smart Adquiridos
+  const { data: kpiSmartsAcquired, isLoading: isLoadingKpiSmartsAcquired } = useQuery<KpiSmartAcquired[], Error>({
+    queryKey: ['kpiSmartsAcquiredForLiberated', user?.id, selectedCompany?.id],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smarts_acquired')
+        .select('kpi_smart_id')
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  // Fetch KPIs Smart Liberados, filtrando por kpi_smarts_acquired
   const { data: kpiSmartsLiberated, isLoading: isLoadingKpiSmartsLiberated, error: errorKpiSmartsLiberated } = useQuery<KpiSmartLiberated[], Error>({
     queryKey: ['kpiSmartsLiberated', user?.id],
     queryFn: async () => {
@@ -91,7 +109,16 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   };
 
   const isMutating = deleteKpiSmartLiberatedMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsLiberated;
+  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmartsAcquired;
+
+  // Filtrar os KPIs Smart Liberados para exibir apenas os que estão em kpi_smarts_acquired
+  const filteredKpiSmartsLiberated = useMemo(() => {
+    if (!kpiSmartsLiberated || !kpiSmartsAcquired) return [];
+
+    const acquiredKpiSmartIds = new Set(kpiSmartsAcquired.map(item => item.kpi_smart_id));
+
+    return kpiSmartsLiberated.filter(item => acquiredKpiSmartIds.has(item.kpi_smart_id));
+  }, [kpiSmartsLiberated, kpiSmartsAcquired]);
 
   if (isLoadingPage) {
     return <div className="text-center text-muted-foreground">Carregando KPIs Smart liberados...</div>;
@@ -124,14 +151,14 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {kpiSmartsLiberated?.length === 0 ? (
+              {filteredKpiSmartsLiberated?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center text-muted-foreground">
                     Nenhum KPI Smart liberado encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                kpiSmartsLiberated?.map((item) => (
+                filteredKpiSmartsLiberated?.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="font-medium text-foreground">{item.code}</TableCell>
                     <TableCell className="text-muted-foreground">{item.kpi_smarts?.description || 'N/A'}</TableCell>
