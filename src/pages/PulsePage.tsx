@@ -456,7 +456,7 @@ const PulsePage: React.FC = () => {
             </div>
           </div>
         ) : (
-          <p className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</p>
+          <div className="text-muted-foreground text-center">Nenhum informativo PULSE publicado para hoje.</div>
         )}
         <div className="mt-6 text-right">
           <Link to="/pulse/informatives">
