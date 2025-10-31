@@ -38,8 +38,8 @@ const emptyStringToUndefined = z.preprocess(
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
-  execution_user_types: z.array(z.string()).optional(),
-  view_user_types: z.array(z.string()).optional(),
+  execution_user_types: z.array(z.string()).optional().nullable(),
+  view_user_types: z.array(z.string()).optional().nullable(),
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
   kpi_smart_status_id: z.string().min(1, { message: 'O status é obrigatório.' }),
   logical_comparator: z.string().optional().nullable(),
@@ -112,7 +112,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
           *,
           kpi_smarts(description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
           kpi_smart_frequencies(description),
-          kpi_smart_statuses(description)
+          kpi_smart_statuses(description, id)
         `)
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
@@ -283,9 +283,9 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         logical_comparator: data.logical_comparator,
         base_value: data.base_value,
         target_value: data.target_value,
-        deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null,
-        planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
-        actual_delivery_date: data.actual_delivery_date ? format(data.actual_delivery_date, 'yyyy-MM-dd') : null,
+        deadline_date: data.deadline_date,
+        planned_delivery_date: data.planned_delivery_date,
+        actual_delivery_date: data.actual_delivery_date,
         progress_percentage: data.progress_percentage,
         planned_frequency: data.planned_frequency,
         planned_executions: data.planned_executions,
@@ -296,7 +296,13 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       };
       const { data: newKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
-        .insert(payload)
+        .insert({
+          ...payload,
+          deadline_date: payload.deadline_date ? format(payload.deadline_date, 'yyyy-MM-dd') : null,
+          planned_delivery_date: payload.planned_delivery_date ? format(payload.planned_delivery_date, 'yyyy-MM-dd') : null,
+          actual_delivery_date: payload.actual_delivery_date ? format(payload.actual_delivery_date, 'yyyy-MM-dd') : null,
+          user_id: user.id,
+        })
         .select()
         .single();
       if (error) throw error;
@@ -322,9 +328,9 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         logical_comparator: data.logical_comparator,
         base_value: data.base_value,
         target_value: data.target_value,
-        deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null,
-        planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
-        actual_delivery_date: data.actual_delivery_date ? format(data.actual_delivery_date, 'yyyy-MM-dd') : null,
+        deadline_date: data.deadline_date,
+        planned_delivery_date: data.planned_delivery_date,
+        actual_delivery_date: data.actual_delivery_date,
         progress_percentage: data.progress_percentage,
         planned_frequency: data.planned_frequency,
         planned_executions: data.planned_executions,
@@ -335,7 +341,12 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       };
       const { data: updatedKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
-        .update(payload)
+        .update({
+          ...payload,
+          deadline_date: payload.deadline_date ? format(payload.deadline_date, 'yyyy-MM-dd') : null,
+          planned_delivery_date: payload.planned_delivery_date ? format(payload.planned_delivery_date, 'yyyy-MM-dd') : null,
+          actual_delivery_date: payload.actual_delivery_date ? format(payload.actual_delivery_date, 'yyyy-MM-dd') : null,
+        })
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
         .select()
@@ -401,7 +412,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
           *,
           kpi_smarts(description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
           kpi_smart_frequencies(description),
-          kpi_smart_statuses(description)
+          kpi_smart_statuses(description, id)
         `)
         .eq('user_id', user.id);
 
@@ -430,7 +441,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     if (!kpiSmartsLiberated) return [];
     return kpiSmartsLiberated.filter(item => {
       const matchesPillar = selectedPillarFilter === 'all' || item.kpi_smarts?.pillar_id === selectedPillarFilter;
-      const matchesStatus = selectedStatusFilter === 'all' || item.kpi_smart_statuses?.id === selectedStatusFilter; // Corrected access
+      const matchesStatus = selectedStatusFilter === 'all' || item.kpi_smart_statuses?.id === selectedStatusFilter;
       return matchesPillar && matchesStatus;
     });
   }, [kpiSmartsLiberated, selectedPillarFilter, selectedStatusFilter]);
@@ -916,6 +927,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
+                          
                           <FormControl>
                             <Input type="number" step="0.01" placeholder="Ex: 0" {...field} disabled={isLoadingForm} className="rounded-lg" />
                           </FormControl>
