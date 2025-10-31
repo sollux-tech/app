@@ -249,8 +249,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       // Fetch all companies owned by the current user
       const { data: ownedCompanies, error: ownedCompaniesError } = await supabase
         .from('companies')
-        .select('id')
-        .eq('user_id', user.id);
+        .select('id, user_id'); // <-- Changed: Include user_id here
 
       if (ownedCompaniesError) {
         console.error("Error fetching owned companies:", ownedCompaniesError);
@@ -262,8 +261,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       // Fetch all company shares where the current user is the owner OR the shared_with_user
       const { data: companyShares, error: companySharesError } = await supabase
         .from('company_shares')
-        .select('company_id, shared_with_user_id')
-        .or(`shared_with_user_id.eq.${user.id},company_id.in.(${ownedCompanyIds.join(',')})`);
+        .select('company_id, shared_with_user_id');
 
       if (companySharesError) {
         console.error("Error fetching company shares:", companySharesError);
@@ -284,7 +282,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       // Fetch profiles for all collected user IDs
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name');
+        .select('id, first_name, last_name'); // Fetch all profiles
 
       if (profilesError) {
         console.error("Error fetching profiles:", profilesError);
@@ -542,10 +540,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <SelectContent>
                         {!selectedPillarIdForKpiSmart ? (
                           <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
-                        ) : isLoadingKpiSmarts || isLoadingEditingKpiSmartDetails ? (
+                        ) : isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
                         ) : kpiSmartOptions?.length === 0 ? (
-                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
+                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo para este pilar</SelectItem>
                         ) : (
                           kpiSmartOptions?.map((kpi) => (
                             kpi.id && kpi.id !== '' ? (
