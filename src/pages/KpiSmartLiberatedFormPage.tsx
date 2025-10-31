@@ -11,7 +11,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
-import { UserType } from '@/types/userType';
+import { UserType } from '@/types/userType'; // Still needed if we want to show user types
 import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
@@ -21,6 +21,7 @@ import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
+import { useCompany } from '@/components/CompanyContext'; // Import useCompany
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -31,8 +32,8 @@ const emptyStringToUndefined = z.preprocess(
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
-  execution_user_types: z.array(z.string()).optional(),
-  view_user_types: z.array(z.string()).optional(),
+  execution_user_types: z.array(z.string()).optional(), // Agora armazena IDs de usuário
+  view_user_types: z.array(z.string()).optional(), // Agora armazena IDs de usuário
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
 
   // Campos para tipo 'Quantitativo'
@@ -60,6 +61,7 @@ const formSchema = z.object({
 const KpiSmartLiberatedFormPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const { selectedCompany } = useCompany(); // Get selected company
   const navigate = useNavigate();
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
@@ -209,16 +211,48 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const { data: userTypes, isLoading: isLoadingUserTypes } = useQuery<UserType[], Error>({
-    queryKey: ['userTypesForKpiSmartLiberatedForm'],
+  // NEW: Fetch all users associated with the selected company (owner + shared)
+  const { data: companyUsers, isLoading: isLoadingCompanyUsers } = useQuery<MultiSelectOption[], Error>({
+    queryKey: ['companyUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_types')
-        .select('*')
-        .order('name', { ascending: true });
-      if (error) throw error;
-      return data;
+      if (!user?.id || !selectedCompany?.id) return [];
+
+      const userIds = new Set<string>();
+      userIds.add(user.id); // Add the current user (company owner)
+
+      // Fetch shared users for the selected company
+      const { data: sharedUsersData, error: sharedUsersError } = await supabase
+        .from('company_shares')
+        .select('shared_with_user_id')
+        .eq('company_id', selectedCompany.id);
+
+      if (sharedUsersError) {
+        console.error("Error fetching shared users:", sharedUsersError);
+        throw sharedUsersError;
+      }
+      sharedUsersData?.forEach(share => userIds.add(share.shared_with_user_id));
+
+      const uniqueUserIds = Array.from(userIds);
+
+      // Fetch profiles for all collected user IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name'); // Fetch all profiles
+
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
+
+      // Filter profiles to only include those relevant to the company
+      const relevantProfiles = profilesData?.filter(profile => uniqueUserIds.includes(profile.id));
+
+      return relevantProfiles?.map(profile => ({
+        value: profile.id,
+        label: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || `Usuário ${profile.id.substring(0, 8)}`
+      })) || [];
     },
+    enabled: !!user?.id && !!selectedCompany?.id,
   });
 
   const { data: kpiSmartFrequencies, isLoading: isLoadingKpiSmartFrequencies } = useQuery<KpiSmartFrequency[], Error>({
@@ -236,9 +270,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
-  const userTypeOptions: MultiSelectOption[] = useMemo(() => {
-    return userTypes?.map(ut => ({ value: ut.id, label: ut.name })) || [];
-  }, [userTypes]);
+  // Use companyUsers for MultiSelect options
+  const userOptions: MultiSelectOption[] = useMemo(() => {
+    return companyUsers || [];
+  }, [companyUsers]);
 
   const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
   const kpiSmartTypeCode = selectedKpiSmart?.kpi_smart_types?.code;
@@ -262,8 +297,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .insert({
           kpi_smart_id: data.kpi_smart_id,
           user_id: user.id,
-          execution_user_types: data.execution_user_types,
-          view_user_types: data.view_user_types,
+          execution_user_types: data.execution_user_types, // Now stores user IDs
+          view_user_types: data.view_user_types, // Now stores user IDs
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
           
           // Campos Quantitativos
@@ -303,8 +338,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
-          execution_user_types: data.execution_user_types,
-          view_user_types: data.view_user_types,
+          execution_user_types: data.execution_user_types, // Now stores user IDs
+          view_user_types: data.view_user_types, // Now stores user IDs
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
 
           // Campos Quantitativos
@@ -373,7 +408,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     }
   };
 
-  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingUserTypes || isLoadingKpiSmartFrequencies || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending;
+  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingCompanyUsers || isLoadingKpiSmartFrequencies || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending;
 
   if (isEditing && isLoadingEditingKpiSmartLiberated) {
     return <div className="text-center text-muted-foreground">Carregando KPI Smart Liberado...</div>;
@@ -746,14 +781,14 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                 name="execution_user_types"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Nível de Execução (Tipos de Usuário)</FormLabel>
+                    <FormLabel className="text-foreground">Nível de Execução (Usuários)</FormLabel>
                     <FormControl>
                       <MultiSelect
-                        options={userTypeOptions}
+                        options={userOptions}
                         selected={field.value || []}
                         onChange={field.onChange}
-                        placeholder="Selecione os tipos de usuário para execução..."
-                        disabled={isLoadingUserTypes || isLoadingForm}
+                        placeholder="Selecione os usuários para execução..."
+                        disabled={isLoadingCompanyUsers || isLoadingForm}
                       />
                     </FormControl>
                     <FormMessage />
@@ -766,14 +801,14 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                 name="view_user_types"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-foreground">Nível de Visualização (Tipos de Usuário)</FormLabel>
+                    <FormLabel className="text-foreground">Nível de Visualização (Usuários)</FormLabel>
                     <FormControl>
                       <MultiSelect
-                        options={userTypeOptions}
+                        options={userOptions}
                         selected={field.value || []}
                         onChange={field.onChange}
-                        placeholder="Selecione os tipos de usuário para visualização..."
-                        disabled={isLoadingUserTypes || isLoadingForm}
+                        placeholder="Selecione os usuários para visualização..."
+                        disabled={isLoadingCompanyUsers || isLoadingForm}
                       />
                     </FormControl>
                     <FormMessage />
