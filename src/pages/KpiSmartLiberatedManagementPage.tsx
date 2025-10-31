@@ -85,19 +85,19 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       view_user_types: [],
       kpi_smart_frequency_id: '',
       kpi_smart_status_id: '',
-      logical_comparator: '',
-      base_value: undefined,
-      target_value: undefined,
-      deadline_date: undefined,
-      planned_delivery_date: undefined,
-      actual_delivery_date: undefined,
-      progress_percentage: undefined,
-      planned_frequency: '',
-      planned_executions: undefined,
-      performed_executions: undefined,
-      min_value: undefined,
-      max_value: undefined,
-      current_value: undefined,
+      logical_comparator: null, // Alterado para null
+      base_value: null, // Alterado para null
+      target_value: null, // Alterado para null
+      deadline_date: null, // Alterado para null
+      planned_delivery_date: null, // Alterado para null
+      actual_delivery_date: null, // Alterado para null
+      progress_percentage: null, // Alterado para null
+      planned_frequency: null, // Alterado para null
+      planned_executions: null, // Alterado para null
+      performed_executions: null, // Alterado para null
+      min_value: null, // Alterado para null
+      max_value: null, // Alterado para null
+      current_value: null, // Alterado para null
     },
   });
 
@@ -140,19 +140,19 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         view_user_types: fetchedEditingKpiSmartLiberated.view_user_types || [],
         kpi_smart_frequency_id: fetchedEditingKpiSmartLiberated.kpi_smart_frequency_id || '',
         kpi_smart_status_id: fetchedEditingKpiSmartLiberated.kpi_smart_status_id || '',
-        logical_comparator: fetchedEditingKpiSmartLiberated.logical_comparator || '',
-        base_value: fetchedEditingKpiSmartLiberated.base_value || undefined,
-        target_value: fetchedEditingKpiSmartLiberated.target_value || undefined,
-        deadline_date: fetchedEditingKpiSmartLiberated.deadline_date ? new Date(fetchedEditingKpiSmartLiberated.deadline_date + 'T00:00:00') : undefined,
-        planned_delivery_date: fetchedEditingKpiSmartLiberated.planned_delivery_date ? new Date(fetchedEditingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : undefined,
-        actual_delivery_date: fetchedEditingKpiSmartLiberated.actual_delivery_date ? new Date(fetchedEditingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : undefined,
-        progress_percentage: fetchedEditingKpiSmartLiberated.progress_percentage || undefined,
-        planned_frequency: fetchedEditingKpiSmartLiberated.planned_frequency || '',
-        planned_executions: fetchedEditingKpiSmartLiberated.planned_executions || undefined,
-        performed_executions: fetchedEditingKpiSmartLiberated.performed_executions || undefined,
-        min_value: fetchedEditingKpiSmartLiberated.min_value || undefined,
-        max_value: fetchedEditingKpiSmartLiberated.max_value || undefined,
-        current_value: fetchedEditingKpiSmartLiberated.current_value || undefined,
+        logical_comparator: fetchedEditingKpiSmartLiberated.logical_comparator || null,
+        base_value: fetchedEditingKpiSmartLiberated.base_value || null,
+        target_value: fetchedEditingKpiSmartLiberated.target_value || null,
+        deadline_date: fetchedEditingKpiSmartLiberated.deadline_date ? new Date(fetchedEditingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
+        planned_delivery_date: fetchedEditingKpiSmartLiberated.planned_delivery_date ? new Date(fetchedEditingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
+        actual_delivery_date: fetchedEditingKpiSmartLiberated.actual_delivery_date ? new Date(fetchedEditingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
+        progress_percentage: fetchedEditingKpiSmartLiberated.progress_percentage || null,
+        planned_frequency: fetchedEditingKpiSmartLiberated.planned_frequency || null,
+        planned_executions: fetchedEditingKpiSmartLiberated.planned_executions || null,
+        performed_executions: fetchedEditingKpiSmartLiberated.performed_executions || null,
+        min_value: fetchedEditingKpiSmartLiberated.min_value || null,
+        max_value: fetchedEditingKpiSmartLiberated.max_value || null,
+        current_value: fetchedEditingKpiSmartLiberated.current_value || null,
       });
       setSelectedPillarIdForForm(kpiSmartPillarId);
     } else if (!isEditing) {
@@ -163,19 +163,19 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         view_user_types: [],
         kpi_smart_frequency_id: '',
         kpi_smart_status_id: '',
-        logical_comparator: '',
-        base_value: undefined,
-        target_value: undefined,
-        deadline_date: undefined,
-        planned_delivery_date: undefined,
-        actual_delivery_date: undefined,
-        progress_percentage: undefined,
-        planned_frequency: '',
-        planned_executions: undefined,
-        performed_executions: undefined,
-        min_value: undefined,
-        max_value: undefined,
-        current_value: undefined,
+        logical_comparator: null,
+        base_value: null,
+        target_value: null,
+        deadline_date: null,
+        planned_delivery_date: null,
+        actual_delivery_date: null,
+        progress_percentage: null,
+        planned_frequency: null,
+        planned_executions: null,
+        performed_executions: null,
+        min_value: null,
+        max_value: null,
+        current_value: null,
       });
       setSelectedPillarIdForForm('');
     }

@@ -33,8 +33,8 @@ const emptyStringToUndefined = z.preprocess(
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
-  execution_user_types: z.array(z.string()).optional(),
-  view_user_types: z.array(z.string()).optional(),
+  execution_user_types: z.array(z.string()).optional().nullable(),
+  view_user_types: z.array(z.string()).optional().nullable(),
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
   kpi_smart_status_id: z.string().min(1, { message: 'O status é obrigatório.' }), // Adicionado ao schema
 
@@ -76,19 +76,19 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       view_user_types: [],
       kpi_smart_frequency_id: '',
       kpi_smart_status_id: '', // Adicionado ao defaultValues
-      logical_comparator: '',
-      base_value: undefined,
-      target_value: undefined,
-      deadline_date: undefined, // Novo campo
-      planned_delivery_date: undefined,
-      actual_delivery_date: undefined,
-      progress_percentage: undefined,
-      planned_frequency: '',
-      planned_executions: undefined,
-      performed_executions: undefined,
-      min_value: undefined,
-      max_value: undefined,
-      current_value: undefined,
+      logical_comparator: null, // Alterado para null
+      base_value: null, // Alterado para null
+      target_value: null, // Alterado para null
+      deadline_date: null, // Alterado para null
+      planned_delivery_date: null, // Alterado para null
+      actual_delivery_date: null, // Alterado para null
+      progress_percentage: null, // Alterado para null
+      planned_frequency: null, // Alterado para null
+      planned_executions: null, // Alterado para null
+      performed_executions: null, // Alterado para null
+      min_value: null, // Alterado para null
+      max_value: null, // Alterado para null
+      current_value: null, // Alterado para null
     },
   });
 
@@ -105,7 +105,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           *,
           kpi_smarts(description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
           kpi_smart_frequencies(description),
-          kpi_smart_statuses(description)
+          kpi_smart_statuses(description, id)
         `)
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
@@ -131,28 +131,28 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
         view_user_types: editingKpiSmartLiberated.view_user_types || [],
         kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
-        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '', // Adicionado ao reset
+        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
         
         // Campos Quantitativos
-        logical_comparator: editingKpiSmartLiberated.logical_comparator || '',
-        base_value: editingKpiSmartLiberated.base_value || undefined,
-        target_value: editingKpiSmartLiberated.target_value || undefined,
-        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : undefined, // Novo campo
+        logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
+        base_value: editingKpiSmartLiberated.base_value || null,
+        target_value: editingKpiSmartLiberated.target_value || null,
+        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
 
         // Campos Marco
-        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : undefined,
-        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : undefined,
-        progress_percentage: editingKpiSmartLiberated.progress_percentage || undefined,
+        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
+        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
+        progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
 
         // Campos Frequência
-        planned_frequency: editingKpiSmartLiberated.planned_frequency || '',
-        planned_executions: editingKpiSmartLiberated.planned_executions || undefined,
-        performed_executions: editingKpiSmartLiberated.performed_executions || undefined,
+        planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
+        planned_executions: editingKpiSmartLiberated.planned_executions || null,
+        performed_executions: editingKpiSmartLiberated.performed_executions || null,
 
         // Campos Intervalo
-        min_value: editingKpiSmartLiberated.min_value || undefined,
-        max_value: editingKpiSmartLiberated.max_value || undefined,
-        current_value: editingKpiSmartLiberated.current_value || undefined,
+        min_value: editingKpiSmartLiberated.min_value || null,
+        max_value: editingKpiSmartLiberated.max_value || null,
+        current_value: editingKpiSmartLiberated.current_value || null,
       });
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
     } else if (!isEditing) {
@@ -162,20 +162,20 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         execution_user_types: [],
         view_user_types: [],
         kpi_smart_frequency_id: '',
-        kpi_smart_status_id: '', // Adicionado ao reset
-        logical_comparator: '',
-        base_value: undefined,
-        target_value: undefined,
-        deadline_date: undefined, // Novo campo
-        planned_delivery_date: undefined,
-        actual_delivery_date: undefined,
-        progress_percentage: undefined,
-        planned_frequency: '',
-        planned_executions: undefined,
-        performed_executions: undefined,
-        min_value: undefined,
-        max_value: undefined,
-        current_value: undefined,
+        kpi_smart_status_id: '',
+        logical_comparator: null,
+        base_value: null,
+        target_value: null,
+        deadline_date: null,
+        planned_delivery_date: null,
+        actual_delivery_date: null,
+        progress_percentage: null,
+        planned_frequency: null,
+        planned_executions: null,
+        performed_executions: null,
+        min_value: null,
+        max_value: null,
+        current_value: null,
       });
       setSelectedPillarIdForKpiSmart('');
     }
@@ -268,6 +268,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const createKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
+      console.log("Creating KPI Smart Liberated with data:", data); // Log para depuração
       const { data: newKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
         .insert({
@@ -276,7 +277,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
-          kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
+          kpi_smart_status_id: data.kpi_smart_status_id,
           
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
@@ -311,6 +312,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
+      console.log("Updating KPI Smart Liberated with data:", data); // Log para depuração
       const { data: updatedKpiSmartLiberatedResult, error } = await supabase
         .from('kpi_smarts_liberated')
         .update({
@@ -318,7 +320,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
-          kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
+          kpi_smart_status_id: data.kpi_smart_status_id,
 
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
@@ -354,31 +356,31 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload: KpiSmartLiberatedFormData = {
       kpi_smart_id: data.kpi_smart_id,
-      execution_user_types: form.getValues('execution_user_types') || [],
-      view_user_types: form.getValues('view_user_types') || [],
+      execution_user_types: form.getValues('execution_user_types') || null, // Alterado para null
+      view_user_types: form.getValues('view_user_types') || null, // Alterado para null
       kpi_smart_frequency_id: form.getValues('kpi_smart_frequency_id'),
-      kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
+      kpi_smart_status_id: data.kpi_smart_status_id,
 
       // Campos Quantitativos
-      logical_comparator: form.getValues('logical_comparator'),
-      base_value: form.getValues('base_value'),
-      target_value: form.getValues('target_value'),
-      deadline_date: form.getValues('deadline_date'),
+      logical_comparator: form.getValues('logical_comparator') || null, // Alterado para null
+      base_value: form.getValues('base_value') || null, // Alterado para null
+      target_value: form.getValues('target_value') || null, // Alterado para null
+      deadline_date: form.getValues('deadline_date') || null, // Alterado para null
 
       // Campos Marco
-      planned_delivery_date: form.getValues('planned_delivery_date'),
-      actual_delivery_date: form.getValues('actual_delivery_date'),
-      progress_percentage: form.getValues('progress_percentage'),
+      planned_delivery_date: form.getValues('planned_delivery_date') || null, // Alterado para null
+      actual_delivery_date: form.getValues('actual_delivery_date') || null, // Alterado para null
+      progress_percentage: form.getValues('progress_percentage') || null, // Alterado para null
 
       // Campos Frequência
-      planned_frequency: form.getValues('planned_frequency'),
-      planned_executions: form.getValues('planned_executions'),
-      performed_executions: form.getValues('performed_executions'),
+      planned_frequency: form.getValues('planned_frequency') || null, // Alterado para null
+      planned_executions: form.getValues('planned_executions') || null, // Alterado para null
+      performed_executions: form.getValues('performed_executions') || null, // Alterado para null
 
       // Campos Intervalo
-      min_value: form.getValues('min_value'),
-      max_value: form.getValues('max_value'),
-      current_value: form.getValues('current_value'),
+      min_value: form.getValues('min_value') || null, // Alterado para null
+      max_value: form.getValues('max_value') || null, // Alterado para null
+      current_value: form.getValues('current_value') || null, // Alterado para null
     };
     if (isEditing) {
       updateKpiSmartLiberatedMutation.mutate(payload);
@@ -614,7 +616,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       control={form.control}
                       name="deadline_date"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col">
+                        <FormItem className="md:col-span-2">
                           <FormLabel className="text-foreground text-left">Data Limite</FormLabel>
                           <FormControl>
                             <DatePicker
@@ -676,7 +678,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       control={form.control}
                       name="progress_percentage"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel className="text-foreground">Progresso (%)</FormLabel>
                           <FormControl>
                             <Input type="number" step="0.01" placeholder="Ex: 75" {...field} disabled={isLoadingForm} className="rounded-lg" />
@@ -734,7 +736,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       control={form.control}
                       name="performed_executions"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel className="text-foreground">Execuções Realizadas</FormLabel>
                           <FormControl>
                             <Input type="number" step="1" placeholder="Ex: 7" {...field} disabled={isLoadingForm} className="rounded-lg" />
@@ -757,6 +759,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
+                          
                           <FormControl>
                             <Input type="number" step="0.01" placeholder="Ex: 0" {...field} disabled={isLoadingForm} className="rounded-lg" />
                           </FormControl>
@@ -781,7 +784,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       control={form.control}
                       name="current_value"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="md:col-span-2">
                           <FormLabel className="text-foreground">Valor Atual</FormLabel>
                           <FormControl>
                             <Input type="number" step="0.01" placeholder="Ex: 50" {...field} disabled={isLoadingForm} className="rounded-lg" />
@@ -799,14 +802,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoadingForm} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {isLoadingForm ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Salvando...
-                    </>
-                  ) : (
-                    isEditing ? 'Salvar Alterações' : 'Liberar KPI Smart'
-                  )}
+                  {isEditing ? 'Salvar Alterações' : 'Liberar KPI Smart'}
                 </Button>
               </div>
             </form>
