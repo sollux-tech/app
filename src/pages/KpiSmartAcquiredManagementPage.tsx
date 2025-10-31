@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Importando useMemo
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
-  pillar_id: z.string().min(1, { message: 'O Pilar é obrigatório.' }), // Novo campo para o formulário
+  pillar_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }), // Novo campo para o formulário
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   status: z.boolean().default(true),
 });
