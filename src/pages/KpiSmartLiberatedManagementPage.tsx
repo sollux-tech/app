@@ -42,6 +42,9 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   const [selectedKpiSmartFilter, setSelectedKpiSmartFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Declaração do estado isDialogOpen
+  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null); // Declaração do estado editingKpiSmartLiberated
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
