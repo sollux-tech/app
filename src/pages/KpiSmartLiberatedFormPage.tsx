@@ -25,6 +25,7 @@ import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge'; // Importar Badge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Importar Table, etc.
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
+import { Label } from '@/components/ui/label'; // Importar Label
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -251,6 +252,21 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
+  const { data: kpiSmartFrequencies, isLoading: isLoadingKpiSmartFrequencies } = useQuery<KpiSmartFrequency[], Error>({
+    queryKey: ['kpiSmartFrequenciesListForLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_frequencies')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   // Use companyUsers for MultiSelect options
   const userOptions: MultiSelectOption[] = useMemo(() => {
     return [];
@@ -320,7 +336,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { error } = await supabase
+      const { data: updatedKpiSmartLiberatedResult, error } = await supabase
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
@@ -355,7 +371,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .select()
         .single();
       if (error) throw error;
-      return updatedKpiSmartLiberated;
+      return updatedKpiSmartLiberatedResult;
     },
     ...mutationOptions,
     onSuccess: () => {
@@ -441,7 +457,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   };
 
   const isMutating = createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || deleteKpiSmartLiberatedMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingKpiSmartStatuses;
+  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingKpiSmartStatuses || isLoadingKpiSmartFrequencies;
 
   if (!selectedCompany) {
     return (
