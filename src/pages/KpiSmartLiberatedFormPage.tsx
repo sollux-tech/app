@@ -249,7 +249,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       // Fetch all companies owned by the current user
       const { data: ownedCompanies, error: ownedCompaniesError } = await supabase
         .from('companies')
-        .select('id, user_id'); // <-- Changed: Include user_id here
+        .select('id, user_id'); // <-- CORRIGIDO: Incluir user_id aqui
 
       if (ownedCompaniesError) {
         console.error("Error fetching owned companies:", ownedCompaniesError);
@@ -261,7 +261,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       // Fetch all company shares where the current user is the owner OR the shared_with_user
       const { data: companyShares, error: companySharesError } = await supabase
         .from('company_shares')
-        .select('company_id, shared_with_user_id');
+        .select('company_id, shared_with_user_id')
+        .or(`shared_with_user_id.eq.${user.id},company_id.in.(${ownedCompanyIds.join(',')})`);
 
       if (companySharesError) {
         console.error("Error fetching company shares:", companySharesError);
@@ -540,10 +541,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <SelectContent>
                         {!selectedPillarIdForKpiSmart ? (
                           <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
-                        ) : isLoadingKpiSmarts ? (
+                        ) : isLoadingKpiSmarts || isLoadingEditingKpiSmartDetails ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
                         ) : kpiSmartOptions?.length === 0 ? (
-                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo para este pilar</SelectItem>
+                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
                           kpiSmartOptions?.map((kpi) => (
                             kpi.id && kpi.id !== '' ? (
@@ -582,7 +583,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     name="logical_comparator"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground">Comparador Lógico</FormLabel>
+                        <FormLabel className="text-foreground">Comparador LBLógico</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
