@@ -17,13 +17,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Loader2, Edit, Trash2 } from 'lucide-react'; // Importar Edit e Trash2
+import { Loader2, Edit, Trash2, Plus } from 'lucide-react'; // Importar Edit e Trash2
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge'; // Importar Badge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Importar Table, etc.
+import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -64,7 +65,7 @@ const formSchema = z.object({
 const KpiSmartLiberatedFormPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { selectedCompany } = useCompany();
+  const { selectedCompany } = useCompany(); // Usando useCompany
   const navigate = useNavigate();
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
@@ -102,11 +103,14 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     },
   });
 
+  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
+
   useEffect(() => {
     if (editingKpiSmartLiberated) {
+      const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       form.reset({
         kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-        pillar_id: (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '',
+        pillar_id: kpiSmartPillarId,
         execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
         view_user_types: editingKpiSmartLiberated.view_user_types || [],
         kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
@@ -133,7 +137,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         max_value: editingKpiSmartLiberated.max_value || undefined,
         current_value: editingKpiSmartLiberated.current_value || undefined,
       });
-      setSelectedPillarIdForKpiSmart((editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '');
+      setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
     } else if (!isEditing) {
       form.reset({
         kpi_smart_id: '',
@@ -495,22 +499,18 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
               <Select
                 value={selectedKpiSmartFilter}
                 onValueChange={setSelectedKpiSmartFilter}
-                disabled={isLoadingKpiSmarts || (selectedPillarFilter !== 'all' && filteredKpiSmartsForFilter.length === 0)}
+                disabled={isLoadingKpiSmarts || (selectedPillarFilter !== 'all' && kpiSmarts?.length === 0)}
               >
                 <SelectTrigger id="kpi-smart-filter" className="rounded-lg">
                   <SelectValue placeholder="Todos os KPIs Smart" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os KPIs Smart</SelectItem>
-                  {filteredKpiSmartsForFilter.length === 0 ? (
-                    <SelectItem value="no-kpis" disabled>Nenhum KPI Smart para este pilar</SelectItem>
-                  ) : (
-                    filteredKpiSmartsForFilter.map((kpi) => (
-                      <SelectItem key={kpi.id} value={kpi.id}>
-                        {kpi.description}
-                      </SelectItem>
-                    ))
-                  )}
+                  {kpiSmarts?.map((kpi) => (
+                    <SelectItem key={kpi.id} value={kpi.id}>
+                      {kpi.description}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
