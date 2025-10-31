@@ -51,12 +51,12 @@ const formSchema = z.object({
   actual_delivery_date: z.date().optional().nullable(),
   progress_percentage: emptyStringToUndefined.pipe(z.coerce.number().min(0).max(100).optional().nullable()),
 
-  // Campos para tipo 'Frequência'
+  // Campos Frequência
   planned_frequency: z.string().optional().nullable(),
   planned_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
   performed_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
 
-  // Campos para tipo 'Intervalo'
+  // Campos Intervalo
   min_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   max_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   current_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
@@ -65,7 +65,7 @@ const formSchema = z.object({
 const KpiSmartLiberatedFormPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { selectedCompany } = useCompany(); // Usando useCompany
+  const { selectedCompany } = useCompany();
   const navigate = useNavigate();
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
@@ -441,7 +441,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   };
 
   const isMutating = createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || deleteKpiSmartLiberatedMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingCompanyUsers || isLoadingKpiSmartFrequencies || isLoadingKpiSmartStatuses;
+  const isLoadingPage = isLoadingKpiSmartsLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingKpiSmartStatuses;
 
   if (!selectedCompany) {
     return (
