@@ -24,20 +24,30 @@ const JobsPage: React.FC = () => {
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false); // Novo estado para o diálogo de QR Code
   const [jobToQr, setJobToQr] = useState<{ id: string; title: string } | null>(null); // Novo estado para a vaga do QR Code
 
-  const { data: jobs, isLoading, error } = useQuery<Job[], Error>({
-    queryKey: ['jobs', selectedCompany?.id],
+  const companyId = selectedCompany?.id;
+
+  const {
+    data: jobs,
+    status,
+    fetchStatus,
+    error,
+  } = useQuery<Job[], Error>({
+    queryKey: ['jobs', companyId],
     queryFn: async () => {
-      if (!selectedCompany) return [];
+      if (!companyId) return [];
       const { data, error } = await supabase
         .from('jobs')
         .select('*')
-        .eq('company_id', selectedCompany.id)
+        .eq('company_id', companyId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
-    enabled: !!selectedCompany,
+    enabled: !!companyId,
   });
+
+  const isLoading = status === 'pending' && fetchStatus !== 'idle';
+  const jobList = jobs ?? [];
 
   const deleteJobMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -119,14 +129,14 @@ const JobsPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {jobs?.length === 0 ? (
+                {jobList.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground">
                       Nenhuma vaga encontrada para esta empresa.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  jobs?.map((job) => (
+                  jobList.map((job) => (
                     <TableRow key={job.id}>
                       <TableCell className="font-medium text-foreground">{job.title}</TableCell>
                       <TableCell>
