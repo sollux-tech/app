@@ -2,13 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
@@ -24,7 +21,12 @@ import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+
+// Helper para converter string vazia para undefined para campos opcionais de número
+const emptyStringToUndefined = z.preprocess(
+  (val) => (val === "" ? undefined : val),
+  z.any()
+);
 
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
@@ -99,7 +101,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .select(`
           *,
-          kpi_smarts(description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
+          kpi_smarts(pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
           kpi_smart_frequencies(description),
           kpi_smart_statuses(description) // Incluindo o relacionamento com kpi_smart_statuses
         `)
@@ -347,7 +349,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
   const mutationOptions = {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id, selectedCompany?.id] });
+      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id] });
       showSuccess(`KPI Smart Liberado ${isEditing ? 'atualizado' : 'criado'} com sucesso!`);
       navigate('/ops/shift/kpi-smarts-liberated');
     },
@@ -402,7 +404,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { error } = await supabase
+      const { data: updatedKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
@@ -448,7 +450,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       execution_user_types: form.getValues('execution_user_types') || [],
       view_user_types: form.getValues('view_user_types') || [],
       kpi_smart_frequency_id: form.getValues('kpi_smart_frequency_id'),
-      kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
+      kpi_smart_status_id: form.getValues('kpi_smart_status_id'), // Adicionado
 
       // Campos Quantitativos
       logical_comparator: form.getValues('logical_comparator'),
@@ -607,7 +609,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     name="logical_comparator"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-foreground">Comparador Lógico</FormLabel>
+                        <FormLabel className="text-foreground">Comparador LBLógico</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
                           <FormControl>
                             <SelectTrigger className="rounded-lg">
@@ -763,6 +765,50 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         <FormLabel className="text-foreground">Execuções Realizadas</FormLabel>
                         <FormControl>
                           <Input type="number" step="1" placeholder="Ex: 3" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {kpiSmartTypeCode === 4 && ( // Intervalo
+                <>
+                  <FormField
+                    control={form.control}
+                    name="min_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" placeholder="Ex: 0.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="max_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground">Valor Máximo</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="current_value"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-foreground">Valor Atual</FormLabel>
+                        <FormControl>
+                          <Input type="number" step="0.01" placeholder="Ex: 50.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
