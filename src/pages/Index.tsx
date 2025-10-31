@@ -1,17 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input"; // Importar Input
-import { Search } from "lucide-react"; // Importar Search icon
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 const Index = () => {
   return (
     <div className="space-y-6">
-      {/* Header - Mantido para contexto, mas o título principal agora está na Topbar */}
-      {/* <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Bem-vindo ao SOLLUX Business Platform</p>
-      </div> */}
-
-      {/* Campos de entrada inspirados na imagem */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl p-4 flex items-center">
           <Search className="h-5 w-5 text-muted-foreground mr-3" />
@@ -22,8 +15,7 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Ajustado para 3 colunas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-bold text-foreground uppercase">Indicador X</CardTitle>
@@ -58,7 +50,6 @@ const Index = () => {
         </Card>
       </div>
 
-      {/* Main Content - Painel X */}
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-foreground uppercase font-bold">Painel X</CardTitle>

@@ -2,37 +2,37 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, FileText, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { Document, DocumentFormData } from '@/types/document';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { BasicProfileInfo } from '@/types/profile'; // Importar BasicProfileInfo
+import { BasicProfileInfo } from '@/types/profile';
 import { Switch } from '@/components/ui/switch';
-import SearchableUserSelect from '@/components/SearchableUserSelect'; // Importar o novo componente
+import SearchableUserSelect from '@/components/SearchableUserSelect';
 import { Badge } from '@/components/ui/badge';
+import { ManagementPageLayout } from '@/components/layout/ManagementPageLayout';
+import { LoadingState } from '@/components/status/LoadingState';
+import { ErrorState } from '@/components/status/ErrorState';
 
 const formSchema = z.object({
   title: z.string().min(1, { message: 'O título é obrigatório.' }),
   version: z.string().min(1, { message: 'A versão é obrigatória.' }),
   content: z.string().min(1, { message: 'O conteúdo é obrigatório.' }),
   publication_date: z.date({ required_error: 'A data de publicação é obrigatória.' }),
-  target_user_id: z.string().optional().nullable(), // 'all' or specific user ID
-  status: z.boolean().default(true), // Novo campo de status
+  target_user_id: z.string().optional().nullable(),
+  status: z.boolean().default(true),
 });
 
 const DocumentManagementPage: React.FC = () => {
@@ -51,7 +51,7 @@ const DocumentManagementPage: React.FC = () => {
       content: '',
       publication_date: undefined,
       target_user_id: 'all',
-      status: true, // Valor padrão para o novo campo
+      status: true,
     },
   });
 
@@ -67,7 +67,7 @@ const DocumentManagementPage: React.FC = () => {
         content: editingDocument.content,
         publication_date: publicationDate,
         target_user_id: editingDocument.target_user_id || 'all',
-        status: editingDocument.status === 'active', // Mapear 'active'/'inactive' para boolean
+        status: editingDocument.status === 'active',
       });
     } else {
       form.reset({
@@ -86,16 +86,14 @@ const DocumentManagementPage: React.FC = () => {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      // 1. Fetch documents without direct profile join
       const { data: documentsData, error: documentsError } = await supabase
         .from('documents')
-        .select('*') // Select all columns from documents
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (documentsError) throw documentsError;
       if (!documentsData) return [];
 
-      // 2. Collect all unique user IDs (creator and target) from the fetched documents
       const userIds = new Set<string>();
       documentsData.forEach(doc => {
         userIds.add(doc.creator_user_id);
@@ -106,7 +104,6 @@ const DocumentManagementPage: React.FC = () => {
 
       const uniqueUserIds = Array.from(userIds);
 
-      // 3. Fetch profiles for these user IDs
       let profilesMap = new Map<string, BasicProfileInfo>();
       if (uniqueUserIds.length > 0) {
         const { data: profilesData, error: profilesError } = await supabase
@@ -116,13 +113,11 @@ const DocumentManagementPage: React.FC = () => {
 
         if (profilesError) {
           console.error("Error fetching profiles for documents:", profilesError);
-          // Log the error but proceed, as the main document data is still valid.
         } else if (profilesData) {
           profilesData.forEach(p => profilesMap.set(p.id, p));
         }
       }
 
-      // 4. Map profiles back to documents
       const enrichedDocuments = documentsData.map(doc => ({
         ...doc,
         creator_profile: profilesMap.get(doc.creator_user_id) || null,
@@ -175,7 +170,7 @@ const DocumentManagementPage: React.FC = () => {
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           target_user_id: data.target_user_id === 'all' ? null : data.target_user_id,
           creator_user_id: user.id,
-          status: data.status ? 'active' : 'inactive', // Salvar status
+          status: data.status ? 'active' : 'inactive',
         })
         .select()
         .single();
@@ -201,7 +196,7 @@ const DocumentManagementPage: React.FC = () => {
           content: data.content,
           publication_date: data.publication_date ? format(data.publication_date, 'yyyy-MM-dd') : null,
           target_user_id: data.target_user_id === 'all' ? null : data.target_user_id,
-          status: data.status ? 'active' : 'inactive', // Atualizar status
+          status: data.status ? 'active' : 'inactive',
         })
         .eq('id', editingDocument.id)
         .eq('creator_user_id', user.id)
@@ -273,104 +268,108 @@ const DocumentManagementPage: React.FC = () => {
   const isLoadingPage = isLoadingDocuments || isLoadingUsers;
 
   if (isLoadingPage) {
-    return <div className="text-center text-muted-foreground">Carregando documentos...</div>;
+    return <LoadingState message="Carregando documentos..." />;
   }
 
   if (errorDocuments) {
-    return <div className="text-center text-destructive">Erro ao carregar documentos: {errorDocuments.message}</div>;
+    return (
+      <ErrorState
+        message={`Erro ao carregar documentos: ${errorDocuments.message}`}
+        onRetry={() => queryClient.invalidateQueries({ queryKey: ['documents', user?.id] })}
+      />
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-foreground uppercase font-bold">Gerenciar Documentos</CardTitle>
+    <>
+      <ManagementPageLayout
+        title="Gerenciar Documentos"
+        actions={(
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
             <Plus className="mr-2 h-4 w-4" /> Adicionar Documento
           </Button>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
+        )}
+      >
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-foreground">Título</TableHead>
+              <TableHead className="text-foreground">Versão</TableHead>
+              <TableHead className="text-foreground">Publicado em</TableHead>
+              <TableHead className="text-foreground">Para</TableHead>
+              <TableHead className="text-foreground">Status</TableHead>
+              <TableHead className="text-right text-foreground">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {documents?.length === 0 ? (
               <TableRow>
-                <TableHead className="text-foreground">Título</TableHead>
-                <TableHead className="text-foreground">Versão</TableHead>
-                <TableHead className="text-foreground">Publicado em</TableHead>
-                <TableHead className="text-foreground">Para</TableHead>
-                <TableHead className="text-foreground">Status</TableHead> {/* Nova coluna */}
-                <TableHead className="text-right text-foreground">Ações</TableHead>
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  Nenhum documento encontrado.
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {documents?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
-                    Nenhum documento encontrado.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                documents?.map((doc) => {
-                  const targetUserName = doc.target_user_id
-                    ? (doc.target_profile ? `${doc.target_profile.first_name || ''} ${doc.target_profile.last_name || ''}`.trim() : `Usuário ${doc.target_user_id.substring(0, 8)}`)
-                    : 'Todos os Usuários';
-                  return (
-                    <TableRow key={doc.id}>
-                      <TableCell className="font-medium text-foreground">{doc.title}</TableCell>
-                      <TableCell className="text-muted-foreground">{doc.version}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {format(new Date(doc.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {doc.target_user_id === user?.id ? 'Você' : targetUserName}
-                      </TableCell>
-                      <TableCell> {/* Nova célula para status */}
-                        <Badge
-                          variant={doc.status === 'active' ? 'default' : 'secondary'}
-                          className={doc.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}
-                        >
-                          {doc.status === 'active' ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right flex justify-end items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewContentClick(doc)}
-                          className="text-blue-600 hover:bg-blue-50 rounded-lg"
-                          disabled={isMutating}
-                          title="Visualizar Conteúdo"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditClick(doc)}
-                          className="mr-2 text-foreground hover:bg-accent rounded-lg"
-                          disabled={isMutating}
-                          title="Editar Documento"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteClick(doc.id)}
-                          className="bg-sollux-red hover:bg-red-700 text-white rounded-lg"
-                          disabled={isMutating}
-                          title="Excluir Documento"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ) : (
+              documents?.map((doc) => {
+                const targetUserName = doc.target_user_id
+                  ? (doc.target_profile ? `${doc.target_profile.first_name || ''} ${doc.target_profile.last_name || ''}`.trim() : `Usuário ${doc.target_user_id.substring(0, 8)}`)
+                  : 'Todos os Usuários';
+                return (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-medium text-foreground">{doc.title}</TableCell>
+                    <TableCell className="text-muted-foreground">{doc.version}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {format(new Date(doc.publication_date + 'T00:00:00'), 'dd/MM/yyyy', { locale: ptBR })}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {doc.target_user_id === user?.id ? 'Você' : targetUserName}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={doc.status === 'active' ? 'default' : 'secondary'}
+                        className={doc.status === 'active' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-800 border-gray-200'}
+                      >
+                        {doc.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="flex items-center justify-end gap-1 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewContentClick(doc)}
+                        className="rounded-lg text-blue-600 hover:bg-blue-50"
+                        disabled={isMutating}
+                        title="Visualizar Conteúdo"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(doc)}
+                        className="mr-2 rounded-lg text-foreground hover:bg-accent"
+                        disabled={isMutating}
+                        title="Editar Documento"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteClick(doc.id)}
+                        className="rounded-lg bg-sollux-red text-white hover:bg-red-700"
+                        disabled={isMutating}
+                        title="Excluir Documento"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </ManagementPageLayout>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
@@ -508,7 +507,6 @@ const DocumentManagementPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog para Visualizar Conteúdo do Documento */}
       <Dialog open={isViewContentDialogOpen} onOpenChange={setIsViewContentDialogOpen}>
         <DialogContent className="sm:max-w-3xl bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -547,7 +545,7 @@ const DocumentManagementPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 

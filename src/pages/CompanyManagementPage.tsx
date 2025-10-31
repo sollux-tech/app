@@ -1,6 +1,5 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,14 +7,16 @@ import { useSession } from '@/components/SessionContextProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import CompanyCard from '@/components/CompanyCard';
 import { Company } from '@/types/company';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 import { useCompany } from '@/components/CompanyContext';
+import { ManagementPageLayout } from '@/components/layout/ManagementPageLayout';
+import { LoadingState } from '@/components/status/LoadingState';
 
 const CompanyManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { companies, isLoadingCompanies, setSelectedCompany } = useCompany();
-  const navigate = useNavigate(); // Inicializar useNavigate
+  const navigate = useNavigate();
 
   const deleteCompanyMutation = useMutation({
     mutationFn: async (companyId: string) => {
@@ -23,11 +24,10 @@ const CompanyManagementPage: React.FC = () => {
         .from('companies')
         .delete()
         .eq('id', companyId)
-        .eq('user_id', user?.id); // Garante que o usuário só delete suas próprias empresas
+        .eq('user_id', user?.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      // Invalida a query principal no contexto para que toda a UI seja atualizada
       queryClient.invalidateQueries({ queryKey: ['companies', user?.id] });
       setSelectedCompany(null);
       showSuccess('Empresa excluída com sucesso!');
@@ -45,47 +45,45 @@ const CompanyManagementPage: React.FC = () => {
   };
 
   const handleAddClick = () => {
-    navigate('/id/companies/new'); // Navega para a página de criação
+    navigate('/id/companies/new');
   };
 
   const handleEditClick = (company: Company) => {
-    navigate(`/id/companies/${company.id}`); // Navega para a página de edição
+    navigate(`/id/companies/${company.id}`);
   };
 
   if (isLoadingCompanies) {
-    return <div className="text-center text-muted-foreground">Carregando suas empresas...</div>;
+    return <LoadingState message="Carregando suas empresas..." />;
   }
 
-  // Filtra a lista de empresas do contexto para mostrar apenas as que o usuário é proprietário
   const ownedCompanies = companies.filter(company => company.user_id === user?.id);
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-foreground uppercase font-bold">Minhas Empresas</CardTitle>
-          <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
-            <Plus className="mr-2 h-4 w-4" /> Adicionar Empresa
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {ownedCompanies.length === 0 ? (
-              <p className="text-muted-foreground col-span-full text-center">Nenhuma empresa encontrada. Adicione uma nova empresa para começar.</p>
-            ) : (
-              ownedCompanies.map((company) => (
-                <CompanyCard
-                  key={company.id}
-                  company={company}
-                  onEdit={handleEditClick}
-                  onDelete={handleDeleteCompany}
-                />
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <ManagementPageLayout
+      title="Minhas Empresas"
+      actions={(
+        <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
+          <Plus className="mr-2 h-4 w-4" /> Adicionar Empresa
+        </Button>
+      )}
+    >
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {ownedCompanies.length === 0 ? (
+          <p className="col-span-full text-center text-muted-foreground">
+            Nenhuma empresa encontrada. Adicione uma nova empresa para começar.
+          </p>
+        ) : (
+          ownedCompanies.map((company) => (
+            <CompanyCard
+              key={company.id}
+              company={company}
+              onEdit={handleEditClick}
+              onDelete={handleDeleteCompany}
+            />
+          ))
+        )}
+      </div>
+    </ManagementPageLayout>
   );
 };
 
