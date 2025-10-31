@@ -17,11 +17,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Edit, Trash2 } from 'lucide-react'; // Importar Edit e Trash2
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Badge } from '@/components/ui/badge'; // Importar Badge
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Importar Table, etc.
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -62,6 +64,7 @@ const formSchema = z.object({
 const KpiSmartLiberatedFormPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const { selectedCompany } = useCompany();
   const navigate = useNavigate();
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
@@ -130,6 +133,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         max_value: editingKpiSmartLiberated.max_value || undefined,
         current_value: editingKpiSmartLiberated.current_value || undefined,
       });
+      setSelectedPillarIdForKpiSmart((editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '');
     } else if (!isEditing) {
       form.reset({
         kpi_smart_id: '',
@@ -353,6 +357,30 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     onSuccess: () => {
       mutationOptions.onSuccess();
       showSuccess('KPI Smart Liberado atualizado com sucesso!');
+    },
+  });
+
+  const deleteKpiSmartLiberatedMutation = useMutation({
+    mutationFn: async (id: string) => {
+      if (!user?.id) throw new Error("Usuário não autenticado.");
+      const { error, count } = await supabase
+        .from('kpi_smarts_liberated')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .eq('company_id', selectedCompany?.id); // Adicionado company_id
+      
+      if (error) {
+        throw error;
+      }
+      if (count === 0) {
+        throw new Error("KPI Smart Liberado não encontrado ou você não tem permissão para excluí-lo.");
+      }
+    },
+    ...mutationOptions,
+    onSuccess: () => {
+      mutationOptions.onSuccess();
+      showSuccess('KPI Smart Liberado excluído com sucesso!');
     },
   });
 
