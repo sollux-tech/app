@@ -81,9 +81,10 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     queryKey: ['kpiSmartsListForAcquired', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
+      // Selecionar todos os campos para corresponder à interface KpiSmart
       const { data, error } = await supabase
         .from('kpi_smarts')
-        .select('id, description, status')
+        .select('*') // Alterado de 'id, description, status' para '*'
         .eq('user_id', user.id)
         .eq('status', 'active') // Apenas KPIs Smart ativos podem ser adquiridos
         .order('description', { ascending: true });
@@ -314,7 +315,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                       <SelectContent>
                         {isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
-                        ) : kpiSmarts?.length === 0 ? (
+                        ) : (kpiSmarts && kpiSmarts.length === 0) ? ( {/* Adicionada verificação para kpiSmarts ser um array */}
                           <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível</SelectItem>
                         ) : (
                           kpiSmarts?.map((kpi) => (
