@@ -12,6 +12,7 @@ import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLi
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
 import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
+import { KpiSmartStatus } from '@/types/kpiSmartStatus'; // Importar KpiSmartStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -33,6 +34,7 @@ const formSchema = z.object({
   execution_user_types: z.array(z.string()).optional(),
   view_user_types: z.array(z.string()).optional(),
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
+  kpi_smart_status_id: z.string().min(1, { message: 'O status é obrigatório.' }), // Adicionado ao schema
 
   // Campos para tipo 'Quantitativo'
   logical_comparator: z.string().optional().nullable(),
@@ -73,6 +75,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       execution_user_types: [],
       view_user_types: [],
       kpi_smart_frequency_id: '',
+      kpi_smart_status_id: '', // Adicionado ao defaultValues
       logical_comparator: '',
       base_value: undefined,
       target_value: undefined,
@@ -99,7 +102,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .select(`
           *,
           kpi_smarts(pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
-          kpi_smart_frequencies(description)
+          kpi_smart_frequencies(description),
+          kpi_smart_statuses(description) // Incluindo o relacionamento com kpi_smart_statuses
         `)
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user?.id)
@@ -109,6 +113,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         ...data,
         kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
         kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
+        kpi_smart_statuses: Array.isArray(data.kpi_smart_statuses) ? data.kpi_smart_statuses[0] : data.kpi_smart_statuses, // Mapear o status
       };
     },
     enabled: isEditing && !!user?.id,
@@ -124,6 +129,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
         view_user_types: editingKpiSmartLiberated.view_user_types || [],
         kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
+        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '', // Adicionado ao reset
         
         // Campos Quantitativos
         logical_comparator: editingKpiSmartLiberated.logical_comparator || '',
@@ -154,6 +160,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         execution_user_types: [],
         view_user_types: [],
         kpi_smart_frequency_id: '',
+        kpi_smart_status_id: '', // Adicionado ao reset
         logical_comparator: '',
         base_value: undefined,
         target_value: undefined,
@@ -316,6 +323,22 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
+  // Query para buscar todos os Status de KPI Smart (para o formulário)
+  const { data: kpiSmartStatuses, isLoading: isLoadingKpiSmartStatuses } = useQuery<KpiSmartStatus[], Error>({
+    queryKey: ['kpiSmartStatusesListForLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_statuses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   // Use companyUsers for MultiSelect options
   const userOptions: MultiSelectOption[] = useMemo(() => {
     return companyUsers || [];
@@ -346,6 +369,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
+          kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
           
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
@@ -387,6 +411,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
+          kpi_smart_status_id: data.kpi_smart_status_id, // Adicionado
 
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
@@ -422,30 +447,31 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload: KpiSmartLiberatedFormData = {
       kpi_smart_id: data.kpi_smart_id,
-      execution_user_types: data.execution_user_types || [],
-      view_user_types: data.view_user_types || [],
-      kpi_smart_frequency_id: data.kpi_smart_frequency_id,
-      
+      execution_user_types: form.getValues('execution_user_types') || [],
+      view_user_types: form.getValues('view_user_types') || [],
+      kpi_smart_frequency_id: form.getValues('kpi_smart_frequency_id'),
+      kpi_smart_status_id: form.getValues('kpi_smart_status_id'), // Adicionado
+
       // Campos Quantitativos
-      logical_comparator: data.logical_comparator,
-      base_value: data.base_value,
-      target_value: data.target_value,
-      deadline_date: data.deadline_date,
+      logical_comparator: form.getValues('logical_comparator'),
+      base_value: form.getValues('base_value'),
+      target_value: form.getValues('target_value'),
+      deadline_date: form.getValues('deadline_date'),
 
       // Campos Marco
-      planned_delivery_date: data.planned_delivery_date,
-      actual_delivery_date: data.actual_delivery_date,
-      progress_percentage: data.progress_percentage,
+      planned_delivery_date: form.getValues('planned_delivery_date'),
+      actual_delivery_date: form.getValues('actual_delivery_date'),
+      progress_percentage: form.getValues('progress_percentage'),
 
       // Campos Frequência
-      planned_frequency: data.planned_frequency,
-      planned_executions: data.planned_executions,
-      performed_executions: data.performed_executions,
+      planned_frequency: form.getValues('planned_frequency'),
+      planned_executions: form.getValues('planned_executions'),
+      performed_executions: form.getValues('performed_executions'),
 
       // Campos Intervalo
-      min_value: data.min_value,
-      max_value: data.max_value,
-      current_value: data.current_value,
+      min_value: form.getValues('min_value'),
+      max_value: form.getValues('max_value'),
+      current_value: form.getValues('current_value'),
     };
     if (isEditing) {
       updateKpiSmartLiberatedMutation.mutate(payload);
@@ -454,7 +480,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     }
   };
 
-  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingCompanyUsers || isLoadingKpiSmartFrequencies || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || isLoadingEditingKpiSmartDetails;
+  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingCompanyUsers || isLoadingKpiSmartFrequencies || isLoadingKpiSmartStatuses || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || isLoadingEditingKpiSmartDetails;
 
   if (isEditing && isLoadingEditingKpiSmartLiberated) {
     return <div className="text-center text-muted-foreground">Carregando KPI Smart Liberado...</div>;
@@ -811,6 +837,37 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                             freq.id && freq.id !== '' ? (
                               <SelectItem key={freq.id} value={freq.id}>
                                 {freq.description}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="kpi_smart_status_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Status do KPI Smart Liberado</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmartStatuses || isLoadingForm}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg">
+                          <SelectValue placeholder="Selecione o status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {kpiSmartStatuses?.length === 0 ? (
+                          <SelectItem value="no-statuses" disabled>Nenhum status cadastrado</SelectItem>
+                        ) : (
+                          kpiSmartStatuses?.map((status) => (
+                            status.id && status.id !== '' ? (
+                              <SelectItem key={status.id} value={status.id}>
+                                {status.description}
                               </SelectItem>
                             ) : null
                           ))
