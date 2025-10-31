@@ -34,6 +34,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/shift/kpi-smarts-liberated': { name: 'Gerenciar KPIs Smart Liberados', parent: '/ops/shift', icon: ListChecks }, // Nova rota
   '/ops/shift/kpi-smarts-liberated/new': { name: 'Liberar Novo KPI Smart', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
   '/ops/shift/kpi-smarts-liberated/:id': { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
+  '/ops/shift/kpi-smarts-acquired': { name: 'KPIs Smart Adquiridos', parent: '/ops/shift', icon: ShoppingBag }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },

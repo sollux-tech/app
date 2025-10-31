@@ -71,6 +71,7 @@ import KpiSmartManagementPage from './pages/KpiSmartManagementPage'; // Importar
 import ShiftPage from './pages/ShiftPage'; // Importar a nova página ShiftPage
 import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; // Importar a nova página
 import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
+import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -191,6 +192,7 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/shift/kpi-smarts-liberated" element={<KpiSmartLiberatedManagementPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
+                  <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> {/* Nova rota */}
                   <Route path="/core" element={<CorePage />} /> 
                   <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
