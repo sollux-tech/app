@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'; // Importando useMemo
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -19,3 +19,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import { useCompany } from '@/components/CompanyContext';
 import { KpiSmartAcquired } from '@/types/kpiSmartAcquired'; // Importando KpiSmartAcquired
+
+const formSchema = z.object({
+  kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
+});
+
+const KpiSmartLiberatedManagementPage: React.FC = () => {
+  // ... (restante do código)
+};
+
+export default KpiSmartLiberatedManagementPage;
