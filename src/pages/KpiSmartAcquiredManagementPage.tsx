@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartAcquired, KpiSmartAcquiredFormData } from '@/types/kpiSmartAcquired';
 import { KpiSmart } from '@/types/kpiSmart';
+import { Pillar } from '@/types/pillar'; // Importar Pillar
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -22,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
+  pillar_id: z.string().min(1, { message: 'O Pilar é obrigatório.' }), // Novo campo para o formulário
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   status: z.boolean().default(true),
 });
@@ -33,22 +35,45 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpiSmartAcquired, setEditingKpiSmartAcquired] = useState<KpiSmartAcquired | null>(null);
 
-  const form = useForm<KpiSmartAcquiredFormData>({
+  // Estados para os filtros da tabela
+  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      pillar_id: '', // Valor padrão para o novo campo
       kpi_smart_id: '',
       status: true,
     },
   });
 
+  // Observar o valor do pilar selecionado no formulário para filtrar os KPIs Smart
+  const selectedPillarIdForForm = form.watch('pillar_id');
+
   useEffect(() => {
     if (editingKpiSmartAcquired) {
-      form.reset({
-        kpi_smart_id: editingKpiSmartAcquired.kpi_smart_id,
-        status: editingKpiSmartAcquired.status === 'active',
-      });
+      // Ao editar, precisamos buscar o pilar do KPI Smart original
+      const fetchKpiSmartPillar = async () => {
+        const { data: kpiSmartData, error } = await supabase
+          .from('kpi_smarts')
+          .select('pillar_id')
+          .eq('id', editingKpiSmartAcquired.kpi_smart_id)
+          .single();
+        if (error) {
+          console.error("Erro ao buscar pilar do KPI Smart:", error);
+          return;
+        }
+        form.reset({
+          pillar_id: kpiSmartData?.pillar_id || '',
+          kpi_smart_id: editingKpiSmartAcquired.kpi_smart_id,
+          status: editingKpiSmartAcquired.status === 'active',
+        });
+      };
+      fetchKpiSmartPillar();
     } else {
       form.reset({
+        pillar_id: '',
         kpi_smart_id: '',
         status: true,
       });
@@ -56,18 +81,28 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   }, [editingKpiSmartAcquired, form, isDialogOpen]);
 
   const { data: kpiSmartsAcquired, isLoading: isLoadingKpiSmartsAcquired, error: errorKpiSmartsAcquired } = useQuery<KpiSmartAcquired[], Error>({
-    queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id],
+    queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter], // Adicionar filtros ao queryKey
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
-      const { data, error } = await supabase
+      let query = supabase
         .from('kpi_smarts_acquired')
         .select(`
           *,
-          kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description))
+          kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id)
         `)
         .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
-        .order('code', { ascending: true });
+        .eq('company_id', selectedCompany.id);
+      
+      // Aplicar filtros da tabela
+      if (selectedPillarFilter !== 'all') {
+        query = query.eq('kpi_smarts.pillar_id', selectedPillarFilter);
+      }
+      if (selectedStatusFilter !== 'all') {
+        query = query.eq('status', selectedStatusFilter);
+      }
+
+      query = query.order('code', { ascending: true });
+      const { data, error } = await query;
       if (error) throw error;
       return data.map(item => ({
         ...item,
@@ -77,20 +112,38 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     enabled: !!user?.id && !!selectedCompany?.id,
   });
 
-  const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmartsListForAcquired', user?.id],
+  // Query para buscar todos os Pilares (para filtros e formulário)
+  const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['pillarsListForKpiSmartAcquired', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
-        .from('kpi_smarts')
-        .select('*') // Selecionar todos os campos para corresponder à interface KpiSmart
+        .from('pillars')
+        .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'active') // Apenas KPIs Smart ativos podem ser adquiridos
         .order('description', { ascending: true });
       if (error) throw error;
       return data;
     },
     enabled: !!user?.id,
+  });
+
+  // Query para buscar KPIs Smart ativos, filtrados pelo pilar selecionado no formulário
+  const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
+    queryKey: ['kpiSmartsListForAcquiredForm', user?.id, selectedPillarIdForForm],
+    queryFn: async () => {
+      if (!user?.id || !selectedPillarIdForForm) return [];
+      const { data, error } = await supabase
+        .from('kpi_smarts')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .eq('pillar_id', selectedPillarIdForForm) // Filtrar por pilar selecionado
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id && !!selectedPillarIdForForm, // Habilitar apenas se um pilar for selecionado
   });
 
   const mutationOptions = {
@@ -105,7 +158,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   };
 
   const createKpiSmartAcquiredMutation = useMutation({
-    mutationFn: async (data: KpiSmartAcquiredFormData) => {
+    mutationFn: async (data: z.infer<typeof formSchema>) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       const { data: newKpiSmartAcquired, error } = await supabase
         .from('kpi_smarts_acquired')
@@ -128,7 +181,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   });
 
   const updateKpiSmartAcquiredMutation = useMutation({
-    mutationFn: async (data: KpiSmartAcquiredFormData) => {
+    mutationFn: async (data: z.infer<typeof formSchema>) => {
       if (!editingKpiSmartAcquired?.id) throw new Error("ID do KPI Smart Adquirido está faltando.");
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       const { data: updatedKpiSmartAcquired, error } = await supabase
@@ -176,7 +229,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: KpiSmartAcquiredFormData) => {
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (editingKpiSmartAcquired) {
       updateKpiSmartAcquiredMutation.mutate(data);
     } else {
@@ -201,7 +254,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   };
 
   const isMutating = createKpiSmartAcquiredMutation.isPending || updateKpiSmartAcquiredMutation.isPending || deleteKpiSmartAcquiredMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsAcquired || isLoadingKpiSmarts;
+  const isLoadingPage = isLoadingKpiSmartsAcquired || isLoadingKpiSmarts || isLoadingPillars;
 
   if (!selectedCompany) {
     return (
@@ -229,6 +282,46 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
+          {/* Filtros da Tabela */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <Label htmlFor="pillar-filter" className="text-foreground">Filtrar por Pilar</Label>
+              <Select
+                value={selectedPillarFilter}
+                onValueChange={setSelectedPillarFilter}
+                disabled={isLoadingPillars}
+              >
+                <SelectTrigger id="pillar-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Pilares" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Pilares</SelectItem>
+                  {pillars?.map((pillar) => (
+                    <SelectItem key={pillar.id} value={pillar.id}>
+                      {pillar.description}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="status-filter" className="text-foreground">Filtrar por Status</Label>
+              <Select
+                value={selectedStatusFilter}
+                onValueChange={setSelectedStatusFilter}
+              >
+                <SelectTrigger id="status-filter" className="rounded-lg">
+                  <SelectValue placeholder="Todos os Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os Status</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -301,23 +394,60 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
+                name="pillar_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Pilar</FormLabel>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      form.setValue('kpi_smart_id', ''); // Limpar KPI Smart quando o pilar muda
+                    }} value={field.value} disabled={isLoadingPillars || isMutating}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg">
+                          <SelectValue placeholder="Selecione um Pilar" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingPillars ? (
+                          <SelectItem value="loading-pillars" disabled>Carregando Pilares...</SelectItem>
+                        ) : (pillars && pillars.length === 0) ? (
+                          <SelectItem value="no-pillars" disabled>Nenhum Pilar cadastrado</SelectItem>
+                        ) : (
+                          pillars?.map((pillar) => (
+                            pillar.id && pillar.id !== '' ? (
+                              <SelectItem key={pillar.id} value={pillar.id}>
+                                {pillar.description}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="kpi_smart_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmarts || isMutating}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarIdForForm || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isMutating}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {isLoadingKpiSmarts ? (
+                        {!selectedPillarIdForForm ? (
+                          <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
+                        ) : isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
                         ) : (kpiSmarts && kpiSmarts.length === 0) ? (
-                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível</SelectItem>
+                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
-                          kpiSmarts?.map((kpi) => (
+                          kpiSmarts.map((kpi) => (
                             kpi.id && kpi.id !== '' ? (
                               <SelectItem key={kpi.id} value={kpi.id}>
                                 {kpi.description}
