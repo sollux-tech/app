@@ -198,6 +198,7 @@ const AppContent: React.FC = () => {
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
                   <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
                   <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
+                  <Route path="/informative/:id" element={<PublicInformativePage />} /> {/* Rota pública */}
                   <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
                   <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
                   <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
