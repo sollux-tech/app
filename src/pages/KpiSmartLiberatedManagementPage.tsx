@@ -122,7 +122,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   useEffect(() => {
     if (isEditing && editingKpiSmartLiberated) {
       const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
-      setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
+      setSelectedPillarIdForForm(kpiSmartPillarId); // Corrigido: usar setSelectedPillarIdForForm
       
       const fetchKpiSmartDetails = async () => {
         if (editingKpiSmartLiberated.kpi_smart_id) {
@@ -213,25 +213,22 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   }, [isEditing, editingKpiSmartLiberated, form]);
 
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForKpiSmart],
+    queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForForm],
     queryFn: async () => {
-      if (!user?.id || !selectedPillarIdForKpiSmart) return [];
+      if (!user?.id || !selectedPillarIdForForm) return [];
       const { data, error } = await supabase
         .from('kpi_smarts')
         .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .eq('pillar_id', selectedPillarIdForKpiSmart)
+        .eq('pillar_id', selectedPillarIdForForm)
         .order('description', { ascending: true });
       if (error) throw error;
-      // Ensure the returned data matches the KpiSmart type, including nested objects
       return data.map(item => ({
         ...item,
-        // Explicitly handle nested objects, ensuring they match the expected structure
         kpi_smart_types: item.kpi_smart_types ? (Array.isArray(item.kpi_smart_types) ? item.kpi_smart_types[0] : item.kpi_smart_types) : null,
         kpi_smart_focuses: item.kpi_smart_focuses ? (Array.isArray(item.kpi_smart_focuses) ? item.kpi_smart_focuses[0] : item.kpi_smart_focuses) : null,
         kpi_smart_units: item.kpi_smart_units ? (Array.isArray(item.kpi_smart_units) ? item.kpi_smart_units[0] : item.kpi_smart_units) : null,
-        // Add other potentially missing top-level properties with default values if necessary
         user_id: item.user_id || '',
         code: item.code || 0,
         kpi_smart_type_id: item.kpi_smart_type_id || '',
@@ -242,7 +239,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         created_at: item.created_at || new Date().toISOString(),
       })) as KpiSmart[];
     },
-    enabled: !!user?.id && !!selectedPillarIdForKpiSmart,
+    enabled: !!user?.id && !!selectedPillarIdForForm,
   });
 
   const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
@@ -509,7 +506,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForKpiSmart(value);
+                      setSelectedPillarIdForForm(value); // Corrigido: usar setSelectedPillarIdForForm
                       form.setValue('kpi_smart_id', ''); // Resetar KPI Smart ao mudar o pilar
                     }} value={field.value} disabled={isLoadingPillars || isLoadingForm}>
                       <FormControl>
@@ -549,16 +546,16 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
                       if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
                         form.setValue('pillar_id', details.pillar_id);
-                        setSelectedPillarIdForKpiSmart(details.pillar_id);
+                        setSelectedPillarIdForForm(details.pillar_id); // Corrigido: usar setSelectedPillarIdForForm
                       }
-                    }} value={field.value} disabled={isLoadingKpiSmarts || selectedPillarIdForKpiSmart === '' || isLoadingForm}>
+                    }} value={field.value} disabled={isLoadingKpiSmarts || selectedPillarIdForForm === '' || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {!selectedPillarIdForKpiSmart ? (
+                        {!selectedPillarIdForForm ? (
                           <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
                         ) : isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>

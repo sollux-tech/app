@@ -39,7 +39,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<z.infer<typeof formSchema>>({ // Usar z.infer para o tipo do form
+  const form = useForm<KpiSmartAcquiredFormData>({ // Corrigido o tipo do form
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '', // Valor padrão para o novo campo
@@ -240,8 +240,8 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
 
   const handleAddClick = () => {
     setEditingKpiSmartAcquired(null);
-    setSelectedPillarIdForForm('');
-    setSelectedKpiSmartDetails(null);
+    setSelectedPillarIdForForm(''); // Corrigido: usar setSelectedPillarIdForForm
+    setSelectedKpiSmartDetails(null); // Corrigido: usar setSelectedKpiSmartDetails
     form.reset();
     setIsDialogOpen(true);
   };
@@ -338,7 +338,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                 kpiSmartsAcquired?.map((kpiSmartAcquired) => (
                   <TableRow key={kpiSmartAcquired.id}>
                     <TableCell className="font-medium text-foreground">{kpiSmartAcquired.code}</TableCell>
-                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.pillar_id}</TableCell>
+                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.pillar_id}</TableCell> {/* Acessando pillar_id do kpi_smarts */}
                     <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.description || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={kpiSmartAcquired.status === 'active' ? 'default' : 'secondary'}>
@@ -390,7 +390,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForForm(value);
+                      setSelectedPillarIdForForm(value); // Corrigido: usar setSelectedPillarIdForForm
                       form.setValue('kpi_smart_id', ''); // Limpar KPI Smart quando o pilar muda
                     }} value={field.value} disabled={isLoadingPillars}>
                       <FormControl>
