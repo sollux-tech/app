@@ -139,7 +139,24 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           if (error) {
             console.error("Erro ao buscar detalhes do KPI Smart:", error);
           } else {
-            setSelectedKpiSmartDetails(kpiDetails as KpiSmart);
+            // Ensure kpiDetails conforms to KpiSmart type before setting state
+            if (kpiDetails) {
+              setSelectedKpiSmartDetails({
+                ...kpiDetails,
+                user_id: kpiDetails.user_id || '', // Provide default values if missing
+                code: kpiDetails.code || 0,
+                kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
+                kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
+                kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
+                kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id || '',
+                status: kpiDetails.status || 'active',
+                created_at: kpiDetails.created_at || new Date().toISOString(),
+                // Ensure nested objects are correctly typed or handle potential nulls
+                kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
+                kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
+                kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
+              });
+            }
           }
         }
       };
@@ -213,7 +230,23 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .eq('pillar_id', selectedPillarIdForKpiSmart)
         .order('description', { ascending: true });
       if (error) throw error;
-      return data;
+      // Ensure the returned data matches the KpiSmart type, including nested objects
+      return data.map(item => ({
+        ...item,
+        // Explicitly handle nested objects, ensuring they match the expected structure
+        kpi_smart_types: item.kpi_smart_types ? (Array.isArray(item.kpi_smart_types) ? item.kpi_smart_types[0] : item.kpi_smart_types) : null,
+        kpi_smart_focuses: item.kpi_smart_focuses ? (Array.isArray(item.kpi_smart_focuses) ? item.kpi_smart_focuses[0] : item.kpi_smart_focuses) : null,
+        kpi_smart_units: item.kpi_smart_units ? (Array.isArray(item.kpi_smart_units) ? item.kpi_smart_units[0] : item.kpi_smart_units) : null,
+        // Add other potentially missing top-level properties with default values if necessary
+        user_id: item.user_id || '',
+        code: item.code || 0,
+        kpi_smart_type_id: item.kpi_smart_type_id || '',
+        kpi_smart_action_verb_id: item.kpi_smart_action_verb_id || '',
+        kpi_smart_focus_id: item.kpi_smart_focus_id || '',
+        kpi_smart_unit_id: item.kpi_smart_unit_id || '',
+        status: item.status || 'active',
+        created_at: item.created_at || new Date().toISOString(),
+      })) as KpiSmart[];
     },
     enabled: !!user?.id && !!selectedPillarIdForKpiSmart,
   });
