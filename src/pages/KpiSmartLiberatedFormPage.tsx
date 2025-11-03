@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns'; // Corrected import
+import { format } from 'date-fns';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -69,10 +69,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
-  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>(''); // State for selected pillar ID
-  const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null); // State for selected KPI Smart details
+  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
+  const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -99,37 +97,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     },
   });
 
-  const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForForm],
-    queryFn: async () => {
-      if (!user?.id || !selectedPillarIdForForm) return [];
-      const { data, error } = await supabase
-        .from('kpi_smarts')
-        .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .eq('pillar_id', selectedPillarIdForForm)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data.map(item => ({
-        ...item,
-        kpi_smart_types: item.kpi_smart_types ? (Array.isArray(item.kpi_smart_types) ? item.kpi_smart_types[0] : item.kpi_smart_types) : null,
-        kpi_smart_focuses: item.kpi_smart_focuses ? (Array.isArray(item.kpi_smart_focuses) ? item.kpi_smart_focuses[0] : item.kpi_smart_focuses) : null,
-        kpi_smart_units: item.kpi_smart_units ? (Array.isArray(item.kpi_smart_units) ? item.kpi_smart_units[0] : item.kpi_smart_units) : null,
-        user_id: item.user_id || '',
-        code: item.code || 0,
-        kpi_smart_type_id: item.kpi_smart_type_id || '',
-        kpi_smart_action_verb_id: item.kpi_smart_action_verb_id || '',
-        kpi_smart_focus_id: item.kpi_smart_focus_id || '',
-        kpi_smart_unit_id: item.kpi_smart_unit_id || '',
-        status: item.status || 'active',
-        created_at: item.created_at || new Date().toISOString(),
-      })) as KpiSmart[];
-    },
-    enabled: !!user?.id && !!selectedPillarIdForForm,
-  });
-
-  const { data: editingKpiSmartLiberated, isLoading: isLoadingEditingKpiSmartLiberated, error: errorEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
+  const { data: editingKpiSmartLiberated, isLoading: isLoadingEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
     queryKey: ['kpiSmartLiberated', kpiSmartLiberatedId],
     queryFn: async () => {
       if (!kpiSmartLiberatedId || !user?.id) throw new Error("ID do KPI Smart Liberado ou usuário faltando.");
@@ -138,9 +106,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .select(`
           *,
           kpi_smarts(id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
-          kpi_smart_frequencies(id, description),
-          kpi_smart_statuses(id, description),
-          pillars(id, description)
+          kpi_smart_frequencies(description),
+          kpi_smart_statuses(description, id)
         `)
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
@@ -151,7 +118,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
         kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
         kpi_smart_statuses: Array.isArray(data.kpi_smart_statuses) ? data.kpi_smart_statuses[0] : data.kpi_smart_statuses,
-        pillars: Array.isArray(data.pillars) ? data.pillars[0] : data.pillars,
       };
     },
     enabled: isEditing && !!user?.id,
@@ -160,7 +126,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
   useEffect(() => {
     if (isEditing && editingKpiSmartLiberated) {
-      const kpiSmartPillarId = editingKpiSmartLiberated.pillar_id || '';
+      const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
       
       const fetchKpiSmartDetails = async () => {
@@ -172,48 +138,60 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
             .single();
           if (error) {
             console.error("Erro ao buscar detalhes do KPI Smart:", error);
-          } else if (kpiDetails) {
-            setSelectedKpiSmartDetails({
-              ...kpiDetails,
-              user_id: kpiDetails.user_id || '',
-              code: kpiDetails.code || 0,
-              kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
-              kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
-              kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
-              kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id || '',
-              status: kpiDetails.status || 'active',
-              created_at: kpiDetails.created_at || new Date().toISOString(),
-              kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
-              kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
-              kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
-            });
+          } else {
+            // Ensure kpiDetails conforms to KpiSmart type before setting state
+            if (kpiDetails) {
+              setSelectedKpiSmartDetails({
+                ...kpiDetails,
+                user_id: kpiDetails.user_id || '', // Provide default values if missing
+                code: kpiDetails.code || 0,
+                kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
+                kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
+                kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
+                kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id || '',
+                status: kpiDetails.status || 'active',
+                created_at: kpiDetails.created_at || new Date().toISOString(),
+                // Ensure nested objects are correctly typed or handle potential nulls
+                kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
+                kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
+                kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
+              });
+            }
           }
         }
       };
+
       fetchKpiSmartDetails();
 
-      form.reset({
-        kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-        pillar_id: kpiSmartPillarId,
-        execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [],
-        view_user_ids: editingKpiSmartLiberated.view_user_ids || [],
-        kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
-        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
-        logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
-        base_value: editingKpiSmartLiberated.base_value || null,
-        target_value: editingKpiSmartLiberated.target_value || null,
-        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
-        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
-        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
-        progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
-        planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
-        planned_executions: editingKpiSmartLiberated.planned_executions || null,
-        performed_executions: editingKpiSmartLiberated.performed_executions || null,
-        min_value: editingKpiSmartLiberated.min_value || null,
-        max_value: editingKpiSmartLiberated.max_value || null,
-        current_value: editingKpiSmartLiberated.current_value || null,
-      });
-    } else {
+      const timer = setTimeout(() => {
+        form.reset({
+          kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
+          pillar_id: kpiSmartPillarId,
+          execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [],
+          view_user_ids: editingKpiSmartLiberated.view_user_ids || [],
+          kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
+          kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
+          
+          logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
+          base_value: editingKpiSmartLiberated.base_value || null,
+          target_value: editingKpiSmartLiberated.target_value || null,
+          deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
+
+          planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
+          actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
+          progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
+
+          planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
+          planned_executions: editingKpiSmartLiberated.planned_executions || null,
+          performed_executions: editingKpiSmartLiberated.performed_executions || null,
+
+          min_value: editingKpiSmartLiberated.min_value || null,
+          max_value: editingKpiSmartLiberated.max_value || null,
+          current_value: editingKpiSmartLiberated.current_value || null,
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (!isEditing) {
       form.reset({
         kpi_smart_id: '',
         pillar_id: '',
@@ -238,7 +216,132 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       setSelectedPillarIdForKpiSmart('');
       setSelectedKpiSmartDetails(null);
     }
-  }, [isEditing, editingKpiSmartLiberated, form, isDialogOpen]);
+  }, [isEditing, editingKpiSmartLiberated, form]);
+
+  const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
+    queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForKpiSmart],
+    queryFn: async () => {
+      if (!user?.id || !selectedPillarIdForKpiSmart) return [];
+      const { data, error } = await supabase
+        .from('kpi_smarts')
+        .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .eq('pillar_id', selectedPillarIdForKpiSmart)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      // Ensure the returned data matches the KpiSmart type, including nested objects
+      return data.map(item => ({
+        ...item,
+        // Explicitly handle nested objects, ensuring they match the expected structure
+        kpi_smart_types: item.kpi_smart_types ? (Array.isArray(item.kpi_smart_types) ? item.kpi_smart_types[0] : item.kpi_smart_types) : null,
+        kpi_smart_focuses: item.kpi_smart_focuses ? (Array.isArray(item.kpi_smart_focuses) ? item.kpi_smart_focuses[0] : item.kpi_smart_focuses) : null,
+        kpi_smart_units: item.kpi_smart_units ? (Array.isArray(item.kpi_smart_units) ? item.kpi_smart_units[0] : item.kpi_smart_units) : null,
+        // Add other potentially missing top-level properties with default values if necessary
+        user_id: item.user_id || '',
+        code: item.code || 0,
+        kpi_smart_type_id: item.kpi_smart_type_id || '',
+        kpi_smart_action_verb_id: item.kpi_smart_action_verb_id || '',
+        kpi_smart_focus_id: item.kpi_smart_focus_id || '',
+        kpi_smart_unit_id: item.kpi_smart_unit_id || '',
+        status: item.status || 'active',
+        created_at: item.created_at || new Date().toISOString(),
+      })) as KpiSmart[];
+    },
+    enabled: !!user?.id && !!selectedPillarIdForKpiSmart,
+  });
+
+  const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
+    queryKey: ['pillarsListForKpiSmartLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('pillars')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<BasicProfileInfo[], Error>({
+    queryKey: ['allRelevantUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
+    queryFn: async () => {
+      if (!user?.id || !selectedCompany?.id) return [];
+
+      const userIds = new Set<string>();
+      userIds.add(user.id);
+
+      const { data: companyOwner, error: ownerError } = await supabase
+        .from('companies')
+        .select('user_id')
+        .eq('id', selectedCompany.id)
+        .single();
+      if (ownerError) console.error("Error fetching company owner:", ownerError);
+      if (companyOwner?.user_id) userIds.add(companyOwner.user_id);
+
+      const { data: sharedUsers, error: sharedError } = await supabase
+        .from('company_shares')
+        .select('shared_with_user_id')
+        .eq('company_id', selectedCompany.id);
+      if (sharedError) console.error("Error fetching shared users:", sharedError);
+      sharedUsers?.forEach(su => userIds.add(su.shared_with_user_id));
+
+      const uniqueUserIds = Array.from(userIds);
+
+      if (uniqueUserIds.length === 0) return [];
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', uniqueUserIds);
+      if (profilesError) throw profilesError;
+      return profiles;
+    },
+    enabled: !!user?.id && !!selectedCompany?.id,
+  });
+
+  const { data: kpiSmartFrequencies, isLoading: isLoadingKpiSmartFrequencies } = useQuery<KpiSmartFrequency[], Error>({
+    queryKey: ['kpiSmartFrequenciesForKpiSmartLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_frequencies')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const { data: kpiSmartStatuses, isLoading: isLoadingKpiSmartStatuses } = useQuery<KpiSmartStatus[], Error>({
+    queryKey: ['kpiSmartStatusesListForLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_statuses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const relevantUserOptions: MultiSelectOption[] = useMemo(() => {
+    return allRelevantUsers?.map(p => ({
+      value: p.id,
+      label: `${p.first_name || ''} ${p.last_name || ''}`.trim() || `Usuário ${p.id.substring(0, 8)}`
+    })) || [];
+  }, [allRelevantUsers]);
+
+  const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
+  const kpiSmartTypeCode = selectedKpiSmart?.kpi_smart_types?.code;
 
   const mutationOptions = {
     onSuccess: () => {
@@ -253,14 +356,13 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
   const createKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
-      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
+      if (!user?.id) throw new Error("Usuário não autenticado.");
       console.log("Creating KPI Smart Liberated with data:", data);
       const { data: newKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
         .insert({
           kpi_smart_id: data.kpi_smart_id,
           user_id: user.id,
-          company_id: selectedCompany.id,
           execution_user_ids: data.execution_user_ids,
           view_user_ids: data.view_user_ids,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
@@ -295,7 +397,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const updateKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
-      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
+      if (!user?.id) throw new Error("Usuário não autenticado.");
       console.log("Updating KPI Smart Liberated with data:", data);
       const { data: updatedKpiSmartLiberatedResult, error } = await supabase
         .from('kpi_smarts_liberated')
@@ -326,7 +428,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         })
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id)
         .select()
         .single();
       if (error) throw error;
@@ -414,8 +515,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForKpiSmart(value); // Atualiza o estado para filtrar KPIs
-                      form.setValue('kpi_smart_id', ''); // Limpar KPI Smart ao mudar o pilar
+                      setSelectedPillarIdForKpiSmart(value);
+                      form.setValue('kpi_smart_id', ''); // Resetar KPI Smart ao mudar o pilar
                     }} value={field.value} disabled={isLoadingPillars || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -429,9 +530,11 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-pillars" disabled>Nenhum Pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
-                            <SelectItem key={pillar.id} value={pillar.id}>
-                              {pillar.description}
-                            </SelectItem>
+                            pillar.id && pillar.id !== '' ? (
+                              <SelectItem key={pillar.id} value={pillar.id}>
+                                {pillar.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
@@ -448,6 +551,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
+                      // Buscar detalhes do KPI Smart selecionado para preencher os campos condicionais
                       const details = kpiSmarts?.find(k => k.id === value);
                       setSelectedKpiSmartDetails(details || null);
                       // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
@@ -455,24 +559,26 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         form.setValue('pillar_id', details.pillar_id);
                         setSelectedPillarIdForKpiSmart(details.pillar_id);
                       }
-                    }} value={field.value} disabled={isLoadingKpiSmarts || !selectedPillarIdForForm || isLoadingForm}>
+                    }} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {!selectedPillarIdForForm ? (
+                        {!selectedPillarIdForKpiSmart ? (
                           <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
                         ) : isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
                         ) : (kpiSmarts && kpiSmarts.length === 0) ? (
                           <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
-                          kpiSmarts?.map((kpi) => (
-                            <SelectItem key={kpi.id} value={kpi.id}>
-                              {kpi.description}
-                            </SelectItem>
+                          kpiSmarts.map((kpi) => (
+                            kpi.id && kpi.id !== '' ? (
+                              <SelectItem key={kpi.id} value={kpi.id}>
+                                {kpi.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
@@ -500,9 +606,11 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-frequencies" disabled>Nenhuma Frequência cadastrada</SelectItem>
                         ) : (
                           kpiSmartFrequencies?.map((frequency) => (
-                            <SelectItem key={frequency.id} value={frequency.id}>
-                              {frequency.description}
-                            </SelectItem>
+                            frequency.id && frequency.id !== '' ? (
+                              <SelectItem key={frequency.id} value={frequency.id}>
+                                {frequency.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
@@ -530,9 +638,11 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-statuses" disabled>Nenhum Status cadastrado</SelectItem>
                         ) : (
                           kpiSmartStatuses?.map((status) => (
-                            <SelectItem key={status.id} value={status.id}>
-                              {status.description}
-                            </SelectItem>
+                            status.id && status.id !== '' ? (
+                              <SelectItem key={status.id} value={status.id}>
+                                {status.description}
+                              </SelectItem>
+                            ) : null
                           ))
                         )}
                       </SelectContent>
