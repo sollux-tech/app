@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-A';
+import { format } from 'date-fns'; // Corrigido: import de date-fns
 import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 import { Label } from '@/components/ui/label'; // Importar Label
@@ -135,7 +135,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         if (editingKpiSmartLiberated.kpi_smart_id) {
           const { data: kpiDetails, error } = await supabase
             .from('kpi_smarts')
-            .select('description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id')
+            .select('id, description, pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
             .eq('id', editingKpiSmartLiberated.kpi_smart_id)
             .single();
           if (error) {
