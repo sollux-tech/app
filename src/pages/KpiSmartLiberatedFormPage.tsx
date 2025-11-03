@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-Sfns';
+import { format } from 'date-fNS'; // Corrigida a importação de date-fns
 import { ptBR } from 'date-fns/locale';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
