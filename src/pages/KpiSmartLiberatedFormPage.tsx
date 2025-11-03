@@ -22,7 +22,7 @@ import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
-import { Profile } from '@/types/profile'; // Importar Profile
+import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 
 // Helper para converter string vazia para undefined para campos opcionais de número
@@ -134,8 +134,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         form.reset({
           kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
           pillar_id: kpiSmartPillarId,
-          execution_user_ids: editingKpiSmartLiberated.execution_user_types || [], // Alterado para user_ids
-          view_user_ids: editingKpiSmartLiberated.view_user_types || [], // Alterado para user_ids
+          execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [], // Corrigido para usar execution_user_ids
+          view_user_ids: editingKpiSmartLiberated.view_user_ids || [], // Corrigido para usar view_user_ids
           kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
           kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
           
@@ -221,7 +221,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   });
 
   // NEW: Fetch all profiles (owner + shared) for the current company
-  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<Profile[], Error>({
+  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<BasicProfileInfo[], Error>({ // Alterado para BasicProfileInfo[]
     queryKey: ['allRelevantUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
@@ -320,8 +320,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .insert({
           kpi_smart_id: data.kpi_smart_id,
           user_id: user.id,
-          execution_user_types: data.execution_user_ids, // Alterado para user_ids
-          view_user_types: data.view_user_ids, // Alterado para user_ids
+          execution_user_ids: data.execution_user_ids, // Alterado para user_ids
+          view_user_ids: data.view_user_ids, // Alterado para user_ids
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
           kpi_smart_status_id: data.kpi_smart_status_id,
           
@@ -363,8 +363,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
-          execution_user_types: data.execution_user_ids, // Alterado para user_ids
-          view_user_types: data.view_user_ids, // Alterado para user_ids
+          execution_user_ids: data.execution_user_ids, // Alterado para user_ids
+          view_user_ids: data.view_user_ids, // Alterado para user_ids
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
           kpi_smart_status_id: data.kpi_smart_status_id,
 
@@ -848,7 +848,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
               <FormField
                 control={form.control}
-                name="execution_user_ids" // Alterado para user_ids
+                name="execution_user_ids"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Usuários com Permissão de Execução</FormLabel>
@@ -868,7 +868,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
               <FormField
                 control={form.control}
-                name="view_user_ids" // Alterado para user_ids
+                name="view_user_ids"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Usuários com Permissão de Visualização</FormLabel>
