@@ -20,9 +20,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns';
+import { format } from 'date-A';
 import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
+import { Label } from '@/components/ui/label'; // Importar Label
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -317,25 +318,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     })) || [];
   }, [allRelevantUsers]);
 
-  // Atualiza os detalhes do KPI Smart selecionado quando o valor do formulário muda
-  useEffect(() => {
-    const selectedKpiId = form.watch('kpi_smart_id');
-    if (selectedKpiId) {
-      const details = kpiSmarts?.find(k => k.id === selectedKpiId);
-      setSelectedKpiSmartDetails(details || null);
-      // Atualiza o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
-      if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
-        form.setValue('pillar_id', details.pillar_id);
-        setSelectedPillarIdForKpiSmart(details.pillar_id); // Atualiza o estado para carregar os blocos corretos
-      }
-    } else {
-      setSelectedKpiSmartDetails(null);
-      form.setValue('pillar_id', ''); // Limpa o pilar se nenhum KPI for selecionado
-      setSelectedPillarIdForKpiSmart('');
-    }
-  }, [form.watch('kpi_smart_id'), kpiSmarts, form.setValue, setSelectedPillarIdForKpiSmart]);
-
-  const kpiSmartTypeCode = selectedKpiSmartDetails?.kpi_smart_types?.code;
+  const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
+  const kpiSmartTypeCode = selectedKpiSmart?.kpi_smart_types?.code;
 
   const mutationOptions = {
     onSuccess: () => {
