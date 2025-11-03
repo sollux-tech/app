@@ -445,6 +445,7 @@ const PulsePage: React.FC = () => {
         ) : informativeToday ? (
           <div className="space-y-4">
             {informativeToday.short_summary && (
+              // Alterado de <p> para <div> para evitar o erro de aninhamento
               <div className="prose max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: informativeToday.short_summary }} />
             )}
             <div className="mt-4 text-right">
@@ -497,14 +498,14 @@ const PulsePage: React.FC = () => {
                   <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
                   </h4>
-                  <p className="text-2xl font-bold text-foreground">
+                  <div className="text-2xl font-bold text-foreground"> {/* Alterado de <p> para <div> */}
                     {pillar.percentage.toFixed(2)}%
                     {pillar.classification && (
                       <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
                         {pillar.classification.classification_label}
                       </Badge>
                     )}
-                  </p>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -619,13 +620,14 @@ const PulsePage: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
+                        {/* O Badge é um div, então precisa estar dentro de um div, não de um p */}
+                        <Badge className={`px-2 py-1 text-xs rounded-full ${
                           job.status === 'active' 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-gray-100 text-gray-800'
                         }`}>
                           {job.status === 'active' ? 'Ativa' : 'Inativa'}
-                        </span>
+                        </Badge>
                         <Link to={`/jobs/${job.id}`}>
                           <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 rounded-lg">
                             Ver
@@ -726,13 +728,14 @@ const PulsePage: React.FC = () => {
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
+                          {/* O Badge é um div, então precisa estar dentro de um div, não de um p */}
+                          <Badge className={`px-2 py-1 text-xs rounded-full ${
                             formItem.status === 'published' 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-800'
                           }`}>
                             {formItem.status === 'published' ? 'Publicado' : 'Rascunho'}
-                          </span>
+                          </Badge>
                           <Link to={`/form/${formItem.id}`}>
                             <Button variant="ghost" size="sm" className="text-blue-600 hover:bg-blue-50 rounded-lg">
                               Ver

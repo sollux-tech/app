@@ -13,6 +13,7 @@ export interface KpiSmartAcquired {
     kpi_smart_types?: { description: string; code: number } | null;
     kpi_smart_focuses?: { description: string } | null;
     kpi_smart_units?: { description: string } | null;
+    pillar_id: string; // Adicionado pillar_id aqui
   } | null;
 }
 

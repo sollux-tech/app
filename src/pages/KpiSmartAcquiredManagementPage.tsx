@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // Importando useMemo
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
-  pillar_id: z.string().min(1, { message: 'O Pilar é obrigatório.' }), // Novo campo para o formulário
+  pillar_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }), // Novo campo para o formulário
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   status: z.boolean().default(true),
 });
@@ -80,8 +80,9 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     }
   }, [editingKpiSmartAcquired, form, isDialogOpen]);
 
-  const { data: kpiSmartsAcquired, isLoading: isLoadingKpiSmartsAcquired, error: errorKpiSmartsAcquired } = useQuery<KpiSmartAcquired[], Error>({
-    queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter], // Adicionar filtros ao queryKey
+  // Query para buscar todos os KPIs Smart Adquiridos (sem filtro de pilar na query)
+  const { data: rawKpiSmartsAcquired, isLoading: isLoadingKpiSmartsAcquired, error: errorKpiSmartsAcquired } = useQuery<KpiSmartAcquired[], Error>({
+    queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id], // Removido filtros do queryKey para buscar todos
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
       let query = supabase
@@ -93,13 +94,10 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
       
-      // Aplicar filtros da tabela
-      if (selectedPillarFilter !== 'all') {
-        query = query.eq('kpi_smarts.pillar_id', selectedPillarFilter);
-      }
-      if (selectedStatusFilter !== 'all') {
-        query = query.eq('status', selectedStatusFilter);
-      }
+      // O filtro de status permanece na query, pois é um campo direto da tabela kpi_smarts_acquired
+      // if (selectedStatusFilter !== 'all') {
+      //   query = query.eq('status', selectedStatusFilter);
+      // }
 
       query = query.order('code', { ascending: true });
       const { data, error } = await query;
@@ -111,6 +109,18 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });
+
+  // Aplicar filtros de pilar e status no lado do cliente
+  const kpiSmartsAcquired = useMemo(() => {
+    if (!rawKpiSmartsAcquired) return [];
+
+    return rawKpiSmartsAcquired.filter(item => {
+      const matchesPillar = selectedPillarFilter === 'all' || item.kpi_smarts?.pillar_id === selectedPillarFilter;
+      const matchesStatus = selectedStatusFilter === 'all' || item.status === selectedStatusFilter;
+      return matchesPillar && matchesStatus;
+    });
+  }, [rawKpiSmartsAcquired, selectedPillarFilter, selectedStatusFilter]);
+
 
   // Query para buscar todos os Pilares (para filtros e formulário)
   const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
