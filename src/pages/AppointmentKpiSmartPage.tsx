@@ -35,7 +35,7 @@ const appointmentSchema = z.object({
   type: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]), // 1: Quantitativo, 2: Marco, 3: Frequência, 4: Intervalo
   status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
 
-  // Campos condicionais
+  // Campos específicos para cada tipo de KPI Smart
   current_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   progress_percentage: emptyStringToUndefined.pipe(z.coerce.number().min(0).max(100).optional().nullable()),
   performed_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
