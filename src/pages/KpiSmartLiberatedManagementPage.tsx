@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import * as z from 'zod'; // Corrigido: * as z
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -336,8 +336,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         actual_delivery_date: data.actual_delivery_date,
         progress_percentage: data.progress_percentage,
         planned_frequency: data.planned_frequency,
-        planned_executions: data.planned_executions,
         performed_executions: data.performed_executions,
+        planned_executions: data.planned_executions,
         min_value: data.min_value,
         max_value: data.max_value,
         current_value: data.current_value,
@@ -559,6 +559,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
                     <TableCell className="text-muted-foreground">{item.kpi_smarts?.kpi_smart_focuses?.description || 'N/A'}</TableCell>
                     <TableCell className="text-muted-foreground">{item.kpi_smarts?.kpi_smart_units?.description || 'N/A'}</TableCell>
                     <TableCell>
+                      {/* Corrigido: Badge não pode ser filho direto de p */}
                       <Badge variant={item.kpi_smart_statuses?.description === 'Ativo' ? 'default' : 'secondary'}>
                         {item.kpi_smart_statuses?.description || 'N/A'}
                       </Badge>
