@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Target, ListChecks, ShoppingBag } from 'lucide-react'; // Importar ShoppingBag para o novo card
+import { Target, ListChecks, ShoppingBag, Edit } from 'lucide-react'; // Importar Edit
 
 const ShiftPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +13,10 @@ const ShiftPage: React.FC = () => {
 
   const handleKpiSmartAcquiredClick = () => {
     navigate('/ops/shift/kpi-smarts-acquired'); // Nova rota para KPIs Smart Adquiridos
+  };
+
+  const handleAppointmentClick = () => {
+    navigate('/ops/shift/appointment'); // Nova rota para a página de apontamento
   };
 
   return (
@@ -37,6 +41,12 @@ const ShiftPage: React.FC = () => {
               description="Gerencie os KPIs Smart que sua empresa adquiriu."
               icon={ShoppingBag} // Ícone para KPIs Smart Adquiridos
               onClick={handleKpiSmartAcquiredClick}
+            />
+            <FeatureCard
+              title="Apontamento de KPI Smart"
+              description="Registre dados e acompanhe o progresso dos seus KPIs Smart."
+              icon={Edit} // Ícone para apontamento
+              onClick={handleAppointmentClick}
             />
           </div>
         </CardContent>
