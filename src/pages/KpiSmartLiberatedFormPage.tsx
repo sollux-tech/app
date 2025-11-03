@@ -21,7 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-using-fns';
+import { format } from 'date-fns'; // Corrigido: import de date-fns
 import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 
@@ -129,7 +129,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId); // Set pillar first to load kpiSmarts
       
-      // Use setTimeout to allow kpiSmarts to load before resetting kpi_smart_id
       const timer = setTimeout(() => {
         form.reset({
           kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
@@ -221,7 +220,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   });
 
   // NEW: Fetch all profiles (owner + shared) for the current company
-  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<Profile[], Error>({ // Alterado para Profile[]
+  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<BasicProfileInfo[], Error>({ // Alterado para BasicProfileInfo[]
     queryKey: ['allRelevantUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
