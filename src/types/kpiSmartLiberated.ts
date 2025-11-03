@@ -3,6 +3,7 @@ export interface KpiSmartLiberated {
   user_id: string;
   code: number;
   kpi_smart_id: string;
+  pillar_id: string | null;
   execution_user_ids: string[] | null; // Alterado para user_ids
   view_user_ids: string[] | null; // Alterado para user_ids
   kpi_smart_frequency_id: string | null;

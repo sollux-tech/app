@@ -17,6 +17,7 @@ export interface KpiSmartAcquired {
 }
 
 export interface KpiSmartAcquiredFormData {
+  pillar_id: string;
   kpi_smart_id: string;
   status: boolean; // Represent 'active'/'inactive' as boolean in form
 }

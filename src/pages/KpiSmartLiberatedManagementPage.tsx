@@ -23,7 +23,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-d.ts'; // Importar format
+import { format } from 'date-fns'; // Importar format
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -74,6 +74,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
+  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
+  const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null);
 
   // Estados para os filtros
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
@@ -107,6 +109,43 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
 
   const selectedPillarIdForForm = form.watch('pillar_id');
 
+  const { data: editingKpiSmartLiberatedData, isLoading: isLoadingEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
+    queryKey: ['kpiSmartLiberated', kpiSmartLiberatedId],
+    queryFn: async () => {
+      if (!kpiSmartLiberatedId || !user?.id) {
+        throw new Error('ID do KPI Smart Liberado ou usuário faltando.');
+      }
+      const { data, error } = await supabase
+        .from('kpi_smarts_liberated')
+        .select(`
+          *,
+          kpi_smarts(id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
+          kpi_smart_frequencies(description),
+          kpi_smart_statuses(description, id)
+        `)
+        .eq('id', kpiSmartLiberatedId)
+        .eq('user_id', user.id)
+        .single();
+      if (error) throw error;
+      return {
+        ...data,
+        kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
+        kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
+        kpi_smart_statuses: Array.isArray(data.kpi_smart_statuses) ? data.kpi_smart_statuses[0] : data.kpi_smart_statuses,
+      };
+    },
+    enabled: isEditing && !!user?.id,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (editingKpiSmartLiberatedData) {
+      setEditingKpiSmartLiberated(editingKpiSmartLiberatedData);
+    } else if (!isEditing) {
+      setEditingKpiSmartLiberated(null);
+    }
+  }, [editingKpiSmartLiberatedData, isEditing]);
+
   useEffect(() => {
     if (isEditing && editingKpiSmartLiberated) {
       form.reset({
@@ -131,6 +170,40 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         current_value: editingKpiSmartLiberated.current_value || null,
       });
       setSelectedPillarIdForKpiSmart(editingKpiSmartLiberated.pillar_id || '');
+
+      if (editingKpiSmartLiberated.kpi_smart_id) {
+        const fetchKpiSmartDetails = async () => {
+          const { data: kpiDetails, error } = await supabase
+            .from('kpi_smarts')
+            .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+            .eq('id', editingKpiSmartLiberated.kpi_smart_id)
+            .single();
+          if (error) {
+            console.error('Erro ao buscar detalhes do KPI Smart:', error);
+            return;
+          }
+          if (kpiDetails) {
+            setSelectedKpiSmartDetails({
+              ...kpiDetails,
+              user_id: kpiDetails.user_id || '',
+              code: kpiDetails.code || 0,
+              kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
+              kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
+              kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
+              kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id || '',
+              status: (kpiDetails.status as KpiSmart['status']) || 'active',
+              created_at: kpiDetails.created_at || new Date().toISOString(),
+              kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
+              kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
+              kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
+            });
+          }
+        };
+
+        fetchKpiSmartDetails();
+      } else {
+        setSelectedKpiSmartDetails(null);
+      }
     } else {
       form.reset({
         kpi_smart_id: '',
@@ -154,6 +227,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         current_value: null,
       });
       setSelectedPillarIdForKpiSmart('');
+      setSelectedKpiSmartDetails(null);
     }
   }, [isEditing, editingKpiSmartLiberated, form, isDialogOpen]);
 
@@ -936,4 +1010,4 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
   );
 };
 
-export default KpiSmartLiberatedFormPage;
+export default KpiSmartLiberatedManagementPage;
