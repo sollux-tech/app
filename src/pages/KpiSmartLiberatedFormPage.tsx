@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns'; // Corrigido: import de date-fns
+import { format } from 'date-fns';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -105,7 +105,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .select(`
           *,
-          kpi_smarts(id, description, pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
+          kpi_smarts(id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
           kpi_smart_frequencies(description),
           kpi_smart_statuses(description, id)
         `)
@@ -133,13 +133,13 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         if (editingKpiSmartLiberated.kpi_smart_id) {
           const { data: kpiDetails, error } = await supabase
             .from('kpi_smarts')
-            .select('id, description, pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+            .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
             .eq('id', editingKpiSmartLiberated.kpi_smart_id)
             .single();
           if (error) {
             console.error("Erro ao buscar detalhes do KPI Smart:", error);
           } else {
-            setSelectedKpiSmartDetails(kpiDetails as KpiSmart); // Type assertion
+            setSelectedKpiSmartDetails(kpiDetails as KpiSmart);
           }
         }
       };
@@ -207,19 +207,13 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       if (!user?.id || !selectedPillarIdForKpiSmart) return [];
       const { data, error } = await supabase
         .from('kpi_smarts')
-        .select('id, description, pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+        .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .eq('pillar_id', selectedPillarIdForKpiSmart)
         .order('description', { ascending: true });
       if (error) throw error;
-      // Ensure nested objects are handled correctly
-      return data.map(item => ({
-        ...item,
-        kpi_smart_types: Array.isArray(item.kpi_smart_types) ? item.kpi_smart_types[0] : item.kpi_smart_types,
-        kpi_smart_focuses: Array.isArray(item.kpi_smart_focuses) ? item.kpi_smart_focuses[0] : item.kpi_smart_focuses,
-        kpi_smart_units: Array.isArray(item.kpi_smart_units) ? item.kpi_smart_units[0] : item.kpi_smart_units,
-      })) as KpiSmart[];
+      return data;
     },
     enabled: !!user?.id && !!selectedPillarIdForKpiSmart,
   });
@@ -530,7 +524,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
                       if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
                         form.setValue('pillar_id', details.pillar_id);
-                        setSelectedPillarIdForKpiSmart(details.pillar_id); // Atualiza o estado para carregar os blocos corretos
+                        setSelectedPillarIdForKpiSmart(details.pillar_id);
                       }
                     }} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
                       <FormControl>
@@ -642,7 +636,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       <Label className="text-foreground">Unidade:</Label>
                       <p className="text-muted-foreground">{selectedKpiSmartDetails.kpi_smart_units?.description || 'N/A'}</p>
                     </div>
-                    {/* Adicionar mais detalhes se necessário */}
                   </div>
                 </Card>
               )}
