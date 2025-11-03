@@ -17,7 +17,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Edit, Trash2, Copy, Share2, MessageCircle, Mail, Building2, Calendar, DollarSign, Percent, TrendingUp, BarChart2, ListChecks, ListTodo, Blocks, Scale, Target, Tag, ClipboardCheck, Award, Lightbulb, Ruler, Repeat, CheckCircle, Zap, X, ChevronsUpDown, Search, UserCog, Newspaper, LayoutDashboard, Settings, Bell, LogOut, Home, FileText, Calculator } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns'; // Corrigida a importação de date-fns
@@ -25,6 +25,10 @@ import { ptBR } from 'date-fns/locale';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 // Helper para converter string vazia para undefined para campos opcionais de número
 const emptyStringToUndefined = z.preprocess(
@@ -72,6 +76,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
   const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
   const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State for the dialog
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -139,11 +144,25 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
             .single();
           if (error) {
             console.error("Erro ao buscar detalhes do KPI Smart:", error);
-          } else {
+          } else if (kpiDetails) {
             // Ensure kpiDetails conforms to KpiSmart type before setting state
-            if (kpiDetails) {
-              setSelectedKpiSmartDetails(kpiDetails as KpiSmart);
-            }
+            const safeKpiDetails: KpiSmart = {
+              id: kpiDetails.id,
+              user_id: kpiDetails.user_id,
+              code: kpiDetails.code,
+              description: kpiDetails.description,
+              pillar_id: kpiDetails.pillar_id,
+              kpi_smart_type_id: kpiDetails.kpi_smart_type_id,
+              kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id,
+              kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id,
+              kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id,
+              status: kpiDetails.status,
+              created_at: kpiDetails.created_at,
+              kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
+              kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
+              kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
+            };
+            setSelectedKpiSmartDetails(safeKpiDetails);
           }
         }
       };
