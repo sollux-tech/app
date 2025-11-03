@@ -45,6 +45,7 @@ export interface KpiSmartLiberated {
 
 export interface KpiSmartLiberatedFormData {
   kpi_smart_id: string;
+  pillar_id: string; // Adicionado ao formulário
   execution_user_ids: string[] | null; // Alterado para user_ids
   view_user_ids: string[] | null; // Alterado para user_ids
   kpi_smart_frequency_id: string;

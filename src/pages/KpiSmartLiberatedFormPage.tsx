@@ -11,7 +11,7 @@ import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
-import { UserType } from '@/types/userType'; // Manter import para caso de uso futuro, mas não será usado diretamente aqui
+import { UserType } from '@/types/userType';
 import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
 import { KpiSmartStatus } from '@/types/kpiSmartStatus'; // Importar KpiSmartStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -21,7 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns';
+import { format } from 'date-using-fns';
 import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 
@@ -221,7 +221,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   });
 
   // NEW: Fetch all profiles (owner + shared) for the current company
-  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<BasicProfileInfo[], Error>({ // Alterado para BasicProfileInfo[]
+  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<Profile[], Error>({ // Alterado para Profile[]
     queryKey: ['allRelevantUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
@@ -252,10 +252,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name')
+        .select('id, first_name, last_name') // Seleciona apenas os campos necessários
         .in('id', uniqueUserIds);
       if (profilesError) throw profilesError;
-      return profiles;
+      return profiles; // Retorna um array de perfis compatíveis com BasicProfileInfo
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });
