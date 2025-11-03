@@ -87,7 +87,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
         `)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
-        .eq('execution_user_ids ?|', [user.id]); // Verifica se o usuário tem permissão de execução
+        .contains('execution_user_ids', [user.id]); // Verifica se o usuário tem permissão de execução
 
       // Aplicar filtros
       if (filters.pillar_id) {
@@ -276,7 +276,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Lista de Appointments */}
+          {/* Lista de Apontamentos */}
           <Card>
             <CardHeader>
               <CardTitle>Meus Apontamentos</CardTitle>
@@ -284,8 +284,6 @@ const AppointmentKpiSmartPage: React.FC = () => {
             <CardContent>
               {isLoadingAppointments ? (
                 <p>Carregando apontamentos...</p>
-              ) : errorAppointments ? (
-                <p className="text-destructive">Erro ao carregar apontamentos: {errorAppointments.message}</p>
               ) : appointments.length === 0 ? (
                 <p>Nenhum apontamento encontrado.</p>
               ) : (
