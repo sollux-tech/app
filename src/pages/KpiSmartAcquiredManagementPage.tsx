@@ -39,7 +39,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<z.infer<typeof formSchema>>({ // Usar z.infer para o tipo do form
+  const form = useForm<KpiSmartAcquiredFormData>({ // Corrigido o tipo do form
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '', // Valor padrão para o novo campo
