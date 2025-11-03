@@ -72,6 +72,7 @@ import ShiftPage from './pages/ShiftPage'; // Importar a nova página ShiftPage
 import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; // Importar a nova página
 import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
 import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
+import AppointmentKpiSmartPage from './pages/AppointmentKpiSmartPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -193,6 +194,7 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> {/* Nova rota */}
+                  <Route path="/ops/shift/appointment" element={<AppointmentKpiSmartPage />} /> {/* Nova rota */}
                   <Route path="/core" element={<CorePage />} /> 
                   <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
@@ -260,3 +262,63 @@ function App() {
 }
 
 export default App;
+```
+<dyad-write path="src/pages/ShiftPage.tsx" description="Adicionando o novo FeatureCard para 'Apontamento KPI Smart' na página ShiftPage.">
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import FeatureCard from '@/components/FeatureCard';
+import { Target, ListChecks, ShoppingBag, Edit } from 'lucide-react'; // Adicionar Edit
+
+const ShiftPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleKpiSmartLiberatedClick = () => {
+    navigate('/ops/shift/kpi-smarts-liberated');
+  };
+
+  const handleKpiSmartAcquiredClick = () => {
+    navigate('/ops/shift/kpi-smarts-acquired');
+  };
+
+  const handleAppointmentKpiSmartClick = () => {
+    navigate('/ops/shift/appointment');
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
+        <CardHeader>
+          <CardTitle className="text-4xl font-bold mb-4 text-foreground">SOLLUX SHIFT™</CardTitle>
+          <CardDescription className="text-xl text-muted-foreground">
+            Definição de metas e construção de um plano de ação.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <FeatureCard
+              title="Gerenciar KPIs Smart Liberados"
+              description="Selecione e gerencie os KPIs Smart que estarão disponíveis para uso."
+              icon={ListChecks}
+              onClick={handleKpiSmartLiberatedClick}
+            />
+            <FeatureCard
+              title="KPIs Smart Adquiridos"
+              description="Gerencie os KPIs Smart que sua empresa adquiriu."
+              icon={ShoppingBag}
+              onClick={handleKpiSmartAcquiredClick}
+            />
+            <FeatureCard
+              title="Apontamento KPI Smart"
+              description="Registre dados para KPIs Smart liberados."
+              icon={Edit}
+              onClick={handleAppointmentKpiSmartClick}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ShiftPage;
