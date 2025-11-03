@@ -66,6 +66,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const { id: kpiSmartLiberatedId } = useParams<{ id: string }>();
   const isEditing = !!kpiSmartLiberatedId;
 
+  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -90,8 +92,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       current_value: null, // Alterado para null
     },
   });
-
-  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
 
   // Fetch existing KpiSmartLiberated for editing
   const { data: editingKpiSmartLiberated, isLoading: isLoadingEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
