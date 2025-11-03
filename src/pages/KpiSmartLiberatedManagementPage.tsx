@@ -8,39 +8,46 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
-import { KpiSmartAcquired, KpiSmartAcquiredFormData } from '@/types/kpiSmartAcquired';
+import { KpiSmartLiberated } from '@/types/kpiSmartLiberated'; // Alterado para KpiSmartLiberated
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
-import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Loader2, Plus, Edit, Trash2 } from 'lucide-react'; // Importado Plus, Edit, Trash2
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'; // Importado componentes de tabela
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'; // Importado componentes de diálogo
+import { Switch } from '@/components/ui/switch'; // Importado Switch
+import { Badge } from '@/components/ui/badge'; // Importado Badge
 
+// Esquema de validação para o formulário de KpiSmartLiberated
 const formSchema = z.object({
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   status: z.boolean().default(true),
 });
 
-const KpiSmartAcquiredManagementPage: React.FC = () => {
+// Tipo para os dados do formulário
+type KpiSmartLiberatedManagementFormData = z.infer<typeof formSchema>;
+
+const KpiSmartLiberatedManagementPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
   const navigate = useNavigate();
 
-  const [editingKpiSmartAcquired, setEditingKpiSmartAcquired] = useState<KpiSmartAcquired | null>(null);
-  const [isLoadingEditingKpiSmartAcquired, setIsLoadingEditingKpiSmartAcquired] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
   const [selectedPillarIdForForm, setSelectedPillarIdForForm] = useState<string>('');
   const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null);
 
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<KpiSmartAcquiredFormData>({
+  const form = useForm<KpiSmartLiberatedManagementFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '',
@@ -49,25 +56,21 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     },
   });
 
-  const { id: kpiSmartAcquiredId } = useParams<{ id: string }>();
-  const isEditing = !!kpiSmartAcquiredId;
-
   useEffect(() => {
-    if (editingKpiSmartAcquired) {
-      const kpiSmartPillarId = (editingKpiSmartAcquired.kpi_smarts as any)?.pillar_id || '';
+    if (editingKpiSmartLiberated) {
+      const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       setSelectedPillarIdForForm(kpiSmartPillarId);
       
       const fetchKpiSmartDetails = async () => {
-        if (editingKpiSmartAcquired.kpi_smart_id) {
+        if (editingKpiSmartLiberated.kpi_smart_id) {
           const { data: kpiDetails, error } = await supabase
             .from('kpi_smarts')
             .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
-            .eq('id', editingKpiSmartAcquired.kpi_smart_id)
+            .eq('id', editingKpiSmartLiberated.kpi_smart_id)
             .single();
           if (error) {
             console.error("Erro ao buscar detalhes do KPI Smart:", error);
           } else if (kpiDetails) {
-            // Fix type conversion by ensuring the structure matches KpiSmart
             const safeKpiDetails: KpiSmart = {
               id: kpiDetails.id,
               user_id: kpiDetails.user_id,
@@ -94,8 +97,8 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
       const timer = setTimeout(() => {
         form.reset({
           pillar_id: kpiSmartPillarId,
-          kpi_smart_id: editingKpiSmartAcquired.kpi_smart_id,
-          status: editingKpiSmartAcquired.status === 'active',
+          kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
+          status: editingKpiSmartLiberated.status === 'active',
         });
       }, 100);
       return () => clearTimeout(timer);
@@ -108,15 +111,18 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
       setSelectedPillarIdForForm('');
       setSelectedKpiSmartDetails(null);
     }
-  }, [editingKpiSmartAcquired, form]);
+  }, [editingKpiSmartLiberated, form]);
 
-  const { data: kpiSmartsAcquired, isLoading: isLoadingKpiSmartsAcquired } = useQuery<KpiSmartAcquired[], Error>({
-    queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter],
+  const { data: kpiSmartsLiberated, isLoading: isLoadingKpiSmartsLiberated, error: errorKpiSmartsLiberated } = useQuery<KpiSmartLiberated[], Error>({
+    queryKey: ['kpiSmartsLiberated', user?.id, selectedCompany?.id, selectedPillarFilter, selectedStatusFilter],
     queryFn: async () => {
       if (!user?.id || !selectedCompany?.id) return [];
       let query = supabase
-        .from('kpi_smarts_acquired')
-        .select('*, kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description))')
+        .from('kpi_smarts_liberated')
+        .select(`
+          *,
+          kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id)
+        `)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
       
@@ -130,13 +136,16 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
       query = query.order('code', { ascending: true });
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data.map(item => ({
+        ...item,
+        kpi_smarts: Array.isArray(item.kpi_smarts) ? item.kpi_smarts[0] : item.kpi_smarts,
+      }));
     },
     enabled: !!user?.id && !!selectedCompany?.id,
   });
 
   const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['pillars', user?.id],
+    queryKey: ['pillarsListForKpiSmartLiberated', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
       const { data, error } = await supabase
@@ -151,7 +160,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   });
 
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
-    queryKey: ['kpiSmarts', user?.id, selectedPillarIdForForm],
+    queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForForm],
     queryFn: async () => {
       if (!user?.id || !selectedPillarIdForForm) return [];
       const { data, error } = await supabase
@@ -169,20 +178,21 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
 
   const mutationOptions = {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id] });
-      setEditingKpiSmartAcquired(null);
-      showSuccess('KPI Smart adquirido com sucesso!');
+      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id, selectedCompany?.id] });
+      setIsDialogOpen(false);
+      setEditingKpiSmartLiberated(null);
+      showSuccess('KPI Smart Liberado salvo com sucesso!');
     },
     onError: (error: Error) => {
       showError(`Erro: ${error.message}`);
     },
   };
 
-  const createKpiSmartAcquiredMutation = useMutation({
-    mutationFn: async (data: KpiSmartAcquiredFormData) => {
+  const createKpiSmartLiberatedMutation = useMutation({
+    mutationFn: async (data: KpiSmartLiberatedManagementFormData) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário ou empresa não selecionada.");
-      const { data: newKpiSmartAcquired, error } = await supabase
-        .from('kpi_smarts_acquired')
+      const { data: newKpiSmartLiberated, error } = await supabase
+        .from('kpi_smarts_liberated')
         .insert({
           pillar_id: data.pillar_id,
           kpi_smart_id: data.kpi_smart_id,
@@ -193,7 +203,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
         .select()
         .single();
       if (error) throw error;
-      return newKpiSmartAcquired;
+      return newKpiSmartLiberated;
     },
     ...mutationOptions,
     onSuccess: () => {
@@ -202,24 +212,24 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     },
   });
 
-  const updateKpiSmartAcquiredMutation = useMutation({
-    mutationFn: async (data: KpiSmartAcquiredFormData) => {
-      if (!kpiSmartAcquiredId) throw new Error("ID do KPI Smart adquirido está faltando.");
+  const updateKpiSmartLiberatedMutation = useMutation({
+    mutationFn: async (data: KpiSmartLiberatedManagementFormData) => {
+      if (!editingKpiSmartLiberated?.id) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário ou empresa não selecionada.");
-      const { data: updatedKpiSmartAcquired, error } = await supabase
-        .from('kpi_smarts_acquired')
+      const { data: updatedKpiSmartLiberated, error } = await supabase
+        .from('kpi_smarts_liberated')
         .update({
           pillar_id: data.pillar_id,
           kpi_smart_id: data.kpi_smart_id,
           status: data.status ? 'active' : 'inactive',
         })
-        .eq('id', kpiSmartAcquiredId)
+        .eq('id', editingKpiSmartLiberated.id)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id)
         .select()
         .single();
       if (error) throw error;
-      return updatedKpiSmartAcquired;
+      return updatedKpiSmartLiberated;
     },
     ...mutationOptions,
     onSuccess: () => {
@@ -228,75 +238,77 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     },
   });
 
-  const deleteKpiSmartAcquiredMutation = useMutation({
+  const deleteKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (id: string) => {
       if (!user?.id || !selectedCompany?.id) throw new Error("Usuário ou empresa não selecionada.");
       const { error, count } = await supabase
-        .from('kpi_smarts_acquired')
+        .from('kpi_smarts_liberated')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
       
       if (error) throw error;
-      if (count === 0) throw new Error("KPI Smart adquirido não encontrado ou você não tem permissão para excluí-lo.");
+      if (count === 0) throw new Error("KPI Smart Liberado não encontrado ou você não tem permissão para excluí-lo.");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['kpiSmartsAcquired', user?.id, selectedCompany?.id] });
-      showSuccess('KPI Smart adquirido excluído com sucesso!');
-      setEditingKpiSmartAcquired(null);
+      queryClient.invalidateQueries({ queryKey: ['kpiSmartsLiberated', user?.id, selectedCompany?.id] });
+      showSuccess('KPI Smart Liberado excluído com sucesso!');
+      setEditingKpiSmartLiberated(null);
     },
     onError: (error: Error) => {
       showError(`Erro: ${error.message}`);
     },
   });
 
-  const onSubmit = (data: KpiSmartAcquiredFormData) => {
-    if (isEditing) {
-      updateKpiSmartAcquiredMutation.mutate(data);
+  const onSubmit = (data: KpiSmartLiberatedManagementFormData) => {
+    if (editingKpiSmartLiberated) {
+      updateKpiSmartLiberatedMutation.mutate(data);
     } else {
-      createKpiSmartAcquiredMutation.mutate(data);
+      createKpiSmartLiberatedMutation.mutate(data);
     }
   };
 
   const handleAddClick = () => {
-    setEditingKpiSmartAcquired(null);
+    setEditingKpiSmartLiberated(null);
     setSelectedPillarIdForForm('');
     setSelectedKpiSmartDetails(null);
     form.reset();
+    setIsDialogOpen(true);
   };
 
-  const handleEditClick = (kpiSmartAcquired: KpiSmartAcquired) => {
-    setEditingKpiSmartAcquired(kpiSmartAcquired);
+  const handleEditClick = (kpiSmartLiberated: KpiSmartLiberated) => {
+    setEditingKpiSmartLiberated(kpiSmartLiberated);
+    setIsDialogOpen(true);
   };
 
   const handleDeleteClick = (id: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este KPI Smart adquirido?')) {
-      deleteKpiSmartAcquiredMutation.mutate(id);
+    if (window.confirm('Tem certeza que deseja excluir este KPI Smart Liberado?')) {
+      deleteKpiSmartLiberatedMutation.mutate(id);
     }
   };
 
-  const isMutating = createKpiSmartAcquiredMutation.isPending || updateKpiSmartAcquiredMutation.isPending || deleteKpiSmartAcquiredMutation.isPending;
+  const isMutating = createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || deleteKpiSmartLiberatedMutation.isPending;
 
   if (!selectedCompany) {
     return (
       <div className="text-center text-muted-foreground py-8">
-        Por favor, selecione uma empresa na barra lateral para gerenciar os KPIs Smart adquiridos.
+        Por favor, selecione uma empresa na barra lateral para gerenciar os KPIs Smart Liberados.
       </div>
     );
   }
 
-  if (isLoadingKpiSmartsAcquired) {
-    return <div className="text-center text-muted-foreground">Carregando KPIs Smart adquiridos...</div>;
+  if (isLoadingKpiSmartsLiberated) {
+    return <div className="text-center text-muted-foreground">Carregando KPIs Smart Liberados...</div>;
   }
 
   return (
     <div className="space-y-6">
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-foreground uppercase font-bold">KPIs Smart Adquiridos</CardTitle>
+          <CardTitle className="text-foreground uppercase font-bold">KPIs Smart Liberados</CardTitle>
           <Button onClick={handleAddClick} className="bg-sollux-red hover:bg-sollux-red/90 text-white rounded-lg">
-            <Plus className="mr-2 h-4 w-4" /> Adquirir KPI Smart
+            <Plus className="mr-2 h-4 w-4" /> Liberar KPI Smart
           </Button>
         </CardHeader>
         <CardContent>
@@ -343,28 +355,28 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {kpiSmartsAcquired?.length === 0 ? (
+              {kpiSmartsLiberated?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Nenhum KPI Smart adquirido encontrado para esta empresa.
+                    Nenhum KPI Smart Liberado encontrado para esta empresa.
                   </TableCell>
                 </TableRow>
               ) : (
-                kpiSmartsAcquired?.map((kpiSmartAcquired) => (
-                  <TableRow key={kpiSmartAcquired.id}>
-                    <TableCell className="font-medium text-foreground">{kpiSmartAcquired.code}</TableCell>
-                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.pillar_id}</TableCell>
-                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smart_id}</TableCell>
+                kpiSmartsLiberated?.map((kpiSmartLiberated) => (
+                  <TableRow key={kpiSmartLiberated.id}>
+                    <TableCell className="font-medium text-foreground">{kpiSmartLiberated.code}</TableCell>
+                    <TableCell className="text-muted-foreground">{kpiSmartLiberated.kpi_smarts?.pillar_id}</TableCell>
+                    <TableCell className="text-muted-foreground">{kpiSmartLiberated.kpi_smarts?.description || 'N/A'}</TableCell>
                     <TableCell>
-                      <Badge variant={kpiSmartAcquired.status === 'active' ? 'default' : 'secondary'}>
-                        {kpiSmartAcquired.status === 'active' ? 'Ativo' : 'Inativo'}
+                      <Badge variant={kpiSmartLiberated.status === 'active' ? 'default' : 'secondary'}>
+                        {kpiSmartLiberated.status === 'active' ? 'Ativo' : 'Inativo'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleEditClick(kpiSmartAcquired)}
+                        onClick={() => handleEditClick(kpiSmartLiberated)}
                         className="mr-2 text-foreground hover:bg-accent rounded-lg"
                         disabled={isMutating}
                       >
@@ -373,7 +385,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteClick(kpiSmartAcquired.id)}
+                        onClick={() => handleDeleteClick(kpiSmartLiberated.id)}
                         className="bg-sollux-red hover:bg-red-700 text-white rounded-lg"
                         disabled={isMutating}
                       >
@@ -392,7 +404,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
         <DialogContent className="sm:max-w-lg bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              {isEditing ? 'Editar KPI Smart Adquirido' : 'Adquirir Novo KPI Smart'}
+              {editingKpiSmartLiberated ? 'Editar KPI Smart Liberado' : 'Liberar Novo KPI Smart'}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
@@ -403,7 +415,11 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">Pilar</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingPillars}>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      setSelectedPillarIdForForm(value);
+                      form.setValue('kpi_smart_id', ''); // Limpar KPI Smart quando o pilar muda
+                    }} value={field.value} disabled={isLoadingPillars}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione o pilar" />
@@ -412,7 +428,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                       <SelectContent>
                         {isLoadingPillars ? (
                           <SelectItem value="loading" disabled>Carregando pilares...</SelectItem>
-                        ) : pillars?.length === 0 ? (
+                        ) : (pillars && pillars.length === 0) ? (
                           <SelectItem value="no-pillars" disabled>Nenhum pilar disponível</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
@@ -480,7 +496,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {isEditing ? 'Salvar Alterações' : 'Adquirir KPI Smart'}
+                  {editingKpiSmartLiberated ? 'Salvar Alterações' : 'Liberar KPI Smart'}
                 </Button>
               </DialogFooter>
             </form>
@@ -491,4 +507,4 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   );
 };
 
-export default KpiSmartAcquiredManagementPage;
+export default KpiSmartLiberatedManagementPage;
