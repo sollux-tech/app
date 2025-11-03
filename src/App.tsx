@@ -47,7 +47,7 @@ import KpiManagementPage from './pages/KpiManagementPage';
 import CompanyFormPage from './pages/CompanyFormPage';
 import MarketManagementPage from './pages/MarketManagementPage';
 import AllInformativesPage from './pages/AllInformativesPage';
-import { ThemeProvider, useTheme } from './components/ThemeProvider'; // Importar useTheme
+import { ThemeProvider, useTheme } from './components/ThemeProvider'; 
 import DocumentManagementPage from './pages/DocumentManagementPage';
 import AllDocumentsPage from './pages/AllDocumentsPage';
 import TagManagementPage from './pages/TagManagementPage';
@@ -59,30 +59,30 @@ import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionn
 import ClassificationScaleManagementPage from './pages/ClassificationScaleManagementPage';
 import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage';
 import FlowPage from './pages/FlowPage';
-import PublicDiagnosticResultsPage from './pages/PublicDiagnosticResultsPage'; // Importar a nova página
-import ShopPage from './pages/ShopPage'; // Importar a nova página ShopPage
-import KpiSmartTypeManagementPage from './pages/KpiSmartTypeManagementPage'; // Importar a nova página
-import KpiSmartUnitManagementPage from './pages/KpiSmartUnitManagementPage'; // Importar a nova página
-import KpiSmartFrequencyManagementPage from './pages/KpiSmartFrequencyManagementPage'; // Importar a nova página
-import KpiSmartStatusManagementPage from './pages/KpiSmartStatusManagementPage'; // Importar a nova página
-import KpiSmartFocusManagementPage from './pages/KpiSmartFocusManagementPage'; // Importar a nova página
-import KpiSmartActionVerbManagementPage from './pages/KpiSmartActionVerbManagementPage'; // Importar a nova página
-import KpiSmartManagementPage from './pages/KpiSmartManagementPage'; // Importar a nova página
-import ShiftPage from './pages/ShiftPage'; // Importar a nova página ShiftPage
-import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; // Importar a nova página
-import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
-import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
+import PublicDiagnosticResultsPage from './pages/PublicDiagnosticResultsPage'; 
+import ShopPage from './pages/ShopPage'; 
+import KpiSmartTypeManagementPage from './pages/KpiSmartTypeManagementPage'; 
+import KpiSmartUnitManagementPage from './pages/KpiSmartUnitManagementPage'; 
+import KpiSmartFrequencyManagementPage from './pages/KpiSmartFrequencyManagementPage'; 
+import KpiSmartStatusManagementPage from './pages/KpiSmartStatusManagementPage'; 
+import KpiSmartFocusManagementPage from './pages/KpiSmartFocusManagementPage'; 
+import KpiSmartActionVerbManagementPage from './pages/KpiSmartActionVerbManagementPage'; 
+import KpiSmartManagementPage from './pages/KpiSmartManagementPage'; 
+import ShiftPage from './pages/ShiftPage'; 
+import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; 
+import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; 
+import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; 
+import AppointmentKpiSmartPage from './pages/AppointmentKpiSmartPage'; // Importar a nova página
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Desativa a busca de dados ao focar na janela para maior estabilidade
-      retry: 1, // Tenta novamente apenas 1 vez em caso de erro
+      refetchOnWindowFocus: false, 
+      retry: 1, 
     },
   },
 });
 
-// Componente para proteger rotas, agora mais robusto
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { session, isLoading } = useSession();
 
@@ -101,19 +101,17 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <>{children}</>;
 };
 
-// Novo componente para encapsular o conteúdo principal do App
 const AppContent: React.FC = () => {
   const { profile, isLoading: isLoadingProfile } = useSession();
-  const { setTheme } = useTheme(); // Obter a função setTheme do ThemeProvider
+  const { setTheme } = useTheme(); 
 
   useEffect(() => {
     if (!isLoadingProfile && profile?.theme) {
-      console.log("AppContent: Setting theme from profile:", profile.theme); // Log para depuração
-      setTheme(profile.theme); // Definir o tema do perfil assim que ele for carregado
+      console.log("AppContent: Setting theme from profile:", profile.theme); 
+      setTheme(profile.theme); 
       
-      // Forçar a atualização do atributo data-theme e color-scheme no elemento <html>
       const htmlElement = document.documentElement;
-      if (htmlElement) { // Adicionar verificação para htmlElement
+      if (htmlElement) { 
         if (profile.theme === 'dark') {
           htmlElement.classList.add('dark');
           htmlElement.setAttribute('data-theme', 'dark');
@@ -126,10 +124,9 @@ const AppContent: React.FC = () => {
       }
     } else if (!isLoadingProfile && !profile?.theme) {
       console.log("AppContent: Profile loaded, but no theme found. Defaulting to system.");
-      setTheme("system"); // Garante que um tema seja definido mesmo se o perfil não tiver um
-      // Aplicar tema 'system' ao <html> se não houver tema no perfil
+      setTheme("system"); 
       const htmlElement = document.documentElement;
-      if (htmlElement) { // Adicionar verificação para htmlElement
+      if (htmlElement) { 
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
           htmlElement.classList.add('dark');
           htmlElement.setAttribute('data-theme', 'dark');
@@ -155,10 +152,9 @@ const AppContent: React.FC = () => {
     <ThemeProvider defaultTheme={profile?.theme || "system"} storageKey="vite-ui-theme">
       <Routes>
         <Route path="/login" element={<Login />} />
-        {/* A rota /jobs/:id e /form/:id permanecem fora do ProtectedRoute para acesso público */}
         <Route path="/jobs/:id" element={<PublicJobPage />} />
         <Route path="/form/:id" element={<PublicFormPage />} />
-        <Route path="/informative/:id" element={<PublicInformativePage />} /> {/* Rota pública */}
+        <Route path="/informative/:id" element={<PublicInformativePage />} /> 
         <Route
           path="*"
           element={
@@ -187,12 +183,13 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
                   <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} />
                   <Route path="/ops/flow" element={<FlowPage />} />
-                  <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> {/* Nova rota */}
-                  <Route path="/ops/shift" element={<ShiftPage />} /> {/* Nova rota */}
-                  <Route path="/ops/shift/kpi-smarts-liberated" element={<KpiSmartLiberatedManagementPage />} /> {/* Nova rota */}
-                  <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
-                  <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
-                  <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> {/* Nova rota */}
+                  <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> 
+                  <Route path="/ops/shift" element={<ShiftPage />} /> 
+                  <Route path="/ops/shift/kpi-smarts-liberated" element={<KpiSmartLiberatedManagementPage />} /> 
+                  <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> 
+                  <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> 
+                  <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> 
+                  <Route path="/ops/shift/appointment" element={<AppointmentKpiSmartPage />} /> {/* Nova rota */}
                   <Route path="/core" element={<CorePage />} /> 
                   <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
@@ -218,16 +215,15 @@ const AppContent: React.FC = () => {
                   <Route path="/core/global-settings/ops/kpi-smart-statuses" element={<KpiSmartStatusManagementPage />} />
                   <Route path="/core/global-settings/ops/kpi-smart-focuses" element={<KpiSmartFocusManagementPage />} />
                   <Route path="/core/global-settings/ops/kpi-smart-action-verbs" element={<KpiSmartActionVerbManagementPage />} />
-                  <Route path="/core/global-settings/ops/kpi-smarts" element={<KpiSmartManagementPage />} /> {/* Nova rota */}
+                  <Route path="/core/global-settings/ops/kpi-smarts" element={<KpiSmartManagementPage />} /> 
                   <Route path="/core/sidebar-settings" element={<SidebarSettingsPage />} />
                   <Route path="/core/notifications" element={<NotificationManagementPage />} />
                   <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                   <Route path="/core/data-doctor" element={<DataDoctorPage />} />
                   <Route path="/core/markets" element={<MarketManagementPage />} /> 
                   <Route path="/core/documents" element={<DocumentManagementPage />} />
-                  <Route path="/shop" element={<ShopPage />} /> {/* Nova rota para ShopPage */}
+                  <Route path="/shop" element={<ShopPage />} /> 
                   
-                  {/* Rotas SOLLUX FORM™ */}
                   <Route path="/connect/forms" element={<FormsPage />} />
                   <Route path="/connect/forms/new" element={<FormCreatePage />} /> 
                   <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
@@ -250,7 +246,7 @@ function App() {
           <SessionContextProvider>
             <CompanyProvider>
               <Toaster />
-              <AppContent /> {/* Renderiza o novo componente aqui */}
+              <AppContent /> 
             </CompanyProvider>
           </SessionContextProvider>
         </QueryClientProvider>

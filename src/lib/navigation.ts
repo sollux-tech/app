@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb, Ruler, Repeat, CheckCircle, Zap } from 'lucide-react';
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb, Ruler, Repeat, CheckCircle, Zap, Edit } from 'lucide-react';
 
 interface RouteInfo {
   name: string;
@@ -29,18 +29,19 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/insight/answer-questionnaire': { name: 'Responder Questionário', parent: '/ops/insight', icon: MessageSquareText }, 
   '/ops/insight/evaluation': { name: 'Avaliação do Diagnóstico', parent: '/ops/insight', icon: Award },
   '/ops/flow': { name: 'SOLLUX FLOW™', parent: '/ops', icon: TrendingUp },
-  '/ops/flow/diagnostic-results/:id': { name: 'Resultados do Diagnóstico', parent: '/ops/flow' }, // Nova rota
-  '/ops/shift': { name: 'SOLLUX SHIFT™', parent: '/ops', icon: Target }, // Nova rota
-  '/ops/shift/kpi-smarts-liberated': { name: 'Gerenciar KPIs Smart Liberados', parent: '/ops/shift', icon: ListChecks }, // Nova rota
-  '/ops/shift/kpi-smarts-liberated/new': { name: 'Liberar Novo KPI Smart', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
-  '/ops/shift/kpi-smarts-liberated/:id': { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
-  '/ops/shift/kpi-smarts-acquired': { name: 'KPIs Smart Adquiridos', parent: '/ops/shift', icon: ShoppingBag }, // Nova rota
+  '/ops/flow/diagnostic-results/:id': { name: 'Resultados do Diagnóstico', parent: '/ops/flow' }, 
+  '/ops/shift': { name: 'SOLLUX SHIFT™', parent: '/ops', icon: Target }, 
+  '/ops/shift/kpi-smarts-liberated': { name: 'Gerenciar KPIs Smart Liberados', parent: '/ops/shift', icon: ListChecks }, 
+  '/ops/shift/kpi-smarts-liberated/new': { name: 'Liberar Novo KPI Smart', parent: '/ops/shift/kpi-smarts-liberated' }, 
+  '/ops/shift/kpi-smarts-liberated/:id': { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' }, 
+  '/ops/shift/kpi-smarts-acquired': { name: 'KPIs Smart Adquiridos', parent: '/ops/shift', icon: ShoppingBag }, 
+  '/ops/shift/appointment': { name: 'Apontamento de KPI Smart', parent: '/ops/shift', icon: Edit }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
   '/core/pulse-informatives/new': { name: 'Novo Informativo', parent: '/core/pulse-informatives' },
   '/core/pulse-informatives/:id': { name: 'Editar Informativo', parent: '/core/pulse-informatives' },
-  '/informative/:id': { name: 'Informativo Público', parent: '/pulse' }, // Rota pública
+  '/informative/:id': { name: 'Informativo Público', parent: '/pulse' }, 
   '/core/global-settings': { name: 'Configurações Globais', parent: '/core' },
   '/core/global-settings/jobs': { name: 'Configurações de Vagas', parent: '/core/global-settings' },
   '/core/global-settings/job-sectors': { name: 'Jobs - Áreas/Setores', parent: '/core/global-settings/jobs' },
@@ -68,7 +69,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/core/data-doctor': { name: 'Diagnóstico de Dados', parent: '/core' },
   '/core/markets': { name: 'Gerenciar Mercados', parent: '/core', icon: Store },
   '/core/documents': { name: 'Documentos', parent: '/core', icon: FileText },
-  '/shop': { name: 'SHOP', icon: ShoppingBag }, // Nova rota para ShopPage
+  '/shop': { name: 'SHOP', icon: ShoppingBag }, 
 };
 
 // Adiciona rotas dinâmicas que não estão no mapa estático

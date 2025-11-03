@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns';
+import { format } from 'date-fns'; // Importar format
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -356,13 +356,14 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
 
   const createKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
-      if (!user?.id) throw new Error("Usuário não autenticado.");
+      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       console.log("Creating KPI Smart Liberated with data:", data);
       const { data: newKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
         .insert({
           kpi_smart_id: data.kpi_smart_id,
           user_id: user.id,
+          company_id: selectedCompany.id,
           execution_user_ids: data.execution_user_ids,
           view_user_ids: data.view_user_ids,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
@@ -397,7 +398,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const updateKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
-      if (!user?.id) throw new Error("Usuário não autenticado.");
+      if (!user?.id || !selectedCompany?.id) throw new Error("Usuário não autenticado ou empresa não selecionada.");
       console.log("Updating KPI Smart Liberated with data:", data);
       const { data: updatedKpiSmartLiberatedResult, error } = await supabase
         .from('kpi_smarts_liberated')
@@ -428,6 +429,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         })
         .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
+        .eq('company_id', selectedCompany.id)
         .select()
         .single();
       if (error) throw error;
@@ -515,8 +517,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForKpiSmart(value);
-                      form.setValue('kpi_smart_id', ''); // Resetar KPI Smart ao mudar o pilar
+                      setSelectedPillarIdForKpiSmart(value); // Atualiza o estado para filtrar KPIs
+                      form.setValue('kpi_smart_id', ''); // Limpar KPI Smart ao mudar o pilar
                     }} value={field.value} disabled={isLoadingPillars || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
@@ -530,11 +532,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-pillars" disabled>Nenhum Pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
-                            pillar.id && pillar.id !== '' ? (
-                              <SelectItem key={pillar.id} value={pillar.id}>
-                                {pillar.description}
-                              </SelectItem>
-                            ) : null
+                            <SelectItem key={pillar.id} value={pillar.id}>
+                              {pillar.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>
@@ -551,7 +551,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      // Buscar detalhes do KPI Smart selecionado para preencher os campos condicionais
                       const details = kpiSmarts?.find(k => k.id === value);
                       setSelectedKpiSmartDetails(details || null);
                       // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
@@ -559,7 +558,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         form.setValue('pillar_id', details.pillar_id);
                         setSelectedPillarIdForKpiSmart(details.pillar_id);
                       }
-                    }} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
+                    }} value={field.value} disabled={isLoadingKpiSmarts || !selectedPillarIdForKpiSmart || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
@@ -573,12 +572,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         ) : (kpiSmarts && kpiSmarts.length === 0) ? (
                           <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
-                          kpiSmarts.map((kpi) => (
-                            kpi.id && kpi.id !== '' ? (
-                              <SelectItem key={kpi.id} value={kpi.id}>
-                                {kpi.description}
-                              </SelectItem>
-                            ) : null
+                          kpiSmarts?.map((kpi) => (
+                            <SelectItem key={kpi.id} value={kpi.id}>
+                              {kpi.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>
@@ -606,11 +603,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-frequencies" disabled>Nenhuma Frequência cadastrada</SelectItem>
                         ) : (
                           kpiSmartFrequencies?.map((frequency) => (
-                            frequency.id && frequency.id !== '' ? (
-                              <SelectItem key={frequency.id} value={frequency.id}>
-                                {frequency.description}
-                              </SelectItem>
-                            ) : null
+                            <SelectItem key={frequency.id} value={frequency.id}>
+                              {frequency.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>
@@ -638,11 +633,9 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="no-statuses" disabled>Nenhum Status cadastrado</SelectItem>
                         ) : (
                           kpiSmartStatuses?.map((status) => (
-                            status.id && status.id !== '' ? (
-                              <SelectItem key={status.id} value={status.id}>
-                                {status.description}
-                              </SelectItem>
-                            ) : null
+                            <SelectItem key={status.id} value={status.id}>
+                              {status.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>

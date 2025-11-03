@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartAcquired, KpiSmartAcquiredFormData } from '@/types/kpiSmartAcquired';
 import { KpiSmart } from '@/types/kpiSmart';
-import { Pillar } from '@/types/pillar'; // Importar Pillar
+import { Pillar } from '@/types/pillar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -39,7 +39,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<KpiSmartAcquiredFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '', // Valor padrão para o novo campo
@@ -88,7 +88,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
         .from('kpi_smarts_acquired')
         .select(`
           *,
-          kpi_smarts(description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id)
+          kpi_smarts(description, pillar_id, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description))
         `)
         .eq('user_id', user.id)
         .eq('company_id', selectedCompany.id);
@@ -269,7 +269,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   }
 
   if (errorKpiSmartsAcquired) {
-    return <div className="text-center text-destructive">Erro ao carregar KPIs Smart Adquiridos: {errorKpiSmartsAcquired.message}</div>;
+    return <div className="text-center text-destructive">Erro ao carregar KPIs Smart Adquiridos: ${errorKpiSmartsAcquired.message}</div>;
   }
 
   return (
@@ -414,11 +414,9 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                           <SelectItem value="no-pillars" disabled>Nenhum Pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
-                            pillar.id && pillar.id !== '' ? (
-                              <SelectItem key={pillar.id} value={pillar.id}>
-                                {pillar.description}
-                              </SelectItem>
-                            ) : null
+                            <SelectItem key={pillar.id} value={pillar.id}>
+                              {pillar.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>
@@ -448,11 +446,9 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                           <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
                           kpiSmarts.map((kpi) => (
-                            kpi.id && kpi.id !== '' ? (
-                              <SelectItem key={kpi.id} value={kpi.id}>
-                                {kpi.description}
-                              </SelectItem>
-                            ) : null
+                            <SelectItem key={kpi.id} value={kpi.id}>
+                              {kpi.description}
+                            </SelectItem>
                           ))
                         )}
                       </SelectContent>
