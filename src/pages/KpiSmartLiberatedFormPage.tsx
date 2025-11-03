@@ -20,7 +20,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2, Plus, Edit, Trash2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-use-fns';
+import { format } from 'date-fns'; // Corrigido: importado de 'date-fns'
 import { ptBR } from 'date-fns/locale';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
@@ -207,7 +207,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         max_value: null,
         current_value: null,
       });
-      setSelectedPillarIdForForm('');
+      setSelectedPillarIdForForm(''); // Corrigido: usar setSelectedPillarIdForForm
       setSelectedKpiSmartDetails(null);
     }
   }, [isEditing, editingKpiSmartLiberated, form]);

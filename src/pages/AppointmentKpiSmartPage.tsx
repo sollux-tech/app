@@ -25,17 +25,19 @@ import DatePicker from '@/components/DatePicker';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useKpiSmartAppointments } from '@/hooks/useKpiSmartAppointment';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'; // Importações adicionadas
 
 // Schema base para o formulário de appointment
 const appointmentSchema = z.object({
   kpi_smart_liberated_id: z.string().min(1, { message: 'Selecione um KPI Smart Liberado.' }),
   evidence: z.string().min(1, { message: 'A evidência é obrigatória.' }),
   status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
+  type: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]), // Adicionado 'type' ao schema
   // Campos dinâmicos opcionais
-  current_value: z.number().optional(),
-  progress_percentage: z.number().min(0).max(100).optional(),
-  performed_executions: z.number().min(0).optional(),
-  current_value_interval: z.number().optional(),
+  current_value: z.number().optional().nullable(),
+  progress_percentage: z.number().min(0).max(100).optional().nullable(),
+  performed_executions: z.number().min(0).optional().nullable(),
+  current_value_interval: z.number().optional().nullable(),
 });
 
 type AppointmentFormData = z.infer<typeof appointmentSchema>;
@@ -59,6 +61,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
       kpi_smart_liberated_id: '',
       evidence: '',
       status: 'pending',
+      type: 1, // Valor padrão para 'type'
       current_value: undefined,
       progress_percentage: undefined,
       performed_executions: undefined,
@@ -82,7 +85,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .select(`
           *,
-          kpi_smarts(id, description, kpi_smart_type_id),
+          kpi_smarts(id, description, kpi_smart_type_id, pillar_id),
           pillars(id, description)
         `)
         .eq('user_id', user.id)
@@ -122,17 +125,29 @@ const AppointmentKpiSmartPage: React.FC = () => {
   useEffect(() => {
     if (selectedKpiLiberatedId) {
       const liberated = kpiLiberatedList?.find(l => l.id === selectedKpiLiberatedId);
-      if (liberated?.kpi_smart?.kpi_smart_type_id) {
-        form.setValue('type', liberated.kpi_smart.kpi_smart_type_id as 1 | 2 | 3 | 4);
+      if (liberated?.kpi_smarts?.kpi_smart_type_id) { // Corrigido: kpi_smarts
+        form.setValue('type', liberated.kpi_smarts.kpi_smart_type_id as 1 | 2 | 3 | 4); // Corrigido: kpi_smarts
       }
     }
   }, [selectedKpiLiberatedId, kpiLiberatedList, form]);
 
   const onSubmit = (data: AppointmentFormData) => {
+    if (!user?.id || !selectedCompany?.id) {
+      showError("Usuário não autenticado ou empresa não selecionada.");
+      return;
+    }
+    const appointmentData = {
+      ...data,
+      user_id: user.id,
+      appointment_date: new Date().toISOString(), // Data atual
+      kpi_smart_liberated_id: data.kpi_smart_liberated_id,
+      type: form.getValues('type'), // Garante que o tipo seja enviado
+    };
+
     if (editingAppointment) {
-      updateAppointment.mutate({ ...data, id: editingAppointment.id });
+      updateAppointment.mutate({ ...appointmentData, id: editingAppointment.id });
     } else {
-      createAppointment.mutate(data);
+      createAppointment.mutate(appointmentData);
     }
   };
 
@@ -143,6 +158,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
       kpi_smart_liberated_id: appointment.kpi_smart_liberated_id,
       evidence: appointment.evidence,
       status: appointment.status,
+      type: appointment.type, // Definir o tipo ao editar
       current_value: appointment.current_value,
       progress_percentage: appointment.progress_percentage,
       performed_executions: appointment.performed_executions,
@@ -160,7 +176,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
   const filteredLiberated = useMemo(() => {
     return kpiLiberatedList?.filter(liberated => {
       if (filters.search) {
-        return liberated.kpi_smart?.description.toLowerCase().includes(filters.search.toLowerCase());
+        return liberated.kpi_smarts?.description.toLowerCase().includes(filters.search.toLowerCase()); // Corrigido: kpi_smarts
       }
       return true;
     }) || [];
@@ -249,10 +265,10 @@ const AppointmentKpiSmartPage: React.FC = () => {
                   <TableBody>
                     {filteredLiberated.map(liberated => (
                       <TableRow key={liberated.id}>
-                        <TableCell>{liberated.kpi_smart?.description}</TableCell>
-                        <TableCell>{pillars?.find(p => p.id === liberated.kpi_smarts?.pillar_id)?.description}</TableCell>
+                        <TableCell>{liberated.kpi_smarts?.description}</TableCell> {/* Corrigido: kpi_smarts */}
+                        <TableCell>{pillars?.find(p => p.id === liberated.kpi_smarts?.pillar_id)?.description}</TableCell> {/* Corrigido: kpi_smarts */}
                         <TableCell>
-                          <Badge variant={liberated.status === 'active' ? 'default' : 'secondary'}>
+                          <Badge variant={liberated.status === 'active' ? 'default' : 'secondary'}> {/* Corrigido: status existe em KpiSmartLiberated */}
                             {liberated.status}
                           </Badge>
                         </TableCell>
@@ -284,6 +300,8 @@ const AppointmentKpiSmartPage: React.FC = () => {
             <CardContent>
               {isLoadingAppointments ? (
                 <p>Carregando apontamentos...</p>
+              ) : errorAppointments ? (
+                <p className="text-destructive">Erro ao carregar apontamentos: {errorAppointments.message}</p>
               ) : appointments.length === 0 ? (
                 <p>Nenhum apontamento encontrado.</p>
               ) : (
@@ -299,7 +317,7 @@ const AppointmentKpiSmartPage: React.FC = () => {
                   <TableBody>
                     {appointments.map(appointment => (
                       <TableRow key={appointment.id}>
-                        <TableCell>{kpiLiberatedList?.find(l => l.id === appointment.kpi_smart_liberated_id)?.kpi_smart?.description}</TableCell>
+                        <TableCell>{kpiLiberatedList?.find(l => l.id === appointment.kpi_smart_liberated_id)?.kpi_smarts?.description}</TableCell> {/* Corrigido: kpi_smarts */}
                         <TableCell>{format(new Date(appointment.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</TableCell>
                         <TableCell>
                           <Badge variant={appointment.status === 'pending' ? 'secondary' : appointment.status === 'approved' ? 'default' : 'destructive'}>
@@ -338,14 +356,17 @@ const AppointmentKpiSmartPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>KPI Smart Liberado</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select value={field.value} onValueChange={(value) => {
+                      field.onChange(value);
+                      setSelectedKpiLiberatedId(value); // Atualiza o estado para o useEffect
+                    }}>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um KPI" />
                       </SelectTrigger>
                       <SelectContent>
                         {kpiLiberatedList?.map(liberated => (
                           <SelectItem key={liberated.id} value={liberated.id}>
-                            {liberated.kpi_smart?.description} ({pillars?.find(p => p.id === liberated.kpi_smarts?.pillar_id)?.description})
+                            {liberated.kpi_smarts?.description} ({pillars?.find(p => p.id === liberated.kpi_smarts?.pillar_id)?.description})
                           </SelectItem>
                         ))}
                       </SelectContent>

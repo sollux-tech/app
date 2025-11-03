@@ -39,7 +39,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<KpiSmartAcquiredFormData>({ // Corrigido o tipo do form
+  const form = useForm<KpiSmartAcquiredFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '', // Valor padrão para o novo campo
@@ -240,9 +240,11 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
 
   const handleAddClick = () => {
     setEditingKpiSmartAcquired(null);
-    setSelectedPillarIdForForm(''); // Corrigido: usar setSelectedPillarIdForForm
-    setSelectedKpiSmartDetails(null); // Corrigido: usar setSelectedKpiSmartDetails
-    form.reset();
+    form.reset({
+      pillar_id: '',
+      kpi_smart_id: '',
+      status: true,
+    });
     setIsDialogOpen(true);
   };
 
@@ -285,7 +287,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"> {/* Ajustado para 2 colunas */}
             <div>
               <Label className="text-foreground">Filtrar por Pilar</Label>
               <Select value={selectedPillarFilter} onValueChange={setSelectedPillarFilter} disabled={isLoadingPillars}>
@@ -338,7 +340,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                 kpiSmartsAcquired?.map((kpiSmartAcquired) => (
                   <TableRow key={kpiSmartAcquired.id}>
                     <TableCell className="font-medium text-foreground">{kpiSmartAcquired.code}</TableCell>
-                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.pillar_id}</TableCell>
+                    <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.pillar_id || 'N/A'}</TableCell>
                     <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.description || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={kpiSmartAcquired.status === 'active' ? 'default' : 'secondary'}>
@@ -390,7 +392,8 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForForm(value);
+                      // Atualiza o estado local para o filtro de KPIs Smart
+                      // Isso é importante para que o dropdown de KPI Smart seja re-renderizado com os itens corretos
                       form.setValue('kpi_smart_id', ''); // Limpar KPI Smart quando o pilar muda
                     }} value={field.value} disabled={isLoadingPillars}>
                       <FormControl>
@@ -422,7 +425,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmarts || selectedPillarIdForForm === ''}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmarts || !form.watch('pillar_id')}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione o KPI Smart" />

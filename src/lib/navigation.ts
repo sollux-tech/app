@@ -1,4 +1,4 @@
-import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb, Ruler, Repeat, CheckCircle, Zap } from 'lucide-react';
+import { Home, ListChecks, ListTodo, Blocks, Scale, Target, Store, FileText, Tag, ClipboardCheck, Brain, ClipboardList, MessageSquareText, Award, TrendingUp, ShoppingBag, Lightbulb, Ruler, Repeat, CheckCircle, Zap, Edit } from 'lucide-react';
 
 interface RouteInfo {
   name: string;
@@ -35,6 +35,7 @@ export const routeMap: Record<string, RouteInfo> = {
   '/ops/shift/kpi-smarts-liberated/new': { name: 'Liberar Novo KPI Smart', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
   '/ops/shift/kpi-smarts-liberated/:id': { name: 'Editar KPI Smart Liberado', parent: '/ops/shift/kpi-smarts-liberated' }, // Nova rota
   '/ops/shift/kpi-smarts-acquired': { name: 'KPIs Smart Adquiridos', parent: '/ops/shift', icon: ShoppingBag }, // Nova rota
+  '/ops/shift/appointment': { name: 'Apontamento KPI Smart', parent: '/ops/shift', icon: Edit }, // Nova rota
   '/core': { name: 'Core' },
   '/core/user-types': { name: 'Tipos de Usuário', parent: '/core' },
   '/core/pulse-informatives': { name: 'Informativos PULSE', parent: '/core' },
