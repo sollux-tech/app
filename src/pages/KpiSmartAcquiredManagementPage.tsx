@@ -13,7 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartAcquired, KpiSmartAcquiredFormData } from '@/types/kpiSmartAcquired';
 import { KpiSmart } from '@/types/kpiSmart';
-import { Pillar } from '@/types/pillar'; // Importar Pillar
+import { Pillar } from '@/types/pillar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { useCompany } from '@/components/CompanyContext';
@@ -39,7 +39,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<KpiSmartAcquiredFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       pillar_id: '', // Valor padrão para o novo campo
@@ -258,7 +258,6 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
   };
 
   const isMutating = createKpiSmartAcquiredMutation.isPending || updateKpiSmartAcquiredMutation.isPending || deleteKpiSmartAcquiredMutation.isPending;
-  const isLoadingPage = isLoadingKpiSmartsAcquired || isLoadingKpiSmarts || isLoadingPillars;
 
   if (!selectedCompany) {
     return (
@@ -268,7 +267,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
     );
   }
 
-  if (isLoadingPage) {
+  if (isLoadingKpiSmartsAcquired) {
     return <div className="text-center text-muted-foreground">Carregando KPIs Smart adquiridos...</div>;
   }
 
@@ -329,14 +328,14 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {kpiSmartsLiberated?.length === 0 ? (
+              {kpiSmartsAcquired?.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
                     Nenhum KPI Smart adquirido encontrado para esta empresa.
                   </TableCell>
                 </TableRow>
               ) : (
-                kpiSmartsLiberated?.map((kpiSmartAcquired) => (
+                kpiSmartsAcquired?.map((kpiSmartAcquired) => (
                   <TableRow key={kpiSmartAcquired.id}>
                     <TableCell className="font-medium text-foreground">{kpiSmartAcquired.code}</TableCell>
                     <TableCell className="text-muted-foreground">{kpiSmartAcquired.kpi_smarts?.pillar_id}</TableCell>
@@ -378,7 +377,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
         <DialogContent className="sm:max-w-lg bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              {editingKpiSmartLiberated ? 'Editar KPI Smart Liberado' : 'Adquirir Novo KPI Smart'}
+              {editingKpiSmartAcquired ? 'Editar KPI Smart Adquirido' : 'Adquirir Novo KPI Smart'}
             </DialogTitle>
           </DialogHeader>
           <Form {...form}>
@@ -470,7 +469,7 @@ const KpiSmartAcquiredManagementPage: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isMutating} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {editingKpiSmartLiberated ? 'Salvar Alterações' : 'Adquirir KPI Smart'}
+                  {editingKpiSmartAcquired ? 'Salvar Alterações' : 'Adquirir KPI Smart'}
                 </Button>
               </DialogFooter>
             </form>
