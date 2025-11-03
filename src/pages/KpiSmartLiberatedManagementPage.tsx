@@ -182,26 +182,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     const kpiMap = new Map<string, KpiSmart>();
     kpiSmartsLiberated?.forEach(item => {
       if (item.kpi_smarts && item.kpi_smarts.id) {
-        // Criar um objeto KpiSmart completo para satisfazer o tipo
-        const fullKpiSmart: KpiSmart = {
-          id: item.kpi_smarts.id,
-          user_id: item.kpi_smarts.user_id,
-          code: item.kpi_smarts.code,
-          description: item.kpi_smarts.description,
-          pillar_id: item.kpi_smarts.pillar_id,
-          kpi_smart_type_id: item.kpi_smarts.kpi_smart_type_id,
-          kpi_smart_action_verb_id: item.kpi_smarts.kpi_smart_action_verb_id,
-          kpi_smart_focus_id: item.kpi_smarts.kpi_smart_focus_id,
-          kpi_smart_unit_id: item.kpi_smarts.kpi_smart_unit_id,
-          status: item.kpi_smarts.status,
-          created_at: item.kpi_smarts.created_at,
-          kpi_smart_types: item.kpi_smarts.kpi_smart_types,
-          kpi_smart_action_verbs: item.kpi_smarts.kpi_smart_action_verbs,
-          kpi_smart_focuses: item.kpi_smarts.kpi_smart_focuses,
-          kpi_smart_units: item.kpi_smarts.kpi_smart_units,
-          pillars: item.kpi_smarts.pillars,
-        };
-        kpiMap.set(item.kpi_smarts.id, fullKpiSmart);
+        // Type assertion para garantir que item.kpi_smarts é tratado como KpiSmart
+        kpiMap.set(item.kpi_smarts.id, item.kpi_smarts as KpiSmart);
       }
     });
     return Array.from(kpiMap.values());
