@@ -3,8 +3,8 @@ export interface KpiSmartLiberated {
   user_id: string;
   code: number;
   kpi_smart_id: string;
-  execution_user_types: string[] | null;
-  view_user_types: string[] | null;
+  execution_user_ids: string[] | null; // Alterado para user_ids
+  view_user_ids: string[] | null; // Alterado para user_ids
   kpi_smart_frequency_id: string | null;
   kpi_smart_status_id: string | null; // Adicionado
   created_at: string;
@@ -45,8 +45,8 @@ export interface KpiSmartLiberated {
 
 export interface KpiSmartLiberatedFormData {
   kpi_smart_id: string;
-  execution_user_types: string[] | null;
-  view_user_types: string[] | null;
+  execution_user_ids: string[] | null; // Alterado para user_ids
+  view_user_ids: string[] | null; // Alterado para user_ids
   kpi_smart_frequency_id: string;
   kpi_smart_status_id: string; // Adicionado
 
