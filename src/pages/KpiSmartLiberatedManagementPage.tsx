@@ -506,7 +506,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <FormLabel className="text-foreground">Pilar</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      setSelectedPillarIdForForm(value); // Corrigido: usar setSelectedPillarIdForForm
+                      setSelectedPillarIdForForm(value);
                       form.setValue('kpi_smart_id', ''); // Resetar KPI Smart ao mudar o pilar
                     }} value={field.value} disabled={isLoadingPillars || isLoadingForm}>
                       <FormControl>
@@ -546,7 +546,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
                       if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
                         form.setValue('pillar_id', details.pillar_id);
-                        setSelectedPillarIdForForm(details.pillar_id); // Corrigido: usar setSelectedPillarIdForForm
+                        setSelectedPillarIdForForm(details.pillar_id);
                       }
                     }} value={field.value} disabled={isLoadingKpiSmarts || selectedPillarIdForForm === '' || isLoadingForm}>
                       <FormControl>
