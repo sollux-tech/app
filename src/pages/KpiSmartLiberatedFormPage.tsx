@@ -21,7 +21,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns'; // Corrigido: import de date-fns
+import { format } from 'date-fns';
 import { Profile, BasicProfileInfo } from '@/types/profile'; // Importar Profile e BasicProfileInfo
 import { useCompany } from '@/components/CompanyContext'; // Importar useCompany
 
@@ -132,7 +132,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       const timer = setTimeout(() => {
         form.reset({
           kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-          pillar_id: kpiSmartPillarId,
+          pillar_id: kpiSmartPillarId, // Incluído pillar_id aqui
           execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [], // Corrigido para usar execution_user_ids
           view_user_ids: editingKpiSmartLiberated.view_user_ids || [], // Corrigido para usar view_user_ids
           kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
@@ -323,6 +323,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           view_user_ids: data.view_user_ids, // Alterado para user_ids
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
           kpi_smart_status_id: data.kpi_smart_status_id,
+          pillar_id: data.pillar_id, // Adicionado pillar_id aqui
           
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
@@ -362,6 +363,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
+          pillar_id: data.pillar_id, // Incluído pillar_id aqui
           execution_user_ids: data.execution_user_ids, // Alterado para user_ids
           view_user_ids: data.view_user_ids, // Alterado para user_ids
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
@@ -401,6 +403,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload: KpiSmartLiberatedFormData = {
       kpi_smart_id: data.kpi_smart_id,
+      pillar_id: data.pillar_id, // Incluído pillar_id aqui
       execution_user_ids: form.getValues('execution_user_ids') || null, // Alterado para user_ids
       view_user_ids: form.getValues('view_user_ids') || null, // Alterado para user_ids
       kpi_smart_frequency_id: form.getValues('kpi_smart_frequency_id'),
