@@ -20,7 +20,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-fns';
+import { format } from 'date-Sfns';
+import { ptBR } from 'date-fns/locale';
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -141,21 +142,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           } else {
             // Ensure kpiDetails conforms to KpiSmart type before setting state
             if (kpiDetails) {
-              setSelectedKpiSmartDetails({
-                ...kpiDetails,
-                user_id: kpiDetails.user_id || '', // Provide default values if missing
-                code: kpiDetails.code || 0,
-                kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
-                kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
-                kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
-                kpi_smart_unit_id: kpiDetails.kpi_smart_unit_id || '',
-                status: kpiDetails.status || 'active',
-                created_at: kpiDetails.created_at || new Date().toISOString(),
-                // Ensure nested objects are correctly typed or handle potential nulls
-                kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
-                kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
-                kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
-              });
+              setSelectedKpiSmartDetails(kpiDetails as KpiSmart);
             }
           }
         }
