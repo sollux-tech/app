@@ -23,7 +23,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import MultiSelect, { MultiSelectOption } from '@/components/MultiSelect';
 import DatePicker from '@/components/DatePicker';
-import { format } from 'date-d.ts'; // Importar format
+import { format } from 'date-fns'; // Corrected import
 import { BasicProfileInfo } from '@/types/profile';
 import { useCompany } from '@/components/CompanyContext';
 import { Label } from '@/components/ui/label';
@@ -64,7 +64,7 @@ const formSchema = z.object({
   current_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
 });
 
-const KpiSmartLiberatedManagementPage: React.FC = () => {
+const KpiSmartLiberatedFormPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
   const { selectedCompany } = useCompany();
@@ -74,11 +74,8 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingKpiSmartLiberated, setEditingKpiSmartLiberated] = useState<KpiSmartLiberated | null>(null);
-
-  // Estados para os filtros
-  const [selectedPillarFilter, setSelectedPillarFilter] = useState<string>('all');
-  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('all');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
+  const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>(''); // State for selected pillar ID
+  const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null); // State for selected KPI Smart details
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -103,113 +100,6 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
       max_value: null,
       current_value: null,
     },
-  });
-
-  const selectedPillarIdForForm = form.watch('pillar_id');
-
-  useEffect(() => {
-    if (isEditing && editingKpiSmartLiberated) {
-      form.reset({
-        kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-        pillar_id: editingKpiSmartLiberated.pillar_id || '',
-        execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [],
-        view_user_ids: editingKpiSmartLiberated.view_user_ids || [],
-        kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
-        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
-        logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
-        base_value: editingKpiSmartLiberated.base_value || null,
-        target_value: editingKpiSmartLiberated.target_value || null,
-        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
-        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
-        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
-        progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
-        planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
-        planned_executions: editingKpiSmartLiberated.planned_executions || null,
-        performed_executions: editingKpiSmartLiberated.performed_executions || null,
-        min_value: editingKpiSmartLiberated.min_value || null,
-        max_value: editingKpiSmartLiberated.max_value || null,
-        current_value: editingKpiSmartLiberated.current_value || null,
-      });
-      setSelectedPillarIdForKpiSmart(editingKpiSmartLiberated.pillar_id || '');
-    } else {
-      form.reset({
-        kpi_smart_id: '',
-        pillar_id: '',
-        execution_user_ids: [],
-        view_user_ids: [],
-        kpi_smart_frequency_id: '',
-        kpi_smart_status_id: '',
-        logical_comparator: null,
-        base_value: null,
-        target_value: null,
-        deadline_date: null,
-        planned_delivery_date: null,
-        actual_delivery_date: null,
-        progress_percentage: null,
-        planned_frequency: null,
-        planned_executions: null,
-        performed_executions: null,
-        min_value: null,
-        max_value: null,
-        current_value: null,
-      });
-      setSelectedPillarIdForKpiSmart('');
-    }
-  }, [isEditing, editingKpiSmartLiberated, form, isDialogOpen]);
-
-  const { data: kpiSmartsLiberated, isLoading: isLoadingKpiSmartsLiberated, error: errorKpiSmartsLiberated } = useQuery<KpiSmartLiberated[], Error>({
-    queryKey: ['kpiSmartsLiberated', user?.id, selectedCompany?.id, selectedPillarFilter, selectedTypeFilter, selectedStatusFilter],
-    queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
-      let query = supabase
-        .from('kpi_smarts_liberated')
-        .select(`
-          *,
-          kpi_smarts(id, description, pillar_id, kpi_smart_type_id, kpi_smart_focus_id, kpi_smart_unit_id),
-          pillars(id, description),
-          kpi_smart_frequencies(id, description),
-          kpi_smart_statuses(id, description)
-        `)
-        .eq('user_id', user.id)
-        .eq('company_id', selectedCompany.id);
-      
-      if (selectedPillarFilter !== 'all') {
-        query = query.eq('pillar_id', selectedPillarFilter);
-      }
-      if (selectedTypeFilter !== 'all') {
-        query = query.eq('kpi_smarts.kpi_smart_type_id', selectedTypeFilter);
-      }
-      if (selectedStatusFilter !== 'all') {
-        query = query.eq('kpi_smart_status_id', selectedStatusFilter);
-      }
-
-      query = query.order('code', { ascending: true });
-      const { data, error } = await query;
-      if (error) throw error;
-      return data.map(item => ({
-        ...item,
-        kpi_smarts: Array.isArray(item.kpi_smarts) ? item.kpi_smarts[0] : item.kpi_smarts,
-        pillars: Array.isArray(item.pillars) ? item.pillars[0] : item.pillars,
-        kpi_smart_frequencies: Array.isArray(item.kpi_smart_frequencies) ? item.kpi_smart_frequencies[0] : item.kpi_smart_frequencies,
-        kpi_smart_statuses: Array.isArray(item.kpi_smart_statuses) ? item.kpi_smart_statuses[0] : item.kpi_smart_statuses,
-      }));
-    },
-    enabled: !!user?.id && !!selectedCompany?.id,
-  });
-
-  const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
-    queryKey: ['pillarsListForKpiSmartLiberated', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('pillars')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
   });
 
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
@@ -242,82 +132,116 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     enabled: !!user?.id && !!selectedPillarIdForForm,
   });
 
-  const { data: kpiSmartFrequencies, isLoading: isLoadingKpiSmartFrequencies } = useQuery<KpiSmartFrequency[], Error>({
-    queryKey: ['kpiSmartFrequenciesForKpiSmartLiberatedForm', user?.id],
+  const { data: editingKpiSmartLiberated, isLoading: isLoadingEditingKpiSmartLiberated, error: errorEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
+    queryKey: ['kpiSmartLiberated', kpiSmartLiberatedId],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!kpiSmartLiberatedId || !user?.id) throw new Error("ID do KPI Smart Liberado ou usuário faltando.");
       const { data, error } = await supabase
-        .from('kpi_smart_frequencies')
-        .select('*')
+        .from('kpi_smarts_liberated')
+        .select(`
+          *,
+          kpi_smarts(id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
+          kpi_smart_frequencies(id, description),
+          kpi_smart_statuses(id, description),
+          pillars(id, description)
+        `)
+        .eq('id', kpiSmartLiberatedId)
         .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: kpiSmartStatuses, isLoading: isLoadingKpiSmartStatuses } = useQuery<KpiSmartStatus[], Error>({
-    queryKey: ['kpiSmartStatusesListForLiberatedForm', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('kpi_smart_statuses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('description', { ascending: true });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user?.id,
-  });
-
-  const { data: allRelevantUsers, isLoading: isLoadingAllRelevantUsers } = useQuery<BasicProfileInfo[], Error>({
-    queryKey: ['allRelevantUsersForKpiSmartLiberatedForm', user?.id, selectedCompany?.id],
-    queryFn: async () => {
-      if (!user?.id || !selectedCompany?.id) return [];
-
-      const userIds = new Set<string>();
-      userIds.add(user.id);
-
-      const { data: companyOwner, error: ownerError } = await supabase
-        .from('companies')
-        .select('user_id')
-        .eq('id', selectedCompany.id)
         .single();
-      if (ownerError) console.error("Error fetching company owner:", ownerError);
-      if (companyOwner?.user_id) userIds.add(companyOwner.user_id);
-
-      const { data: sharedUsers, error: sharedError } = await supabase
-        .from('company_shares')
-        .select('shared_with_user_id')
-        .eq('company_id', selectedCompany.id);
-      if (sharedError) console.error("Error fetching shared users:", sharedError);
-      sharedUsers?.forEach(su => userIds.add(su.shared_with_user_id));
-
-      const uniqueUserIds = Array.from(userIds);
-
-      if (uniqueUserIds.length === 0) return [];
-
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name')
-        .in('id', uniqueUserIds);
-      if (profilesError) throw profilesError;
-      return profiles;
+      if (error) throw error;
+      return {
+        ...data,
+        kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
+        kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
+        kpi_smart_statuses: Array.isArray(data.kpi_smart_statuses) ? data.kpi_smart_statuses[0] : data.kpi_smart_statuses,
+        pillars: Array.isArray(data.pillars) ? data.pillars[0] : data.pillars,
+      };
     },
-    enabled: !!user?.id && !!selectedCompany?.id,
+    enabled: isEditing && !!user?.id,
+    retry: false,
   });
 
-  const relevantUserOptions: MultiSelectOption[] = useMemo(() => {
-    return allRelevantUsers?.map(p => ({
-      value: p.id,
-      label: `${p.first_name || ''} ${p.last_name || ''}`.trim() || `Usuário ${p.id.substring(0, 8)}`
-    })) || [];
-  }, [allRelevantUsers]);
+  useEffect(() => {
+    if (isEditing && editingKpiSmartLiberated) {
+      const kpiSmartPillarId = editingKpiSmartLiberated.pillar_id || '';
+      setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
+      
+      const fetchKpiSmartDetails = async () => {
+        if (editingKpiSmartLiberated.kpi_smart_id) {
+          const { data: kpiDetails, error } = await supabase
+            .from('kpi_smarts')
+            .select('id, description, pillar_id, user_id, code, kpi_smart_type_id, kpi_smart_action_verb_id, kpi_smart_focus_id, kpi_smart_unit_id, status, created_at, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+            .eq('id', editingKpiSmartLiberated.kpi_smart_id)
+            .single();
+          if (error) {
+            console.error("Erro ao buscar detalhes do KPI Smart:", error);
+          } else if (kpiDetails) {
+            setSelectedKpiSmartDetails({
+              ...kpiDetails,
+              user_id: kpiDetails.user_id || '',
+              code: kpiDetails.code || 0,
+              kpi_smart_type_id: kpiDetails.kpi_smart_type_id || '',
+              kpi_smart_action_verb_id: kpiDetails.kpi_smart_action_verb_id || '',
+              kpi_smart_focus_id: kpiDetails.kpi_smart_focus_id || '',
+              kpi_smart_unit_id: kpiSmartLiberated.kpi_smart_unit_id || '',
+              status: kpiDetails.status || 'active',
+              created_at: kpiDetails.created_at || new Date().toISOString(),
+              kpi_smart_types: kpiDetails.kpi_smart_types ? (Array.isArray(kpiDetails.kpi_smart_types) ? kpiDetails.kpi_smart_types[0] : kpiDetails.kpi_smart_types) : null,
+              kpi_smart_focuses: kpiDetails.kpi_smart_focuses ? (Array.isArray(kpiDetails.kpi_smart_focuses) ? kpiDetails.kpi_smart_focuses[0] : kpiDetails.kpi_smart_focuses) : null,
+              kpi_smart_units: kpiDetails.kpi_smart_units ? (Array.isArray(kpiDetails.kpi_smart_units) ? kpiDetails.kpi_smart_units[0] : kpiDetails.kpi_smart_units) : null,
+            });
+          }
+        }
+      };
+      fetchKpiSmartDetails();
 
-  const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
-  const kpiSmartTypeCode = selectedKpiSmart?.kpi_smart_types?.code;
+      form.reset({
+        kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
+        pillar_id: kpiSmartPillarId,
+        execution_user_ids: editingKpiSmartLiberated.execution_user_ids || [],
+        view_user_ids: editingKpiSmartLiberated.view_user_ids || [],
+        kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
+        kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
+        logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
+        base_value: editingKpiSmartLiberated.base_value || null,
+        target_value: editingKpiSmartLiberated.target_value || null,
+        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
+        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
+        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
+        progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
+        planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
+        planned_executions: editingKpiSmartLiberated.planned_executions || null,
+        performed_executions: editingKpiSmartLiberated.performed_executions || null,
+        min_value: editingKpiSmartLiberated.min_value || null,
+        max_value: editingKpiSmartLiberated.max_value || null,
+        current_value: editingKpiSmartLiberated.current_value || null,
+      });
+    } else {
+      form.reset({
+        kpi_smart_id: '',
+        pillar_id: '',
+        execution_user_ids: [],
+        view_user_ids: [],
+        kpi_smart_frequency_id: '',
+        kpi_smart_status_id: '',
+        logical_comparator: null,
+        base_value: null,
+        target_value: null,
+        deadline_date: null,
+        planned_delivery_date: null,
+        actual_delivery_date: null,
+        progress_percentage: null,
+        planned_frequency: null,
+        planned_executions: null,
+        performed_executions: null,
+        min_value: null,
+        max_value: null,
+        current_value: null,
+      });
+      setSelectedPillarIdForKpiSmart('');
+      setSelectedKpiSmartDetails(null);
+    }
+  }, [isEditing, editingKpiSmartLiberated, form, isDialogOpen]);
 
   const mutationOptions = {
     onSuccess: () => {
