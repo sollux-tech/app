@@ -11,7 +11,6 @@ import { showSuccess, showError } from '@/utils/toast';
 import { KpiSmartLiberated, KpiSmartLiberatedFormData } from '@/types/kpiSmartLiberated';
 import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
-import { UserType } from '@/types/userType';
 import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
 import { KpiSmartStatus } from '@/types/kpiSmartStatus'; // Importar KpiSmartStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -70,6 +69,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const isEditing = !!kpiSmartLiberatedId;
 
   const [selectedPillarIdForKpiSmart, setSelectedPillarIdForKpiSmart] = useState<string>('');
+  const [selectedKpiSmartDetails, setSelectedKpiSmartDetails] = useState<KpiSmart | null>(null); // Estado para armazenar detalhes do KPI Smart
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -129,6 +129,24 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId); // Set pillar first to load kpiSmarts
       
+      // Buscar detalhes do KPI Smart selecionado para preencher os campos
+      const fetchKpiSmartDetails = async () => {
+        if (editingKpiSmartLiberated.kpi_smart_id) {
+          const { data: kpiDetails, error } = await supabase
+            .from('kpi_smarts')
+            .select('description, kpi_smart_types(description), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id')
+            .eq('id', editingKpiSmartLiberated.kpi_smart_id)
+            .single();
+          if (error) {
+            console.error("Erro ao buscar detalhes do KPI Smart:", error);
+          } else {
+            setSelectedKpiSmartDetails(kpiDetails);
+          }
+        }
+      };
+
+      fetchKpiSmartDetails();
+
       const timer = setTimeout(() => {
         form.reset({
           kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
@@ -184,16 +202,18 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         current_value: null,
       });
       setSelectedPillarIdForKpiSmart('');
+      setSelectedKpiSmartDetails(null); // Limpar detalhes do KPI Smart
     }
   }, [isEditing, editingKpiSmartLiberated, form]);
 
+  // Query para buscar KPIs Smart ativos, filtrados pelo pilar selecionado
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
     queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForKpiSmart],
     queryFn: async () => {
       if (!user?.id || !selectedPillarIdForKpiSmart) return [];
       const { data, error } = await supabase
         .from('kpi_smarts')
-        .select('*, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
+        .select('id, description, pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
         .eq('user_id', user.id)
         .eq('status', 'active')
         .eq('pillar_id', selectedPillarIdForKpiSmart)
@@ -204,6 +224,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id && !!selectedPillarIdForKpiSmart,
   });
 
+  // Query para buscar todos os Pilares (para filtros e formulário)
   const { data: pillars, isLoading: isLoadingPillars } = useQuery<Pillar[], Error>({
     queryKey: ['pillarsListForKpiSmartLiberatedForm', user?.id],
     queryFn: async () => {
@@ -296,8 +317,25 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     })) || [];
   }, [allRelevantUsers]);
 
-  const selectedKpiSmart = kpiSmarts?.find(kpi => kpi.id === form.watch('kpi_smart_id'));
-  const kpiSmartTypeCode = selectedKpiSmart?.kpi_smart_types?.code;
+  // Atualiza os detalhes do KPI Smart selecionado quando o valor do formulário muda
+  useEffect(() => {
+    const selectedKpiId = form.watch('kpi_smart_id');
+    if (selectedKpiId) {
+      const details = kpiSmarts?.find(k => k.id === selectedKpiId);
+      setSelectedKpiSmartDetails(details || null);
+      // Atualiza o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
+      if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
+        form.setValue('pillar_id', details.pillar_id);
+        setSelectedPillarIdForKpiSmart(details.pillar_id); // Atualiza o estado para carregar os blocos corretos
+      }
+    } else {
+      setSelectedKpiSmartDetails(null);
+      form.setValue('pillar_id', ''); // Limpa o pilar se nenhum KPI for selecionado
+      setSelectedPillarIdForKpiSmart('');
+    }
+  }, [form.watch('kpi_smart_id'), kpiSmarts, form.setValue, setSelectedPillarIdForKpiSmart]);
+
+  const kpiSmartTypeCode = selectedKpiSmartDetails?.kpi_smart_types?.code;
 
   const mutationOptions = {
     onSuccess: () => {
@@ -469,7 +507,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
             {isEditing ? 'Editar KPI Smart Liberado' : 'Liberar Novo KPI Smart'}
           </CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            {isEditing ? 'Atualize o KPI Smart liberado.' : 'Selecione um KPI Smart para liberá-lo para uso.'}
+            {isEditing ? 'Atualize os detalhes do KPI Smart liberado.' : 'Selecione um KPI Smart para liberá-lo para uso.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="mt-8">
@@ -517,7 +555,17 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      // Buscar detalhes do KPI Smart selecionado para preencher os campos condicionais
+                      const details = kpiSmarts?.find(k => k.id === value);
+                      setSelectedKpiSmartDetails(details || null);
+                      // Atualizar o pilar_id no formulário se o KPI Smart selecionado tiver um pilar associado
+                      if (details?.pillar_id && form.getValues('pillar_id') !== details.pillar_id) {
+                        form.setValue('pillar_id', details.pillar_id);
+                        setSelectedPillarIdForKpiSmart(details.pillar_id); // Atualiza o estado para carregar os blocos corretos
+                      }
+                    }} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
@@ -609,6 +657,28 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   </FormItem>
                 )}
               />
+
+              {/* Exibir detalhes do KPI Smart selecionado */}
+              {selectedKpiSmartDetails && (
+                <Card className="bg-card/50 border border-border shadow-sm rounded-lg p-4">
+                  <CardTitle className="text-lg font-bold text-foreground mb-4">Detalhes do KPI Smart Selecionado</CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col">
+                      <Label className="text-foreground">Tipo:</Label>
+                      <p className="text-muted-foreground">{selectedKpiSmartDetails.kpi_smart_types?.description || 'N/A'}</p>
+                    </div>
+                    <div className="flex flex-col">
+                      <Label className="text-foreground">Foco:</Label>
+                      <p className="text-muted-foreground">{selectedKpiSmartDetails.kpi_smart_focuses?.description || 'N/A'}</p>
+                    </div>
+                    <div className="flex flex-col">
+                      <Label className="text-foreground">Unidade:</Label>
+                      <p className="text-muted-foreground">{selectedKpiSmartDetails.kpi_smart_units?.description || 'N/A'}</p>
+                    </div>
+                    {/* Adicionar mais detalhes se necessário */}
+                  </div>
+                </Card>
+              )}
 
               {/* Campos Condicionais baseados no kpiSmartTypeCode */}
               {kpiSmartTypeCode === 1 && ( // Quantitativo
