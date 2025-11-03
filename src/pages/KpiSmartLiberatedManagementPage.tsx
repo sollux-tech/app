@@ -138,7 +138,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         .from('kpi_smarts_liberated')
         .select(`
           *,
-          kpi_smarts(id, description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
+          kpi_smarts(*),
           kpi_smart_frequencies(description),
           kpi_smart_statuses(description, id)
         `)
@@ -151,7 +151,7 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
         query = query.eq('kpi_smart_id', selectedKpiSmartFilter);
       }
       if (selectedStatusFilter !== 'all') {
-        query = query.eq('kpi_smart_status_id', selectedStatusFilter);
+        query = query.eq('kpi_smart_statuses.id', selectedStatusFilter); // Corrigido para filtrar pelo ID do status
       }
 
       query = query.order('code', { ascending: true });
@@ -182,7 +182,26 @@ const KpiSmartLiberatedManagementPage: React.FC = () => {
     const kpiMap = new Map<string, KpiSmart>();
     kpiSmartsLiberated?.forEach(item => {
       if (item.kpi_smarts && item.kpi_smarts.id) {
-        kpiMap.set(item.kpi_smarts.id, item.kpi_smarts);
+        // Criar um objeto KpiSmart completo para satisfazer o tipo
+        const fullKpiSmart: KpiSmart = {
+          id: item.kpi_smarts.id,
+          user_id: item.kpi_smarts.user_id,
+          code: item.kpi_smarts.code,
+          description: item.kpi_smarts.description,
+          pillar_id: item.kpi_smarts.pillar_id,
+          kpi_smart_type_id: item.kpi_smarts.kpi_smart_type_id,
+          kpi_smart_action_verb_id: item.kpi_smarts.kpi_smart_action_verb_id,
+          kpi_smart_focus_id: item.kpi_smarts.kpi_smart_focus_id,
+          kpi_smart_unit_id: item.kpi_smarts.kpi_smart_unit_id,
+          status: item.kpi_smarts.status,
+          created_at: item.kpi_smarts.created_at,
+          kpi_smart_types: item.kpi_smarts.kpi_smart_types,
+          kpi_smart_action_verbs: item.kpi_smarts.kpi_smart_action_verbs,
+          kpi_smart_focuses: item.kpi_smarts.kpi_smart_focuses,
+          kpi_smart_units: item.kpi_smarts.kpi_smart_units,
+          pillars: item.kpi_smarts.pillars,
+        };
+        kpiMap.set(item.kpi_smarts.id, fullKpiSmart);
       }
     });
     return Array.from(kpiMap.values());
