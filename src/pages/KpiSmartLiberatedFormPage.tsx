@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import *s z from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { KpiSmart } from '@/types/kpiSmart';
 import { Pillar } from '@/types/pillar';
 import { UserType } from '@/types/userType';
 import { KpiSmartFrequency } from '@/types/kpiSmartFrequency';
+import { KpiSmartStatus } from '@/types/kpiSmartStatus'; // Importar KpiSmartStatus
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -31,9 +32,10 @@ const emptyStringToUndefined = z.preprocess(
 const formSchema = z.object({
   kpi_smart_id: z.string().min(1, { message: 'O KPI Smart é obrigatório.' }),
   pillar_id: z.string().min(1, { message: 'O pilar é obrigatório.' }),
-  execution_user_types: z.array(z.string()).optional(),
-  view_user_types: z.array(z.string()).optional(),
+  execution_user_types: z.array(z.string()).optional().nullable(),
+  view_user_types: z.array(z.string()).optional().nullable(),
   kpi_smart_frequency_id: z.string().min(1, { message: 'A frequência de monitoramento é obrigatória.' }),
+  kpi_smart_status_id: z.string().min(1, { message: 'O status é obrigatório.' }), // Adicionado ao schema
 
   // Campos para tipo 'Quantitativo'
   logical_comparator: z.string().optional().nullable(),
@@ -46,12 +48,12 @@ const formSchema = z.object({
   actual_delivery_date: z.date().optional().nullable(),
   progress_percentage: emptyStringToUndefined.pipe(z.coerce.number().min(0).max(100).optional().nullable()),
 
-  // Campos para tipo 'Frequência'
+  // Campos Frequência
   planned_frequency: z.string().optional().nullable(),
   planned_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
   performed_executions: emptyStringToUndefined.pipe(z.coerce.number().int().positive().optional().nullable()),
 
-  // Campos para tipo 'Intervalo'
+  // Campos Intervalo
   min_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   max_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
   current_value: emptyStringToUndefined.pipe(z.coerce.number().optional().nullable()),
@@ -74,19 +76,20 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
       execution_user_types: [],
       view_user_types: [],
       kpi_smart_frequency_id: '',
-      logical_comparator: '',
-      base_value: undefined,
-      target_value: undefined,
-      deadline_date: undefined, // Novo campo
-      planned_delivery_date: undefined,
-      actual_delivery_date: undefined,
-      progress_percentage: undefined,
-      planned_frequency: '',
-      planned_executions: undefined,
-      performed_executions: undefined,
-      min_value: undefined,
-      max_value: undefined,
-      current_value: undefined,
+      kpi_smart_status_id: '', // Adicionado ao defaultValues
+      logical_comparator: null, // Alterado para null
+      base_value: null, // Alterado para null
+      target_value: null, // Alterado para null
+      deadline_date: null, // Alterado para null
+      planned_delivery_date: null, // Alterado para null
+      actual_delivery_date: null, // Alterado para null
+      progress_percentage: null, // Alterado para null
+      planned_frequency: null, // Alterado para null
+      planned_executions: null, // Alterado para null
+      performed_executions: null, // Alterado para null
+      min_value: null, // Alterado para null
+      max_value: null, // Alterado para null
+      current_value: null, // Alterado para null
     },
   });
 
@@ -94,22 +97,24 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const { data: editingKpiSmartLiberated, isLoading: isLoadingEditingKpiSmartLiberated } = useQuery<KpiSmartLiberated, Error>({
     queryKey: ['kpiSmartLiberated', kpiSmartLiberatedId],
     queryFn: async () => {
-      if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
+      if (!kpiSmartLiberatedId || !user?.id) throw new Error("ID do KPI Smart Liberado ou usuário faltando.");
       const { data, error } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
           *,
-          kpi_smarts(pillar_id, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)),
-          kpi_smart_frequencies(description)
+          kpi_smarts(description, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description), pillar_id),
+          kpi_smart_frequencies(description),
+          kpi_smart_statuses(description, id)
         `)
         .eq('id', kpiSmartLiberatedId)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
       if (error) throw error;
       return {
         ...data,
         kpi_smarts: Array.isArray(data.kpi_smarts) ? data.kpi_smarts[0] : data.kpi_smarts,
         kpi_smart_frequencies: Array.isArray(data.kpi_smart_frequencies) ? data.kpi_smart_frequencies[0] : data.kpi_smart_frequencies,
+        kpi_smart_statuses: Array.isArray(data.kpi_smart_statuses) ? data.kpi_smart_statuses[0] : data.kpi_smart_statuses,
       };
     },
     enabled: isEditing && !!user?.id,
@@ -119,35 +124,41 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   useEffect(() => {
     if (isEditing && editingKpiSmartLiberated) {
       const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
-      form.reset({
-        kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
-        pillar_id: kpiSmartPillarId,
-        execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
-        view_user_types: editingKpiSmartLiberated.view_user_types || [],
-        kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
-        
-        // Campos Quantitativos
-        logical_comparator: editingKpiSmartLiberated.logical_comparator || '',
-        base_value: editingKpiSmartLiberated.base_value || undefined,
-        target_value: editingKpiSmartLiberated.target_value || undefined,
-        deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : undefined, // Novo campo
+      setSelectedPillarIdForKpiSmart(kpiSmartPillarId); // Set pillar first to load kpiSmarts
+      
+      // Use setTimeout to allow kpiSmarts to load before resetting kpi_smart_id
+      const timer = setTimeout(() => {
+        form.reset({
+          kpi_smart_id: editingKpiSmartLiberated.kpi_smart_id,
+          pillar_id: kpiSmartPillarId,
+          execution_user_types: editingKpiSmartLiberated.execution_user_types || [],
+          view_user_types: editingKpiSmartLiberated.view_user_types || [],
+          kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
+          kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
+          
+          // Campos Quantitativos
+          logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
+          base_value: editingKpiSmartLiberated.base_value || null,
+          target_value: editingKpiSmartLiberated.target_value || null,
+          deadline_date: editingKpiSmartLiberated.deadline_date ? new Date(editingKpiSmartLiberated.deadline_date + 'T00:00:00') : null,
 
-        // Campos Marco
-        planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : undefined,
-        actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : undefined,
-        progress_percentage: editingKpiSmartLiberated.progress_percentage || undefined,
+          // Campos Marco
+          planned_delivery_date: editingKpiSmartLiberated.planned_delivery_date ? new Date(editingKpiSmartLiberated.planned_delivery_date + 'T00:00:00') : null,
+          actual_delivery_date: editingKpiSmartLiberated.actual_delivery_date ? new Date(editingKpiSmartLiberated.actual_delivery_date + 'T00:00:00') : null,
+          progress_percentage: editingKpiSmartLiberated.progress_percentage || null,
 
-        // Campos Frequência
-        planned_frequency: editingKpiSmartLiberated.planned_frequency || '',
-        planned_executions: editingKpiSmartLiberated.planned_executions || undefined,
-        performed_executions: editingKpiSmartLiberated.performed_executions || undefined,
+          // Campos Frequência
+          planned_frequency: editingKpiSmartLiberated.planned_frequency || null,
+          planned_executions: editingKpiSmartLiberated.planned_executions || null,
+          performed_executions: editingKpiSmartLiberated.performed_executions || null,
 
-        // Campos Intervalo
-        min_value: editingKpiSmartLiberated.min_value || undefined,
-        max_value: editingKpiSmartLiberated.max_value || undefined,
-        current_value: editingKpiSmartLiberated.current_value || undefined,
-      });
-      setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
+          // Campos Intervalo
+          min_value: editingKpiSmartLiberated.min_value || null,
+          max_value: editingKpiSmartLiberated.max_value || null,
+          current_value: editingKpiSmartLiberated.current_value || null,
+        });
+      }, 100); // Pequeno delay para garantir que a query de kpiSmarts seja acionada
+      return () => clearTimeout(timer);
     } else if (!isEditing) {
       form.reset({
         kpi_smart_id: '',
@@ -155,19 +166,20 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         execution_user_types: [],
         view_user_types: [],
         kpi_smart_frequency_id: '',
-        logical_comparator: '',
-        base_value: undefined,
-        target_value: undefined,
-        deadline_date: undefined, // Novo campo
-        planned_delivery_date: undefined,
-        actual_delivery_date: undefined,
-        progress_percentage: undefined,
-        planned_frequency: '',
-        planned_executions: undefined,
-        performed_executions: undefined,
-        min_value: undefined,
-        max_value: undefined,
-        current_value: undefined,
+        kpi_smart_status_id: '',
+        logical_comparator: null,
+        base_value: null,
+        target_value: null,
+        deadline_date: null,
+        planned_delivery_date: null,
+        actual_delivery_date: null,
+        progress_percentage: null,
+        planned_frequency: null,
+        planned_executions: null,
+        performed_executions: null,
+        min_value: null,
+        max_value: null,
+        current_value: null,
       });
       setSelectedPillarIdForKpiSmart('');
     }
@@ -176,18 +188,14 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const { data: kpiSmarts, isLoading: isLoadingKpiSmarts } = useQuery<KpiSmart[], Error>({
     queryKey: ['kpiSmartsListForLiberatedForm', user?.id, selectedPillarIdForKpiSmart],
     queryFn: async () => {
-      if (!user?.id) return [];
-      let query = supabase
+      if (!user?.id || !selectedPillarIdForKpiSmart) return [];
+      const { data, error } = await supabase
         .from('kpi_smarts')
         .select('*, kpi_smart_types(description, code), kpi_smart_focuses(description), kpi_smart_units(description)')
         .eq('user_id', user.id)
-        .eq('status', 'active');
-      
-      if (selectedPillarIdForKpiSmart) {
-        query = query.eq('pillar_id', selectedPillarIdForKpiSmart);
-      }
-
-      const { data, error } = await query.order('description', { ascending: true });
+        .eq('status', 'active')
+        .eq('pillar_id', selectedPillarIdForKpiSmart)
+        .order('description', { ascending: true });
       if (error) throw error;
       return data;
     },
@@ -236,6 +244,21 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     enabled: !!user?.id,
   });
 
+  const { data: kpiSmartStatuses, isLoading: isLoadingKpiSmartStatuses } = useQuery<KpiSmartStatus[], Error>({
+    queryKey: ['kpiSmartStatusesListForLiberatedForm', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('kpi_smart_statuses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('description', { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
   const userTypeOptions: MultiSelectOption[] = useMemo(() => {
     return userTypes?.map(ut => ({ value: ut.id, label: ut.name })) || [];
   }, [userTypes]);
@@ -257,6 +280,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const createKpiSmartLiberatedMutation = useMutation({
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!user?.id) throw new Error("Usuário não autenticado.");
+      console.log("Creating KPI Smart Liberated with data:", data); // Log para depuração
       const { data: newKpiSmartLiberated, error } = await supabase
         .from('kpi_smarts_liberated')
         .insert({
@@ -265,12 +289,13 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
+          kpi_smart_status_id: data.kpi_smart_status_id,
           
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
           base_value: data.base_value,
           target_value: data.target_value,
-          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null, // Novo campo
+          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null,
 
           // Campos Marco
           planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
@@ -299,19 +324,21 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     mutationFn: async (data: KpiSmartLiberatedFormData) => {
       if (!kpiSmartLiberatedId) throw new Error("ID do KPI Smart Liberado está faltando.");
       if (!user?.id) throw new Error("Usuário não autenticado.");
-      const { data: updatedKpiSmartLiberated, error } = await supabase
+      console.log("Updating KPI Smart Liberated with data:", data); // Log para depuração
+      const { data: updatedKpiSmartLiberatedResult, error } = await supabase
         .from('kpi_smarts_liberated')
         .update({
           kpi_smart_id: data.kpi_smart_id,
           execution_user_types: data.execution_user_types,
           view_user_types: data.view_user_types,
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
+          kpi_smart_status_id: data.kpi_smart_status_id,
 
           // Campos Quantitativos
           logical_comparator: data.logical_comparator,
           base_value: data.base_value,
           target_value: data.target_value,
-          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null, // Novo campo
+          deadline_date: data.deadline_date ? format(data.deadline_date, 'yyyy-MM-dd') : null,
 
           // Campos Marco
           planned_delivery_date: data.planned_delivery_date ? format(data.planned_delivery_date, 'yyyy-MM-dd') : null,
@@ -333,7 +360,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
         .select()
         .single();
       if (error) throw error;
-      return updatedKpiSmartLiberated;
+      return updatedKpiSmartLiberatedResult;
     },
     ...mutationOptions,
   });
@@ -341,30 +368,31 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     const payload: KpiSmartLiberatedFormData = {
       kpi_smart_id: data.kpi_smart_id,
-      execution_user_types: data.execution_user_types || [],
-      view_user_types: data.view_user_types || [],
-      kpi_smart_frequency_id: data.kpi_smart_frequency_id,
-      
+      execution_user_types: form.getValues('execution_user_types') || null,
+      view_user_types: form.getValues('view_user_types') || null,
+      kpi_smart_frequency_id: form.getValues('kpi_smart_frequency_id'),
+      kpi_smart_status_id: form.getValues('kpi_smart_status_id'),
+
       // Campos Quantitativos
-      logical_comparator: data.logical_comparator,
-      base_value: data.base_value,
-      target_value: data.target_value,
-      deadline_date: data.deadline_date, // Novo campo
+      logical_comparator: form.getValues('logical_comparator') || null,
+      base_value: form.getValues('base_value') || null,
+      target_value: form.getValues('target_value') || null,
+      deadline_date: form.getValues('deadline_date') || null,
 
       // Campos Marco
-      planned_delivery_date: data.planned_delivery_date,
-      actual_delivery_date: data.actual_delivery_date,
-      progress_percentage: data.progress_percentage,
+      planned_delivery_date: form.getValues('planned_delivery_date') || null,
+      actual_delivery_date: form.getValues('actual_delivery_date') || null,
+      progress_percentage: form.getValues('progress_percentage') || null,
 
       // Campos Frequência
-      planned_frequency: data.planned_frequency,
-      planned_executions: data.planned_executions,
-      performed_executions: data.performed_executions,
+      planned_frequency: form.getValues('planned_frequency') || null,
+      planned_executions: form.getValues('planned_executions') || null,
+      performed_executions: form.getValues('performed_executions') || null,
 
       // Campos Intervalo
-      min_value: data.min_value,
-      max_value: data.max_value,
-      current_value: data.current_value,
+      min_value: form.getValues('min_value') || null,
+      max_value: form.getValues('max_value') || null,
+      current_value: form.getValues('current_value') || null,
     };
     if (isEditing) {
       updateKpiSmartLiberatedMutation.mutate(payload);
@@ -373,7 +401,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     }
   };
 
-  const isLoadingForm = isLoadingEditingKpiSmartLiberated || isLoadingKpiSmarts || isLoadingPillars || isLoadingUserTypes || isLoadingKpiSmartFrequencies || createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending;
+  const isLoadingForm = createKpiSmartLiberatedMutation.isPending || updateKpiSmartLiberatedMutation.isPending || isLoadingEditingKpiSmartLiberated || isLoadingPillars || isLoadingKpiSmarts || isLoadingKpiSmartStatuses || isLoadingKpiSmartFrequencies;
 
   if (isEditing && isLoadingEditingKpiSmartLiberated) {
     return <div className="text-center text-muted-foreground">Carregando KPI Smart Liberado...</div>;
@@ -398,10 +426,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <Card className="w-full max-w-2xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
+    <div className="space-y-6">
+      <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold mb-2 text-foreground">
+          <CardTitle className="text-foreground uppercase font-bold">
             {isEditing ? 'Editar KPI Smart Liberado' : 'Liberar Novo KPI Smart'}
           </CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
@@ -420,16 +448,18 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                     <Select onValueChange={(value) => {
                       field.onChange(value);
                       setSelectedPillarIdForKpiSmart(value);
-                      form.setValue('kpi_smart_id', ''); // Clear selected KPI Smart when pillar changes
-                    }} value={field.value} disabled={isLoadingPillars || isEditing}>
+                      form.setValue('kpi_smart_id', ''); // Resetar KPI Smart ao mudar o pilar
+                    }} value={field.value} disabled={isLoadingPillars || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
-                          <SelectValue placeholder="Selecione um pilar" />
+                          <SelectValue placeholder="Selecione um Pilar" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {pillars?.length === 0 ? (
-                          <SelectItem value="no-pillars" disabled>Nenhum pilar cadastrado</SelectItem>
+                        {isLoadingPillars ? (
+                          <SelectItem value="loading-pillars" disabled>Carregando Pilares...</SelectItem>
+                        ) : (pillars && pillars.length === 0) ? (
+                          <SelectItem value="no-pillars" disabled>Nenhum Pilar cadastrado</SelectItem>
                         ) : (
                           pillars?.map((pillar) => (
                             pillar.id && pillar.id !== '' ? (
@@ -451,7 +481,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground">KPI Smart</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || kpiSmarts?.length === 0}>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedPillarIdForKpiSmart || isLoadingKpiSmarts || (kpiSmarts && kpiSmarts.length === 0) || isLoadingForm}>
                       <FormControl>
                         <SelectTrigger className="rounded-lg">
                           <SelectValue placeholder="Selecione um KPI Smart" />
@@ -462,10 +492,10 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                           <SelectItem value="select-pillar" disabled>Selecione um pilar primeiro</SelectItem>
                         ) : isLoadingKpiSmarts ? (
                           <SelectItem value="loading-kpis" disabled>Carregando KPIs Smart...</SelectItem>
-                        ) : kpiSmarts?.length === 0 ? (
-                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo para este pilar</SelectItem>
+                        ) : (kpiSmarts && kpiSmarts.length === 0) ? (
+                          <SelectItem value="no-kpis" disabled>Nenhum KPI Smart ativo disponível para este pilar</SelectItem>
                         ) : (
-                          kpiSmarts?.map((kpi) => (
+                          kpiSmarts.map((kpi) => (
                             kpi.id && kpi.id !== '' ? (
                               <SelectItem key={kpi.id} value={kpi.id}>
                                 {kpi.description}
@@ -479,237 +509,6 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   </FormItem>
                 )}
               />
-
-              {selectedKpiSmart && (
-                <Card className="bg-muted/50 border border-border shadow-sm rounded-lg p-4 space-y-2">
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Tipo do KPI:</span> {selectedKpiSmart.kpi_smart_types?.description || 'N/A'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Foco:</span> {selectedKpiSmart.kpi_smart_focuses?.description || 'N/A'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    <span className="font-semibold text-foreground">Unidade de Medida:</span> {selectedKpiSmart.kpi_smart_units?.description || 'N/A'}
-                  </p>
-                </Card>
-              )}
-
-              {/* Campos Condicionais */}
-              {kpiSmartTypeCode === 1 && ( // Quantitativo
-                <>
-                  <FormField
-                    control={form.control}
-                    name="logical_comparator"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Comparador Lógico</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
-                          <FormControl>
-                            <SelectTrigger className="rounded-lg">
-                              <SelectValue placeholder="Selecione um comparador" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value=">=">&gt;= (Maior ou Igual)</SelectItem>
-                            <SelectItem value="<=">&lt;= (Menor ou Igual)</SelectItem>
-                            <SelectItem value="=">= (Igual)</SelectItem>
-                            <SelectItem value=">">&gt; (Maior)</SelectItem>
-                            <SelectItem value="<">&lt; (Menor)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="base_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Valor Base</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="target_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Valor Meta</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 120.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="deadline_date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-foreground text-left">Prazo</FormLabel>
-                        <FormControl>
-                          <DatePicker
-                            date={field.value ?? undefined}
-                            setDate={field.onChange}
-                            placeholder="Selecione o prazo"
-                            disabled={isLoadingForm}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
-              {kpiSmartTypeCode === 2 && ( // Marco
-                <>
-                  <FormField
-                    control={form.control}
-                    name="planned_delivery_date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-foreground text-left">Data Prevista Entrega</FormLabel>
-                        <FormControl>
-                          <DatePicker
-                            date={field.value ?? undefined}
-                            setDate={field.onChange}
-                            placeholder="Selecione a data prevista"
-                            disabled={isLoadingForm}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="actual_delivery_date"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel className="text-foreground text-left">Data Real Entrega</FormLabel>
-                        <FormControl>
-                          <DatePicker
-                            date={field.value ?? undefined}
-                            setDate={field.onChange}
-                            placeholder="Selecione a data real"
-                            disabled={isLoadingForm}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="progress_percentage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Percentual de Progresso (0-100)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 75.50" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
-              {kpiSmartTypeCode === 3 && ( // Frequência
-                <>
-                  <FormField
-                    control={form.control}
-                    name="planned_frequency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Frequência Planejada</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: Semanal, Mensal" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="planned_executions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Execuções Previstas</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="1" placeholder="Ex: 4" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="performed_executions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Execuções Realizadas</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="1" placeholder="Ex: 3" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
-              {kpiSmartTypeCode === 4 && ( // Intervalo
-                <>
-                  <FormField
-                    control={form.control}
-                    name="min_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 0.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="max_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Valor Máximo</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 100.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="current_value"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-foreground">Valor Atual</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Ex: 50.00" {...field} value={field.value ?? ''} className="rounded-lg" disabled={isLoadingForm} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>
-              )}
-
               <FormField
                 control={form.control}
                 name="kpi_smart_frequency_id"
@@ -723,13 +522,15 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {kpiSmartFrequencies?.length === 0 ? (
-                          <SelectItem value="no-frequencies" disabled>Nenhuma frequência cadastrada</SelectItem>
+                        {isLoadingKpiSmartFrequencies ? (
+                          <SelectItem value="loading-frequencies" disabled>Carregando Frequências...</SelectItem>
+                        ) : (kpiSmartFrequencies && kpiSmartFrequencies.length === 0) ? (
+                          <SelectItem value="no-frequencies" disabled>Nenhuma Frequência cadastrada</SelectItem>
                         ) : (
-                          kpiSmartFrequencies?.map((freq) => (
-                            freq.id && freq.id !== '' ? (
-                              <SelectItem key={freq.id} value={freq.id}>
-                                {freq.description}
+                          kpiSmartFrequencies?.map((frequency) => (
+                            frequency.id && frequency.id !== '' ? (
+                              <SelectItem key={frequency.id} value={frequency.id}>
+                                {frequency.description}
                               </SelectItem>
                             ) : null
                           ))
@@ -740,6 +541,276 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="kpi_smart_status_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground">Status do KPI Smart Liberado</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingKpiSmartStatuses || isLoadingForm}>
+                      <FormControl>
+                        <SelectTrigger className="rounded-lg">
+                          <SelectValue placeholder="Selecione o Status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {isLoadingKpiSmartStatuses ? (
+                          <SelectItem value="loading-statuses" disabled>Carregando Status...</SelectItem>
+                        ) : (kpiSmartStatuses && kpiSmartStatuses.length === 0) ? (
+                          <SelectItem value="no-statuses" disabled>Nenhum Status cadastrado</SelectItem>
+                        ) : (
+                          kpiSmartStatuses?.map((status) => (
+                            status.id && status.id !== '' ? (
+                              <SelectItem key={status.id} value={status.id}>
+                                {status.description}
+                              </SelectItem>
+                            ) : null
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Campos Condicionais baseados no kpiSmartTypeCode */}
+              {kpiSmartTypeCode === 1 && ( // Quantitativo
+                <Card className="bg-card/50 border border-border shadow-sm rounded-lg p-4">
+                  <CardTitle className="text-lg font-bold text-foreground mb-4">Configurações Quantitativas</CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="logical_comparator"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Comparador Lógico</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-lg">
+                                <SelectValue placeholder="Selecione um comparador" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value=">=">&gt;= (Maior ou Igual)</SelectItem>
+                              <SelectItem value="<=">&lt;= (Menor ou Igual)</SelectItem>
+                              <SelectItem value="=">= (Igual)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="base_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Valor Base</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 100" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="target_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Valor Alvo</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 120" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="deadline_date"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel className="text-foreground text-left">Data Limite</FormLabel>
+                          <FormControl>
+                            <DatePicker
+                              date={field.value || undefined}
+                              setDate={field.onChange}
+                              placeholder="Selecione a data limite"
+                              disabled={isLoadingForm}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Card>
+              )}
+
+              {kpiSmartTypeCode === 2 && ( // Marco
+                <Card className="bg-card/50 border border-border shadow-sm rounded-lg p-4">
+                  <CardTitle className="text-lg font-bold text-foreground mb-4">Configurações de Marco</CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="planned_delivery_date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-foreground text-left">Data de Entrega Planejada</FormLabel>
+                          <FormControl>
+                            <DatePicker
+                              date={field.value || undefined}
+                              setDate={field.onChange}
+                              placeholder="Selecione a data planejada"
+                              disabled={isLoadingForm}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="actual_delivery_date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel className="text-foreground text-left">Data de Entrega Real</FormLabel>
+                          <FormControl>
+                            <DatePicker
+                              date={field.value || undefined}
+                              setDate={field.onChange}
+                              placeholder="Selecione a data real"
+                              disabled={isLoadingForm}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="progress_percentage"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel className="text-foreground">Progresso (%)</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 75" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Card>
+              )}
+
+              {kpiSmartTypeCode === 3 && ( // Frequência
+                <Card className="bg-card/50 border border-border shadow-sm rounded-lg p-4">
+                  <CardTitle className="text-lg font-bold text-foreground mb-4">Configurações de Frequência</CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="planned_frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Frequência Planejada</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ''} disabled={isLoadingForm}>
+                            <FormControl>
+                              <SelectTrigger className="rounded-lg">
+                                <SelectValue placeholder="Selecione a frequência" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Diário">Diário</SelectItem>
+                              <SelectItem value="Semanal">Semanal</SelectItem>
+                              <SelectItem value="Mensal">Mensal</SelectItem>
+                              <SelectItem value="Trimestral">Trimestral</SelectItem>
+                              <SelectItem value="Anual">Anual</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="planned_executions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Execuções Planejadas</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="1" placeholder="Ex: 10" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="performed_executions"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel className="text-foreground">Execuções Realizadas</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="1" placeholder="Ex: 7" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Card>
+              )}
+
+              {kpiSmartTypeCode === 4 && ( // Intervalo
+                <Card className="bg-card/50 border border-border shadow-sm rounded-lg p-4">
+                  <CardTitle className="text-lg font-bold text-foreground mb-4">Configurações de Intervalo</CardTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="min_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
+                          
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 0" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="max_value"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-foreground">Valor Máximo</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 100" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="current_value"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel className="text-foreground">Valor Atual</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" placeholder="Ex: 50" {...field} disabled={isLoadingForm} className="rounded-lg" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </Card>
+              )}
 
               <FormField
                 control={form.control}
@@ -786,14 +857,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoadingForm || !form.formState.isValid} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                  {isLoadingForm ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditing ? 'Salvando...' : 'Liberando...'}
-                    </>
-                  ) : (
-                    isEditing ? 'Salvar Alterações' : 'Liberar KPI Smart'
-                  )}
+                  {isEditing ? 'Salvar Alterações' : 'Liberar KPI Smart'}
                 </Button>
               </div>
             </form>
