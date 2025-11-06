@@ -134,8 +134,8 @@ const KpiApontamentosPage: React.FC = () => {
                       <div>
                         <Label>Data do Apontamento</Label>
                         <DatePicker
-                          selected={formData[kpi.id]?.date || new Date()}
-                          onSelect={(date) => setFormData(prev => ({
+                          date={formData[kpi.id]?.date || new Date()} // Fixed: Changed 'selected' to 'date'
+                          setDate={(date) => setFormData(prev => ({ // Fixed: Changed 'onSelect' to 'setDate'
                             ...prev,
                             [kpi.id]: { ...prev[kpi.id], date }
                           }))}
