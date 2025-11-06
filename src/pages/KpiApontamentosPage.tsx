@@ -20,12 +20,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { showSuccess, showError } from '@/utils/toast'; // Fixed: Added missing imports
-import { format, subDays } from 'date-fns'; // Fixed: Added missing date-fns imports
+import { showSuccess, showError } from '@/utils/toast';
+import { format, subDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale'; // Fixed: Added missing locale import
 
 interface Appointment {
   id: string;
-  kpi_smart_liberated_id: string;
+  kpi_smart_liberated_id: string; // Fixed: Added missing property
   value: number | null;
   note: string | null;
   appointment_date: string;
@@ -38,11 +39,14 @@ interface LiberatedKpi {
   kpi_smart: {
     id: string;
     description: string;
-    kpi_smart_type_id: string; // Fixed: Ensure this field exists in the join
+    kpi_smart_type_id: string;
   } | null;
   kpi_smart_frequency: {
     description: string;
   } | null;
+  kpi_smart_type: { // Fixed: Added to interface
+    code: number;
+  };
   appointments: Appointment[];
 }
 
@@ -72,6 +76,7 @@ const KpiApontamentosPage: React.FC = () => {
           kpi_smart_frequency: kpi_smart_frequencies(description),
           appointments: kpi_apontamentos(
             id,
+            kpi_smart_liberated_id, // Fixed: Ensure this is selected in the join
             value,
             note,
             appointment_date,
@@ -83,19 +88,22 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (error) throw error;
 
-      // Fixed: Handle array joins by taking first element [0]
+      // Fixed: Handle array joins and ensure kpi_smart_type is properly structured
       const processedData = (data || []).map(kpi => ({
         ...kpi,
         kpi_smart: Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart,
         kpi_smart_type: { code: (Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart)?.kpi_smart_type_id || 1 },
         kpi_smart_frequency: Array.isArray(kpi.kpi_smart_frequency) ? kpi.kpi_smart_frequency[0] : kpi.kpi_smart_frequency,
-        appointments: (kpi.appointments || []).sort((a: Appointment, b: Appointment) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime()),
+        appointments: (kpi.appointments || []).map((appt: any) => ({
+          ...appt,
+          kpi_smart_liberated_id: kpi.id, // Fixed: Ensure kpi_smart_liberated_id is set
+        })).sort((a: Appointment, b: Appointment) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime()),
       }));
 
       setLiberatedKpis(processedData);
     } catch (error) {
       console.error('Erro ao buscar KPIs liberados:', error);
-      showError('Erro ao carregar KPIs liberados.'); // Fixed: Now imported
+      showError('Erro ao carregar KPIs liberados.');
     } finally {
       setLoading(false);
     }
@@ -120,7 +128,7 @@ const KpiApontamentosPage: React.FC = () => {
       .from('kpi_apontamentos')
       .select('id', { count: 'exact', head: true })
       .eq('kpi_smart_liberated_id', kpiId)
-      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd')); // Fixed: Now imported
+      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd', { locale: ptBR })); // Fixed: Added locale
 
     if (error) {
       console.error('Erro ao verificar frequência:', error);
@@ -133,19 +141,19 @@ const KpiApontamentosPage: React.FC = () => {
   const handleSubmitAppointment = async (kpiId: string, appointmentId?: string) => {
     const form = formData[kpiId];
     if (!form || !form.value) {
-      showError('Por favor, insira um valor para o apontamento.'); // Fixed: Now imported
+      showError('Por favor, insira um valor para o apontamento.');
       return;
     }
 
     const kpi = liberatedKpis.find(k => k.id === kpiId);
     if (!kpi?.kpi_smart_frequency?.description) {
-      showError('Frequência não definida para este KPI.'); // Fixed: Now imported
+      showError('Frequência não definida para este KPI.');
       return;
     }
 
     const canProceed = await canMakeAppointment(kpiId, kpi.kpi_smart_frequency.description);
     if (!canProceed) {
-      showError(`Você só pode fazer apontamentos ${kpi.kpi_smart_frequency.description.toLowerCase()}. O último foi recente.`); // Fixed: Now imported
+      showError(`Você só pode fazer apontamentos ${kpi.kpi_smart_frequency.description.toLowerCase()}. O último foi recente.`);
       return;
     }
 
@@ -157,7 +165,7 @@ const KpiApontamentosPage: React.FC = () => {
         user_id: user!.id,
         value: parseFloat(form.value) || null,
         note: form.note || null,
-        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'), // Fixed: Now imported
+        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd', { locale: ptBR }) : format(new Date(), 'yyyy-MM-dd', { locale: ptBR }), // Fixed: Added locale
       };
 
       let result;
@@ -175,13 +183,13 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (result.error) throw result.error;
 
-      showSuccess(appointmentId ? 'Apontamento atualizado!' : 'Apontamento salvo!'); // Fixed: Now imported
+      showSuccess(appointmentId ? 'Apontamento atualizado!' : 'Apontamento salvo!');
       setFormData(prev => ({ ...prev, [kpiId]: { value: '', note: '', date: null } }));
       setEditingAppointment(null);
       fetchLiberatedKpis();
     } catch (error) {
       console.error('Erro ao salvar apontamento:', error);
-      showError('Erro ao salvar apontamento.'); // Fixed: Now imported
+      showError('Erro ao salvar apontamento.');
     } finally {
       setSubmitting(null);
     }
@@ -211,11 +219,11 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (error) throw error;
 
-      showSuccess('Apontamento excluído!'); // Fixed: Now imported
+      showSuccess('Apontamento excluído!');
       fetchLiberatedKpis();
     } catch (error) {
       console.error('Erro ao excluir apontamento:', error);
-      showError('Erro ao excluir apontamento.'); // Fixed: Now imported
+      showError('Erro ao excluir apontamento.');
     }
   };
 
@@ -254,11 +262,12 @@ const KpiApontamentosPage: React.FC = () => {
           ) : (
             <div className="space-y-6">
               {liberatedKpis.map((kpi) => {
+                // Fixed: Access kpi_smart_type.code correctly
                 const typeName = kpi.kpi_smart_type?.code === 1 ? 'Quantitativo' : kpi.kpi_smart_type?.code === 2 ? 'Marco' : kpi.kpi_smart_type?.code === 3 ? 'Frequência' : 'Intervalo';
                 const frequency = kpi.kpi_smart_frequency?.description || 'N/A';
                 const recentAppointments = kpi.appointments.slice(0, showMoreHistory[kpi.id] ? undefined : 5);
                 const chartData = recentAppointments.map(appt => ({
-                  date: format(new Date(appt.appointment_date), 'dd/MM'), // Fixed: Now imported
+                  date: format(new Date(appt.appointment_date), 'dd/MM', { locale: ptBR }), // Fixed: Added locale
                   value: appt.value || 0,
                 }));
 
@@ -356,7 +365,7 @@ const KpiApontamentosPage: React.FC = () => {
                               <div className="flex-1">
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''} {/* Fixed: Added locale import if needed */}
+                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''} // Fixed: Added locale
                                 </div>
                               </div>
                               <div className="flex gap-2">
