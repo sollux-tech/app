@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Target, ListChecks, ShoppingBag } from 'lucide-react'; // Importar ShoppingBag para o novo card
+import { ListChecks, ShoppingBag, PencilRuler } from 'lucide-react'; // PencilRuler para apontamentos
 
 const ShiftPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,7 +12,11 @@ const ShiftPage: React.FC = () => {
   };
 
   const handleKpiSmartAcquiredClick = () => {
-    navigate('/ops/shift/kpi-smarts-acquired'); // Nova rota para KPIs Smart Adquiridos
+    navigate('/ops/shift/kpi-smarts-acquired');
+  };
+
+  const handleKpiApontamentoClick = () => {
+    navigate('/ops/shift/kpi-apontamentos'); // Rota para a página de apontamentos
   };
 
   return (
@@ -20,9 +24,9 @@ const ShiftPage: React.FC = () => {
       <Card className="w-full max-w-4xl bg-card backdrop-blur-md rounded-2xl shadow-lg p-6 text-center border border-border">
         <CardHeader>
           <CardTitle className="text-4xl font-bold mb-4 text-foreground">SOLLUX SHIFT™</CardTitle>
-          <CardDescription className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground">
             Definição de metas e construção de um plano de ação.
-          </CardDescription>
+          </p>
         </CardHeader>
         <CardContent className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -35,8 +39,15 @@ const ShiftPage: React.FC = () => {
             <FeatureCard
               title="KPIs Smart Adquiridos"
               description="Gerencie os KPIs Smart que sua empresa adquiriu."
-              icon={ShoppingBag} // Ícone para KPIs Smart Adquiridos
+              icon={ShoppingBag}
               onClick={handleKpiSmartAcquiredClick}
+            />
+            {/* Novo Card para Apontamento de KPIs */}
+            <FeatureCard
+              title="Apontamento de KPIs"
+              description="Registre os dados e apontamentos para os KPIs designados a você."
+              icon={PencilRuler}
+              onClick={handleKpiApontamentoClick}
             />
           </div>
         </CardContent>
