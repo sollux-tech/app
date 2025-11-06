@@ -69,6 +69,7 @@ import KpiSmartFocusManagementPage from './pages/KpiSmartFocusManagementPage'; /
 import KpiSmartActionVerbManagementPage from './pages/KpiSmartActionVerbManagementPage'; // Importar a nova página
 import KpiSmartManagementPage from './pages/KpiSmartManagementPage'; // Importar a nova página
 import ShiftPage from './pages/ShiftPage'; // Importar a nova página ShiftPage
+import KpiApontamentosPage from './pages/KpiApontamentosPage';
 import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; // Importar a nova página
 import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
 import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
@@ -189,6 +190,8 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/flow" element={<FlowPage />} />
                   <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift" element={<ShiftPage />} /> {/* Nova rota */}
+                  <Route path="/ops/shift/kpi-apontamentos" element={<KpiApontamentosPage />} />
+                  <Route path="/ops/shift/kpi-apontamentos/:id" element={<KpiApontamentosPage />} />
                   <Route path="/ops/shift/kpi-smarts-liberated" element={<KpiSmartLiberatedManagementPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
