@@ -10,7 +10,7 @@ import DatePicker from '@/components/DatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit, Trash2, TrendingUp } from 'lucide-react';
 import { format as formatDate } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR'; // FIX: import ptBR specifically
+import { ptBR } from 'date-fns/locale'; // FIX: import ptBR specifically
 import { showSuccess, showError } from '@/utils/toast';
 
 type SimpleKpi = {
@@ -201,7 +201,7 @@ const KpiApontamentosPage: React.FC = () => {
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{kpi.kpi?.description || 'KPI não encontrado'}</CardTitle>
-                  <Badge>{kpi.kpi?.kpi_smart_type_id}</Badge> {/* Exibe o tipo do KPI */}
+                  <Badge>{kpi.kpi?.kpi_smart_type_id}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
