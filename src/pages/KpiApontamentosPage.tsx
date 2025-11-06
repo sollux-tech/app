@@ -10,7 +10,7 @@ import DatePicker from '@/components/DatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit, Trash2, TrendingUp } from 'lucide-react';
 import { format as formatDate } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale/pt-BR'; // FIX: import ptBR as named export
 import { showSuccess, showError } from '@/utils/toast';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -20,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'; // FIX: Import Table components
+} from '@/components/ui/table';
 
 type SimpleKpi = {
   id: string;
