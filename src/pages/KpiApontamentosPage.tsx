@@ -69,19 +69,20 @@ const KpiApontamentosPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("KpiApontamentosPage: Component mounted or user changed. Calling fetchLiberatedKpis.");
     fetchLiberatedKpis();
   }, [user]);
 
   const fetchLiberatedKpis = async () => {
     if (!user?.id) {
-      console.log('No user ID available, skipping fetch');
+      console.log('KpiApontamentosPage: No user ID available, skipping fetch. User:', user);
       setLoading(false);
       return;
     }
 
     setLoading(true);
     setError(null);
-    console.log('Fetching liberated KPIs for user:', user.id);
+    console.log('KpiApontamentosPage: Fetching liberated KPIs for user:', user.id);
 
     try {
       // Fixed: Use .contains() for array field execution_user_ids
@@ -99,24 +100,24 @@ const KpiApontamentosPage: React.FC = () => {
         .contains('execution_user_ids', [user.id]) // Fixed: Correct array contains query for PostgreSQL array
         .order('created_at', { ascending: false });
 
-      console.log('Raw liberated data from Supabase:', liberatedData);
-      console.log('Liberated query error:', liberatedError);
+      console.log('KpiApontamentosPage: Raw liberated data from Supabase:', liberatedData);
+      console.log('KpiApontamentosPage: Liberated query error:', liberatedError);
 
       if (liberatedError) {
-        console.error('Supabase liberated query error:', liberatedError);
+        console.error('KpiApontamentosPage: Supabase liberated query error:', liberatedError);
         setError(`Erro ao buscar KPIs liberados: ${liberatedError.message}`);
         setLoading(false);
         return;
       }
 
       if (!liberatedData || liberatedData.length === 0) {
-        console.log('No liberated KPIs found for user:', user.id);
+        console.log('KpiApontamentosPage: No liberated KPIs found for user:', user.id);
         setLiberatedKpis([]);
         setLoading(false);
         return;
       }
 
-      console.log('Found liberated KPIs:', liberatedData.length);
+      console.log('KpiApontamentosPage: Found liberated KPIs:', liberatedData.length);
 
       // Fixed: Added 'description' to the select query
       const { data: kpiDetails, error: kpiError } = await supabase
@@ -129,11 +130,11 @@ const KpiApontamentosPage: React.FC = () => {
         `)
         .in('id', liberatedData.map(l => l.kpi_smart_id)) as { data: KpiSmartDetail[]; error: any }; // Explicitly type as array
 
-      console.log('Raw kpi details from Supabase:', kpiDetails);
-      console.log('KPI details error:', kpiError);
+      console.log('KpiApontamentosPage: Raw kpi details from Supabase:', kpiDetails);
+      console.log('KpiApontamentosPage: KPI details error:', kpiError);
 
       if (kpiError) {
-        console.error('KPI details query error:', kpiError);
+        console.error('KpiApontamentosPage: KPI details query error:', kpiError);
         setError(`Erro ao buscar detalhes dos KPIs: ${kpiError.message}`);
         setLoading(false);
         return;
@@ -144,7 +145,7 @@ const KpiApontamentosPage: React.FC = () => {
 
       // Fetch appointments for all liberated KPIs
       const liberatedIds = liberatedData.map(l => l.id);
-      console.log('Fetching appointments for liberated IDs:', liberatedIds);
+      console.log('KpiApontamentosPage: Fetching appointments for liberated IDs:', liberatedIds);
 
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('kpi_apontamentos')
@@ -152,11 +153,11 @@ const KpiApontamentosPage: React.FC = () => {
         .in('kpi_smart_liberated_id', liberatedIds)
         .order('appointment_date', { ascending: false });
 
-      console.log('Raw appointments data from Supabase:', appointmentsData);
-      console.log('Appointments error:', appointmentsError);
+      console.log('KpiApontamentosPage: Raw appointments data from Supabase:', appointmentsData);
+      console.log('KpiApontamentosPage: Appointments error:', appointmentsError);
 
       if (appointmentsError) {
-        console.error('Appointments query error:', appointmentsError);
+        console.error('KpiApontamentosPage: Appointments query error:', appointmentsError);
         setError(`Erro ao buscar apontamentos: ${appointmentsError.message}`);
         setLoading(false);
         return;
@@ -168,7 +169,7 @@ const KpiApontamentosPage: React.FC = () => {
         const kpiDetail = kpiDetailsArray.find((kd: KpiSmartDetail) => kd.id === kpi.kpi_smart_id);
         const frequency = kpiDetail?.kpi_smart_frequencies?.[0]?.description || null;
 
-        console.log(`Processing KPI ${kpi.id}:`, { kpiDetail, frequency });
+        console.log(`KpiApontamentosPage: Processing KPI ${kpi.id}:`, { kpiDetail, frequency });
 
         return {
           id: kpi.id,
@@ -187,17 +188,18 @@ const KpiApontamentosPage: React.FC = () => {
         };
       });
 
-      console.log('Final processed KPIs:', processedData.length);
+      console.log('KpiApontamentosPage: Final processed KPIs:', processedData.length);
       setLiberatedKpis(processedData);
 
       if (processedData.length === 0) {
-        console.warn('No KPIs found - check Supabase data and user permissions');
+        console.warn('KpiApontamentosPage: No KPIs found - check Supabase data and user permissions');
       }
     } catch (error) {
-      console.error('Unexpected error in fetchLiberatedKpis:', error);
+      console.error('KpiApontamentosPage: Unexpected error in fetchLiberatedKpis:', error);
       setError(`Erro inesperado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
+      console.log("KpiApontamentosPage: Loading set to false.");
     }
   };
 
@@ -223,7 +225,7 @@ const KpiApontamentosPage: React.FC = () => {
       .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd', { locale: ptBR }));
 
     if (error) {
-      console.error('Erro ao verificar frequência:', error);
+      console.error('KpiApontamentosPage: Erro ao verificar frequência:', error);
       return true; // Allow on error to avoid blocking
     }
 
@@ -280,7 +282,7 @@ const KpiApontamentosPage: React.FC = () => {
       setEditingAppointment(null);
       fetchLiberatedKpis();
     } catch (error) {
-      console.error('Erro ao salvar apontamento:', error);
+      console.error('KpiApontamentosPage: Erro ao salvar apontamento:', error);
       showError('Erro ao salvar apontamento.');
     } finally {
       setSubmitting(null);
@@ -307,14 +309,14 @@ const KpiApontamentosPage: React.FC = () => {
         .from('kpi_apontamentos')
         .delete()
         .eq('id', appointmentId)
-        .eq('user!.id', user!.id);
+        .eq('user_id', user!.id);
 
       if (error) throw error;
 
       showSuccess('Apontamento excluído!');
       fetchLiberatedKpis();
     } catch (error) {
-      console.error('Erro ao excluir apontamento:', error);
+      console.error('KpiApontamentosPage: Erro ao excluir apontamento:', error);
       showError('Erro ao excluir apontamento.');
     }
   };
@@ -329,6 +331,8 @@ const KpiApontamentosPage: React.FC = () => {
   const toggleHistory = (kpiId: string) => {
     setShowMoreHistory(prev => ({ ...prev, [kpiId]: !prev[kpiId] }));
   };
+
+  console.log("KpiApontamentosPage: Rendering. Loading:", loading, "Error:", error, "Liberated KPIs count:", liberatedKpis.length);
 
   if (loading) {
     return (

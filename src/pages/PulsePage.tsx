@@ -498,7 +498,7 @@ const PulsePage: React.FC = () => {
                   <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
                   </h4>
-                  <div className="flex items-center gap-2"> {/* Changed p to div */}
+                  <div className="flex items-center gap-2"> {/* Use a div instead of p */}
                     <p className="text-2xl font-bold text-foreground">
                       {pillar.percentage.toFixed(2)}%
                     </p>
