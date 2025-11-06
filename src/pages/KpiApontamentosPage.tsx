@@ -479,8 +479,8 @@ const KpiApontamentosPage: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                           {recentAppointments.map((appt) => (
-                            <div key={appt.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                              <div className="flex-1">
+                            <div key={appt.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-muted rounded-lg">
+                              <div className="flex-1 mb-3 md:mb-0"> {/* Add margin-bottom for mobile */}
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
                                 <p className="text-sm text-muted-foreground">
                                   {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} -{' '}
