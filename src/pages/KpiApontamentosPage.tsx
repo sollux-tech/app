@@ -307,7 +307,7 @@ const KpiApontamentosPage: React.FC = () => {
         .from('kpi_apontamentos')
         .delete()
         .eq('id', appointmentId)
-        .eq('user_id', user!.id);
+        .eq('user!.id', user!.id);
 
       if (error) throw error;
 
@@ -482,15 +482,15 @@ const KpiApontamentosPage: React.FC = () => {
                             <div key={appt.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 bg-muted rounded-lg">
                               <div className="flex-1 mb-3 md:mb-0"> {/* Add margin-bottom for mobile */}
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
-                                <p className="text-sm text-muted-foreground">
+                                <div className="text-sm text-muted-foreground"> {/* Changed p to div */}
                                   {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} -{' '}
                                   {appt.note ? (
                                     // If note might contain HTML, use a span instead of div inside p
-                                    <span className="font-medium">{appt.note.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, ' ')}</span>
+                                    <span className="font-medium" dangerouslySetInnerHTML={{ __html: appt.note }} />
                                   ) : (
                                     'Sem observação'
                                   )}
-                                </p>
+                                </div>
                               </div>
                               <div className="flex gap-2">
                                 <Button

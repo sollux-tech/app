@@ -254,16 +254,18 @@ const PublicDiagnosticResultsPage: React.FC = () => {
           {blockIndicator && (
             <div className="mb-6 p-4 bg-muted rounded-lg border border-border text-center">
               <h3 className="text-xl font-semibold text-foreground mb-2 flex items-center justify-center gap-2">
-                <Award className="h-6 w-6 text-sollux-red" /> Indicador do Bloco: {diagnostic.pillar_blocks?.name || 'N/A'}
+                <Award className="h-5 w-5 text-sollux-red" /> Indicador do Bloco: {diagnostic.pillar_blocks?.name || 'N/A'}
               </h3>
-              <p className="text-3xl font-bold text-foreground">
-                {blockIndicator.percentage.toFixed(2)}%
+              <div className="flex items-center justify-center gap-2"> {/* Changed p to div */}
+                <p className="text-3xl font-bold text-foreground">
+                  {blockIndicator.percentage.toFixed(2)}%
+                </p>
                 {blockIndicator.classification && (
-                  <Badge className={getColorClass(blockIndicator.classification.color_code)} style={{ marginLeft: '15px', fontSize: '1.2rem', padding: '0.5rem 1rem' }}>
+                  <Badge className={getColorClass(blockIndicator.classification.color_code)} style={{ fontSize: '1.2rem', padding: '0.5rem 1rem' }}>
                     {blockIndicator.classification.classification_label}
                   </Badge>
                 )}
-              </p>
+              </div>
             </div>
           )}
 

@@ -65,6 +65,7 @@ const getColorHex = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined)
   }
 };
 
+// Reintroduzindo getColorClass para o Badge
 const getColorClass = (colorCode: 'red' | 'yellow' | 'blue' | 'green' | undefined) => {
   switch (colorCode) {
     case 'red': return 'bg-red-500 text-white';
@@ -398,7 +399,7 @@ const PulsePage: React.FC = () => {
       return {
         name: label,
         value: classificationCounts[label],
-        color: classification ? getColorHex(classification.color_code) : '#ccc',
+        color: classification ? getColorHex(classification.color_code) : '#ccc', // Usar getColorHex aqui
       };
     });
 
@@ -411,7 +412,7 @@ const PulsePage: React.FC = () => {
   if (isLoadingConfig) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-sollux-red" />
+        <Loader2 className="h-8 w-8 animate-spin text-sollux-red mr-2" />
         <span className="ml-2 text-muted-foreground">Carregando configurações da página...</span>
       </div>
     );
@@ -497,14 +498,16 @@ const PulsePage: React.FC = () => {
                   <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                     <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
                   </h4>
-                  <p className="text-2xl font-bold text-foreground">
-                    {pillar.percentage.toFixed(2)}%
+                  <div className="flex items-center gap-2"> {/* Changed p to div */}
+                    <p className="text-2xl font-bold text-foreground">
+                      {pillar.percentage.toFixed(2)}%
+                    </p>
                     {pillar.classification && (
-                      <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
+                      <Badge className={getColorClass(pillar.classification.color_code)}>
                         {pillar.classification.classification_label}
                       </Badge>
                     )}
-                  </p>
+                  </div>
                 </Card>
               ))}
             </div>

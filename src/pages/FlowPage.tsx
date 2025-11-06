@@ -395,7 +395,8 @@ const FlowPage: React.FC = () => {
     });
 
     return { pillarIndicators: calculatedPillarIndicators, classificationDistribution: chartData };
-  }, [allPillars, allCompanyQuestionnaireEntries, allPillarBlocks, classificationScales, selectedPillarFilter]);
+  }, [allPillars, allCompanyQuestionnaireEntries, allPillarBlocks, classificationScales, selectedCompany?.id]);
+  // --- Fim da Lógica de Cálculo de Indicadores ---
 
   // Diagnostic Status Counts (filtered by global filters)
   const diagnosticStatusCounts = useMemo(() => {
@@ -540,20 +541,22 @@ const FlowPage: React.FC = () => {
             Certifique-se de que há diagnósticos criados e questionários respondidos.
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {pillarIndicators.map(pillar => (
               <Card key={pillar.id} className="p-4 border border-border rounded-lg bg-muted/50">
                 <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-sollux-orange" /> {pillar.description}
                 </h4>
-                <p className="text-2xl font-bold text-foreground">
-                  {pillar.percentage.toFixed(2)}%
+                <div className="flex items-center gap-2"> {/* Changed p to div */}
+                  <p className="text-2xl font-bold text-foreground">
+                    {pillar.percentage.toFixed(2)}%
+                  </p>
                   {pillar.classification && (
-                    <Badge className={getColorClass(pillar.classification.color_code)} style={{ marginLeft: '10px' }}>
+                    <Badge className={getColorClass(pillar.classification.color_code)}>
                       {pillar.classification.classification_label}
                     </Badge>
                   )}
-                </p>
+                </div>
               </Card>
             ))}
           </div>
