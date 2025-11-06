@@ -38,7 +38,7 @@ interface LiberatedKpi {
   code: number;
   kpi_smart: {
     id: string;
-    description: string;
+    description: string; // Fixed: Added description to match the select query
     kpi_smart_type_id: string;
   } | null;
   kpi_smart_frequency: {
@@ -82,10 +82,10 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (liberatedError) throw liberatedError;
 
-      // Fixed: Remove .single() to return array for multiple IDs
+      // Fixed: Added 'description' to the select query
       const { data: kpiDetails, error: kpiError } = await supabase
         .from('kpi_smarts')
-        .select('id, kpi_smart_type_id, kpi_smart_frequencies(description)')
+        .select('id, description, kpi_smart_type_id, kpi_smart_frequencies(description)')
         .in('id', liberatedData.map(l => l.kpi_smart_id));
 
       if (kpiError) throw kpiError;
@@ -110,7 +110,7 @@ const KpiApontamentosPage: React.FC = () => {
           code: kpi.code,
           kpi_smart: kpiSmart ? {
             id: kpiSmart.id,
-            description: kpiSmart.description || 'N/A',
+            description: kpiSmart.description || 'N/A', // Fixed: Now available from select
             kpi_smart_type_id: kpiSmart.kpi_smart_type_id || '1',
           } : null,
           kpi_smart_frequency: frequency || { description: 'Diário' },
