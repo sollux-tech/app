@@ -22,11 +22,11 @@ import {
 } from 'recharts';
 import { showSuccess, showError } from '@/utils/toast';
 import { format, subDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale'; // Fixed: Added missing locale import
+import { ptBR } from 'date-fns/locale';
 
 interface Appointment {
   id: string;
-  kpi_smart_liberated_id: string; // Fixed: Added missing property
+  kpi_smart_liberated_id: string;
   value: number | null;
   note: string | null;
   appointment_date: string;
@@ -44,9 +44,6 @@ interface LiberatedKpi {
   kpi_smart_frequency: {
     description: string;
   } | null;
-  kpi_smart_type: { // Fixed: Added to interface
-    code: number;
-  };
   appointments: Appointment[];
 }
 
@@ -67,38 +64,63 @@ const KpiApontamentosPage: React.FC = () => {
     if (!user?.id) return;
 
     try {
-      const { data, error } = await supabase
+      // Fixed: Simplified query - fetch main data first, then join appointments separately for clarity
+      const { data: liberatedData, error: liberatedError } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
           id,
           code,
-          kpi_smart: kpi_smarts(id, description, kpi_smart_type_id),
-          kpi_smart_frequency: kpi_smart_frequencies(description),
-          appointments: kpi_apontamentos(
-            id,
-            kpi_smart_liberated_id, // Fixed: Ensure this is selected in the join
-            value,
-            note,
-            appointment_date,
-            created_at
-          )
+          kpi_smart_id,
+          kpi_smart_frequency_id,
+          user_id
         `)
         .eq('execution_user_ids', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (liberatedError) throw liberatedError;
 
-      // Fixed: Handle array joins and ensure kpi_smart_type is properly structured
-      const processedData = (data || []).map(kpi => ({
-        ...kpi,
-        kpi_smart: Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart,
-        kpi_smart_type: { code: (Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart)?.kpi_smart_type_id || 1 },
-        kpi_smart_frequency: Array.isArray(kpi.kpi_smart_frequency) ? kpi.kpi_smart_frequency[0] : kpi.kpi_smart_frequency,
-        appointments: (kpi.appointments || []).map((appt: any) => ({
-          ...appt,
-          kpi_smart_liberated_id: kpi.id, // Fixed: Ensure kpi_smart_liberated_id is set
-        })).sort((a: Appointment, b: Appointment) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime()),
-      }));
+      // Fixed: Fetch kpi_smart_type_id and frequency separately to avoid join parsing issues
+      const liberatedIds = liberatedData?.map(l => l.id) || [];
+      if (liberatedIds.length === 0) {
+        setLiberatedKpis([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: kpiDetails, error: kpiError } = await supabase
+        .from('kpi_smarts')
+        .select('id, kpi_smart_type_id, kpi_smart_frequencies(description)')
+        .in('id', liberatedData.map(l => l.kpi_smart_id))
+        .single(); // Use single() if one-to-one, or adjust for multiple
+
+      if (kpiError) throw kpiError;
+
+      // Fixed: Fetch appointments for all liberated KPIs
+      const { data: appointmentsData, error: appointmentsError } = await supabase
+        .from('kpi_apontamentos')
+        .select('*')
+        .in('kpi_smart_liberated_id', liberatedIds)
+        .order('appointment_date', { ascending: false });
+
+      if (appointmentsError) throw appointmentsError;
+
+      // Fixed: Process data with proper type handling - map to ensure structure
+      const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
+        const kpiSmart = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id) || null;
+        const frequency = kpiSmart?.kpi_smart_frequencies?.[0] || null; // Handle array if needed
+
+        return {
+          id: kpi.id,
+          code: kpi.code,
+          kpi_smart: {
+            id: kpi.kpi_smart_id,
+            description: kpiSmart?.description || 'N/A',
+            kpi_smart_type_id: kpiSmart?.kpi_smart_type_id || '1', // Default to 1 (Quantitativo)
+          },
+          kpi_smart_frequency: frequency || { description: 'Diário' }, // Default frequency
+          appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id),
+        };
+      }) as LiberatedKpi[]; // Type assertion after processing
 
       setLiberatedKpis(processedData);
     } catch (error) {
@@ -128,7 +150,7 @@ const KpiApontamentosPage: React.FC = () => {
       .from('kpi_apontamentos')
       .select('id', { count: 'exact', head: true })
       .eq('kpi_smart_liberated_id', kpiId)
-      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd', { locale: ptBR })); // Fixed: Added locale
+      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd', { locale: ptBR }));
 
     if (error) {
       console.error('Erro ao verificar frequência:', error);
@@ -165,7 +187,7 @@ const KpiApontamentosPage: React.FC = () => {
         user_id: user!.id,
         value: parseFloat(form.value) || null,
         note: form.note || null,
-        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd', { locale: ptBR }) : format(new Date(), 'yyyy-MM-dd', { locale: ptBR }), // Fixed: Added locale
+        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd', { locale: ptBR }) : format(new Date(), 'yyyy-MM-dd', { locale: ptBR }),
       };
 
       let result;
@@ -262,12 +284,14 @@ const KpiApontamentosPage: React.FC = () => {
           ) : (
             <div className="space-y-6">
               {liberatedKpis.map((kpi) => {
-                // Fixed: Access kpi_smart_type.code correctly
-                const typeName = kpi.kpi_smart_type?.code === 1 ? 'Quantitativo' : kpi.kpi_smart_type?.code === 2 ? 'Marco' : kpi.kpi_smart_type?.code === 3 ? 'Frequência' : 'Intervalo';
-                const frequency = kpi.kpi_smart_frequency?.description || 'N/A';
+                // Fixed: Access kpi_smart_type_id correctly from kpi_smart
+                const typeName = kpi.kpi_smart?.kpi_smart_type_id === '1' ? 'Quantitativo' : 
+                                kpi.kpi_smart?.kpi_smart_type_id === '2' ? 'Marco' : 
+                                kpi.kpi_smart?.kpi_smart_type_id === '3' ? 'Frequência' : 'Intervalo';
+                const frequency = kpi.kpi_smart_frequency?.description || 'Diário';
                 const recentAppointments = kpi.appointments.slice(0, showMoreHistory[kpi.id] ? undefined : 5);
                 const chartData = recentAppointments.map(appt => ({
-                  date: format(new Date(appt.appointment_date), 'dd/MM', { locale: ptBR }), // Fixed: Added locale
+                  date: format(new Date(appt.appointment_date), 'dd/MM', { locale: ptBR }),
                   value: appt.value || 0,
                 }));
 
@@ -365,7 +389,7 @@ const KpiApontamentosPage: React.FC = () => {
                               <div className="flex-1">
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''} // Fixed: Added locale
+                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''}
                                 </div>
                               </div>
                               <div className="flex gap-2">
