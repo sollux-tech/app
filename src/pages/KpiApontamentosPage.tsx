@@ -38,7 +38,7 @@ interface LiberatedKpi {
   code: number;
   kpi_smart: {
     id: string;
-    description: string; // Fixed: Added description to match the select query
+    description: string;
     kpi_smart_type_id: string;
   } | null;
   kpi_smart_frequency: {
@@ -58,16 +58,23 @@ const KpiApontamentosPage: React.FC = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [formData, setFormData] = useState<Record<string, { value: string; note: string; date: Date | null }>>({});
   const [showMoreHistory, setShowMoreHistory] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null); // Added error state for better debugging
 
   useEffect(() => {
     fetchLiberatedKpis();
   }, [user]);
 
   const fetchLiberatedKpis = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
 
     try {
-      // Fixed: Simplified query - fetch main data first, then join appointments separately for clarity
+      // Fixed: Use contains() for array field instead of eq()
       const { data: liberatedData, error: liberatedError } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -77,40 +84,66 @@ const KpiApontamentosPage: React.FC = () => {
           kpi_smart_frequency_id,
           user_id
         `)
-        .eq('execution_user_ids', user.id)
+        .contains('execution_user_ids', [user.id]) // Fixed: Correct array contains query
         .order('created_at', { ascending: false });
 
-      if (liberatedError) throw liberatedError;
+      if (liberatedError) {
+        console.error('Supabase error:', liberatedError);
+        setError(`Erro ao buscar KPIs: ${liberatedError.message}`);
+        setLoading(false);
+        return;
+      }
 
-      // Fixed: Added 'description' to the select query
+      if (!liberatedData || liberatedData.length === 0) {
+        console.log('No liberated KPIs found for user:', user.id);
+        setLiberatedKpis([]);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Found liberated KPIs:', liberatedData.length);
+
+      // Fetch kpi_smart_type_id and frequency separately to avoid join parsing issues
+      const liberatedIds = liberatedData.map(l => l.id);
+      const kpiSmartIds = liberatedData.map(l => l.kpi_smart_id);
+
       const { data: kpiDetails, error: kpiError } = await supabase
         .from('kpi_smarts')
         .select('id, description, kpi_smart_type_id, kpi_smart_frequencies(description)')
-        .in('id', liberatedData.map(l => l.kpi_smart_id));
+        .in('id', kpiSmartIds);
 
-      if (kpiError) throw kpiError;
+      if (kpiError) {
+        console.error('KPI details error:', kpiError);
+        setError(`Erro ao buscar detalhes dos KPIs: ${kpiError.message}`);
+        setLoading(false);
+        return;
+      }
 
-      // Fixed: Fetch appointments for all liberated KPIs
+      // Fetch appointments for all liberated KPIs
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('kpi_apontamentos')
         .select('*')
-        .in('kpi_smart_liberated_id', liberatedData.map(l => l.id))
+        .in('kpi_smart_liberated_id', liberatedIds)
         .order('appointment_date', { ascending: false });
 
-      if (appointmentsError) throw appointmentsError;
+      if (appointmentsError) {
+        console.error('Appointments error:', appointmentsError);
+        setError(`Erro ao buscar apontamentos: ${appointmentsError.message}`);
+        setLoading(false);
+        return;
+      }
 
-      // Fixed: Process data with proper type handling - map to ensure structure
+      // Process data with proper type handling - map to ensure structure
       const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
-        // Fixed: Handle array joins by taking first element [0] for kpi_smart
         const kpiSmart = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id);
-        const frequency = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id)?.kpi_smart_frequencies?.[0] || null;
+        const frequency = kpiSmart?.kpi_smart_frequencies?.[0] || null;
 
         return {
           id: kpi.id,
           code: kpi.code,
           kpi_smart: kpiSmart ? {
             id: kpiSmart.id,
-            description: kpiSmart.description || 'N/A', // Fixed: Now available from select
+            description: kpiSmart.description || 'N/A',
             kpi_smart_type_id: kpiSmart.kpi_smart_type_id || '1',
           } : null,
           kpi_smart_frequency: frequency || { description: 'Diário' },
@@ -122,10 +155,11 @@ const KpiApontamentosPage: React.FC = () => {
         };
       });
 
+      console.log('Processed KPIs:', processedData.length);
       setLiberatedKpis(processedData);
     } catch (error) {
-      console.error('Erro ao buscar KPIs liberados:', error);
-      showError('Erro ao carregar KPIs liberados.');
+      console.error('Unexpected error in fetchLiberatedKpis:', error);
+      setError(`Erro inesperado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
     }
@@ -269,6 +303,24 @@ const KpiApontamentosPage: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)]">
+        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 max-w-md text-center">
+          <p className="text-destructive font-medium mb-2">Erro ao carregar KPIs</p>
+          <p className="text-destructive-foreground text-sm">{error}</p>
+          <Button 
+            onClick={fetchLiberatedKpis} 
+            variant="outline" 
+            className="mt-4 bg-destructive/20 hover:bg-destructive/30 text-destructive-foreground"
+          >
+            Tentar Novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="bg-card backdrop-blur-md border border-border shadow-lg rounded-2xl">
@@ -280,11 +332,19 @@ const KpiApontamentosPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {liberatedKpis.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">Nenhum KPI designado encontrado. Verifique em "KPIs Smart Liberados".</p>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">Nenhum KPI designado encontrado.</p>
+              <Button 
+                onClick={fetchLiberatedKpis} 
+                variant="outline" 
+                className="bg-accent/20 hover:bg-accent/30"
+              >
+                Atualizar Lista
+              </Button>
+            </div>
           ) : (
             <div className="space-y-6">
               {liberatedKpis.map((kpi) => {
-                // Fixed: Access kpi_smart_type_id correctly from kpi_smart
                 const typeName = kpi.kpi_smart?.kpi_smart_type_id === '1' ? 'Quantitativo' : 
                                 kpi.kpi_smart?.kpi_smart_type_id === '2' ? 'Marco' : 
                                 kpi.kpi_smart?.kpi_smart_type_id === '3' ? 'Frequência' : 'Intervalo';
