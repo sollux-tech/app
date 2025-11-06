@@ -53,7 +53,7 @@ interface LiberatedKpi {
     description: string;
   } | null;
   kpi_smart_type: {
-    code: number;
+    code: string; // Fixed: Changed from 'number' to 'string' to match kpi_smart_type_id (ID)
   };
   appointments: Appointment[];
 }
@@ -175,11 +175,11 @@ const KpiApontamentosPage: React.FC = () => {
           code: kpi.code,
           kpi_smart: kpiDetail ? {
             id: kpiDetail.id,
-            description: kpiDetail.description || 'N/A', // Now available from select
+            description: kpiDetail.description || 'N/A',
             kpi_smart_type_id: kpiDetail.kpi_smart_type_id || '1',
           } : null,
           kpi_smart_frequency: { description: frequency || 'Diário' },
-          kpi_smart_type: { code: kpiDetail?.kpi_smart_type_id || 1 },
+          kpi_smart_type: { code: kpiDetail?.kpi_smart_type_id || '1' }, // Fixed: Use string ID consistently
           appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id).map((appt: any) => ({
             ...appt,
             kpi_smart_liberated_id: kpi.id,
