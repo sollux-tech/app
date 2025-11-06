@@ -24,17 +24,18 @@ import { showSuccess, showError } from '@/utils/toast';
 import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-// Tipos simplificados para evitar problemas de join
+// Fixed: Updated interfaces to match the data structure
 interface SimpleKpi {
   id: string;
   code: number;
   description: string;
-  type: string; // 'Quantitativo', 'Marco', 'Frequência', 'Intervalo'
-  frequency: string; // 'Diário', 'Semanal', etc.
+  type: string;
+  frequency: string;
 }
 
-interface SimpleAppointment {
+interface Appointment {
   id: string;
+  kpi_smart_liberated_id: string; // Fixed: Added missing property
   value: number | null;
   note: string | null;
   appointment_date: string;
@@ -44,8 +45,14 @@ interface SimpleAppointment {
 interface LiberatedKpi {
   id: string;
   code: number;
-  kpi: SimpleKpi;
-  appointments: SimpleAppointment[];
+  kpi: SimpleKpi; // Fixed: Changed from kpi_smart to kpi to match interface
+  kpi_smart_frequency: {
+    description: string;
+  } | null;
+  kpi_smart_type: {
+    code: string;
+  };
+  appointments: Appointment[];
 }
 
 const KpiApontamentosPage: React.FC = () => {
@@ -57,7 +64,11 @@ const KpiApontamentosPage: React.FC = () => {
   const [formData, setFormData] = useState<Record<string, { value: string; note: string; date: Date | null }>>({});
   const [showMoreHistory, setShowMoreHistory] = useState<Record<string, boolean>>({});
 
-  // Função para buscar KPIs liberados (simplificada)
+  useEffect(() => {
+    console.log("KpiApontamentosPage: Component mounted or user changed. Calling fetchLiberatedKpis.");
+    fetchLiberatedKpis();
+  }, [user]);
+
   const fetchLiberatedKpis = async () => {
     if (!user?.id) {
       console.log('KpiApontamentosPage: No user ID, skipping fetch');
@@ -67,7 +78,7 @@ const KpiApontamentosPage: React.FC = () => {
 
     setLoading(true);
     setError(null);
-    console.log('KpiApontamentosPage: Starting fetch for user:', user.id);
+    console.log('KpiApontamentosPage: Fetching liberated KPIs for user:', user.id);
 
     try {
       // Passo 1: Buscar KPIs liberados onde o usuário está na lista de execução
@@ -148,17 +159,11 @@ const KpiApontamentosPage: React.FC = () => {
         return;
       }
 
-      // Processar dados (simples)
-      const processedKpis: LiberatedKpi[] = liberatedData.map(liberated => {
-        const kpiDetail = kpiDetails?.find(k => k.id === liberated.kpi_smart_id);
-        const frequencyDetail = frequencies?.find(f => f.id === liberated.kpi_smart_frequency_id);
-        const kpiType = kpiDetail?.kpi_smart_type_id || '1'; // Default to 'Quantitativo'
-
-        const typeName = kpiType === '1' ? 'Quantitativo' : 
-                        kpiType === '2' ? 'Marco' : 
-                        kpiType === '3' ? 'Frequência' : 'Intervalo';
-
-        const appointments = appointmentsData?.filter(a => a.kpi_smart_liberated_id === liberated.id) || [];
+      // Fixed: Process data with correct property names and all required fields
+      const processedKpis: LiberatedKpi[] = liberatedData.map((liberated: any) => {
+        const kpiDetail = kpiDetails?.find((kd: any) => kd.id === liberated.kpi_smart_id);
+        const frequencyDetail = frequencies?.find((f: any) => f.id === liberated.kpi_smart_frequency_id);
+        const frequency = frequencyDetail?.description || 'Diário';
 
         return {
           id: liberated.id,
@@ -167,28 +172,74 @@ const KpiApontamentosPage: React.FC = () => {
             id: kpiDetail?.id || '',
             code: kpiDetail?.code || 0,
             description: kpiDetail?.description || 'KPI Desconhecido',
-            type: typeName,
+            type: kpiDetail?.kpi_smart_type_id || '1', // Fixed: Added type field
+            frequency: frequency, // Fixed: Added frequency field
           },
-          frequency: frequencyDetail?.description || 'Diário',
-          appointments,
+          kpi_smart_frequency: { description: frequency }, // Fixed: Changed from kpi_smart_frequency to match interface
+          kpi_smart_type: { code: kpiDetail?.kpi_smart_type_id || '1' },
+          appointments: (appointmentsData || []).map((appt: any) => ({
+            ...appt,
+            kpi_smart_liberated_id: liberated.id, // Fixed: Added missing property
+          })),
         };
       });
 
       console.log('KpiApontamentosPage: Processed KPIs:', processedKpis);
       setLiberatedKpis(processedKpis);
-    } catch (err) {
-      console.error('KpiApontamentosPage: Unexpected error:', err);
-      setError(`Erro inesperado: ${err instanceof Error ? err.message : 'Erro desconhecido'}`);
+    } catch (error) {
+      console.error('KpiApontamentosPage: Unexpected error:', error);
+      setError(`Erro inesperado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Função para submeter apontamento (simplificada)
+  // Fixed: Added kpi_smart_liberated_id to Appointment interface
+  const canMakeAppointment = async (kpiId: string, frequency: string): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    const now = new Date();
+    let daysBack = 1; // Default to daily
+
+    switch (frequency) {
+      case 'Diário': daysBack = 1; break;
+      case 'Semanal': daysBack = 7; break;
+      case 'Mensal': daysBack = 30; break;
+      case 'Trimestral': daysBack = 90; break;
+      case 'Anual': daysBack = 365; break;
+      default: return true; // Allow if unknown
+    }
+
+    const { count, error } = await supabase
+      .from('kpi_apontamentos')
+      .select('id', { count: 'exact', head: true })
+      .eq('kpi_smart_liberated_id', kpiId)
+      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd', { locale: ptBR }));
+
+    if (error) {
+      console.error('KpiApontamentosPage: Error checking frequency:', error);
+      return true; // Allow on error to avoid blocking
+    }
+
+    return count === 0; // Allow only if no recent appointment
+  };
+
   const handleSubmitAppointment = async (kpiId: string, appointmentId?: string) => {
     const form = formData[kpiId];
     if (!form || !form.value) {
       showError('Por favor, insira um valor para o apontamento.');
+      return;
+    }
+
+    const kpi = liberatedKpis.find((k: LiberatedKpi) => k.id === kpiId);
+    if (!kpi?.kpi.frequency) {
+      showError('Frequência não definida para este KPI.');
+      return;
+    }
+
+    const canProceed = await canMakeAppointment(kpiId, kpi.kpi.frequency);
+    if (!canProceed) {
+      showError(`Você só pode fazer apontamentos ${kpi.kpi.frequency.toLowerCase()}. O último foi recente.`);
       return;
     }
 
@@ -199,7 +250,7 @@ const KpiApontamentosPage: React.FC = () => {
         kpi_smart_liberated_id: kpiId,
         value: parseFloat(form.value) || null,
         note: form.note || null,
-        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd', { locale: ptBR }) : format(new Date(), 'yyyy-MM-dd', { locale: ptBR }),
       };
 
       let result;
@@ -217,8 +268,7 @@ const KpiApontamentosPage: React.FC = () => {
       if (result.error) throw result.error;
 
       showSuccess(appointmentId ? 'Apontamento atualizado!' : 'Apontamento salvo!');
-      setFormData(prev => ({ ...prev, [kpiId]: { value: '', note: '', date: null } }));
-      fetchLiberatedKpis(); // Recarregar dados
+      setFormData((prev) => ({ ...prev, [kpiId]: { value: '', note: '', date: null } }));
     } catch (error) {
       console.error('KpiApontamentosPage: Error submitting appointment:', error);
       showError('Erro ao salvar apontamento.');
@@ -227,7 +277,17 @@ const KpiApontamentosPage: React.FC = () => {
     }
   };
 
-  // Função para deletar apontamento
+  const handleEditAppointment = (appointment: Appointment) => {
+    setFormData((prev) => ({
+      ...prev,
+      [appointment.kpi_smart_liberated_id]: { // Fixed: Use the correct property name
+        value: appointment.value?.toString() || '',
+        note: appointment.note || '',
+        date: new Date(appointment.appointment_date),
+      },
+    }));
+  };
+
   const handleDeleteAppointment = async (appointmentId: string) => {
     if (!window.confirm('Tem certeza que deseja excluir este apontamento?')) return;
 
@@ -240,36 +300,22 @@ const KpiApontamentosPage: React.FC = () => {
       if (error) throw error;
 
       showSuccess('Apontamento excluído!');
-      fetchLiberatedKpis(); // Recarregar dados
+      fetchLiberatedKpis();
     } catch (error) {
       console.error('KpiApontamentosPage: Error deleting appointment:', error);
       showError('Erro ao excluir apontamento.');
     }
   };
 
-  // Função para editar apontamento
-  const handleEditAppointment = (appointment: SimpleAppointment) => {
-    setFormData(prev => ({
-      ...prev,
-      [appointment.kpi_smart_liberated_id]: {
-        value: appointment.value?.toString() || '',
-        note: appointment.note || '',
-        date: new Date(appointment.appointment_date),
-      },
-    }));
-  };
-
-  // Função para atualizar form data
   const updateFormData = (kpiId: string, field: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [kpiId]: { ...prev[kpiId], [field]: value },
     }));
   };
 
-  // Função para toggle histórico
   const toggleHistory = (kpiId: string) => {
-    setShowMoreHistory(prev => ({ ...prev, [kpiId]: !prev[kpiId] }));
+    setShowMoreHistory((prev) => ({ ...prev, [kpiId]: !prev[kpiId] }));
   };
 
   console.log('KpiApontamentosPage: Render - Loading:', loading, 'Error:', error, 'Kpis count:', liberatedKpis.length);
@@ -306,13 +352,13 @@ const KpiApontamentosPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-foreground">Apontamentos de KPIs</CardTitle>
           <CardDescription className="text-lg text-muted-foreground">
-            Registre os dados para os KPIs designados a você.
+            Registre os dados para os KPIs designados a você. Considere a frequência de monitoramento.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {liberatedKpis.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>Nenhum KPI designado encontrado. Verifique se há KPIs liberados para você.</p>
+              <p>Nenhum KPI designado encontrado. Verifique se você tem permissões de execução em KPIs liberados.</p>
               <Button onClick={fetchLiberatedKpis} variant="outline" className="mt-4">
                 Atualizar Lista
               </Button>
@@ -321,7 +367,7 @@ const KpiApontamentosPage: React.FC = () => {
             <div className="space-y-6">
               {liberatedKpis.map((kpi) => {
                 const recentAppointments = kpi.appointments.slice(0, showMoreHistory[kpi.id] ? undefined : 5);
-                const chartData = recentAppointments.map(appt => ({
+                const chartData = recentAppointments.map((appt) => ({
                   date: format(new Date(appt.appointment_date), 'dd/MM', { locale: ptBR }),
                   value: appt.value || 0,
                 }));
@@ -334,9 +380,9 @@ const KpiApontamentosPage: React.FC = () => {
                           {kpi.kpi.description} ({kpi.kpi.type})
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="secondary">{kpi.frequency}</Badge>
+                          <Badge variant="secondary">{kpi.kpi.frequency}</Badge>
                           <span className="text-sm text-muted-foreground">
-                            {kpi.frequency !== 'Diário' ? `Próximo: a cada ${kpi.frequency.toLowerCase()}` : ''}
+                            {kpi.kpi.frequency !== 'Diário' ? `Próximo: a cada ${kpi.kpi.frequency.toLowerCase()}` : ''}
                           </span>
                         </div>
                       </div>
@@ -380,7 +426,11 @@ const KpiApontamentosPage: React.FC = () => {
                           disabled={submitting === kpi.id || !formData[kpi.id]?.value}
                           className="mt-3 bg-sollux-red hover:bg-sollux-orange"
                         >
-                          {submitting === kpi.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
+                          {submitting === kpi.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <TrendingUp className="mr-2 h-4 w-4" />
+                          )}
                           Registrar
                         </Button>
                       </div>
