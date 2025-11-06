@@ -9,7 +9,8 @@ import { useSession } from '@/components/SessionContextProvider';
 import DatePicker from '@/components/DatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Edit, Trash2, TrendingUp } from 'lucide-react';
-import { format as formatDate, ptBR } from 'date-fns';
+import { format as formatDate } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR'; // FIX: import ptBR specifically
 import { showSuccess, showError } from '@/utils/toast';
 
 type SimpleKpi = {
@@ -43,7 +44,6 @@ const KpiApontamentosPage: React.FC = () => {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Carrega KPIs liberados e seus apontamentos do usuário
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -131,9 +131,8 @@ const KpiApontamentosPage: React.FC = () => {
       if (error) throw error;
       showSuccess('Apontamento registrado!');
       setFormData(prev => ({ ...prev, [kpi.id]: { value: '', note: '', date: null } }));
-      // Força reload para appointments
       setLoading(true);
-      setTimeout(() => setLoading(false), 500); // O useEffect já fará reload
+      setTimeout(() => setLoading(false), 500);
     } catch (err: any) {
       showError(err?.message || 'Erro ao registrar.');
     } finally {
@@ -141,7 +140,6 @@ const KpiApontamentosPage: React.FC = () => {
     }
   };
 
-  // CRUD - deletar apontamento
   const handleDelete = async (id: string) => {
     if (!window.confirm('Excluir apontamento?')) return;
     try {
@@ -155,7 +153,6 @@ const KpiApontamentosPage: React.FC = () => {
     }
   };
 
-  // Helper para texto do tipo de KPI
   const getTypeName = (typeId?: string) => {
     switch (typeId) {
       case '1': return 'Quantitativo';
@@ -257,7 +254,6 @@ const KpiApontamentosPage: React.FC = () => {
                 <div className="mt-6">
                   <div className="mb-2 flex justify-between items-center">
                     <div className="font-semibold text-foreground">Histórico recente</div>
-                    {/* botão para recarregar, se quiser */}
                   </div>
                   {(appointments[kpi.id]?.length === 0) ? (
                     <div className="text-muted-foreground text-sm">Nenhum apontamento registrado ainda.</div>
