@@ -76,7 +76,8 @@ const KpiApontamentosPage: React.FC = () => {
     console.log('Fetching liberated KPIs for user:', user.id);
 
     try {
-      // Fixed: Use .contains() for array field execution_user_ids
+      // Fixed: Use a more robust query - first fetch liberated KPIs, then join data separately
+      // Step 1: Fetch liberated KPIs where user.id is in execution_user_ids array
       const { data: liberatedData, error: liberatedError } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -88,11 +89,11 @@ const KpiApontamentosPage: React.FC = () => {
           execution_user_ids,
           view_user_ids
         `)
-        .contains('execution_user_ids', [user.id]) // Fixed: Correct array contains query
+        .contains('execution_user_ids', [user.id]) // Fixed: Correct array contains query for PostgreSQL array
         .order('created_at', { ascending: false });
 
       console.log('Raw liberated data from Supabase:', liberatedData);
-      console.log('Liberated error:', liberatedError);
+      console.log('Liberated query error:', liberatedError);
 
       if (liberatedError) {
         console.error('Supabase liberated query error:', liberatedError);
@@ -110,7 +111,7 @@ const KpiApontamentosPage: React.FC = () => {
 
       console.log('Found liberated KPIs:', liberatedData.length);
 
-      // Fetch kpi_smart_type_id and frequency separately to avoid join parsing issues
+      // Step 2: Fetch kpi_smart details for all liberated KPIs
       const kpiSmartIds = liberatedData.map(l => l.kpi_smart_id);
       console.log('Fetching kpi details for IDs:', kpiSmartIds);
 
@@ -134,7 +135,7 @@ const KpiApontamentosPage: React.FC = () => {
         return;
       }
 
-      // Fetch appointments for all liberated KPIs
+      // Step 3: Fetch appointments for all liberated KPIs
       const liberatedIds = liberatedData.map(l => l.id);
       console.log('Fetching appointments for liberated IDs:', liberatedIds);
 
@@ -154,10 +155,13 @@ const KpiApontamentosPage: React.FC = () => {
         return;
       }
 
-      // Process data with proper type handling - map to ensure structure
+      // Fixed: Process data with proper type handling - map to ensure structure
+      // Ensure kpiDetails is always an array
+      const kpiDetailsArray = Array.isArray(kpiDetails) ? kpiDetails : [kpiDetails].filter(Boolean);
+      
       const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
-        // Find the corresponding kpi detail
-        const kpiDetail = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id);
+        // Fixed: Find the corresponding kpi detail from the array
+        const kpiDetail = kpiDetailsArray.find((kd: any) => kd.id === kpi.kpi_smart_id);
         const frequency = kpiDetail?.kpi_smart_frequencies?.[0] || null;
 
         console.log(`Processing KPI ${kpi.id}:`, { kpiDetail, frequency });
@@ -179,7 +183,7 @@ const KpiApontamentosPage: React.FC = () => {
         };
       });
 
-      console.log('Final processed KPIs:', processedData);
+      console.log('Final processed KPIs:', processedData.length);
       setLiberatedKpis(processedData);
     } catch (error) {
       console.error('Unexpected error in fetchLiberatedKpis:', error);
@@ -438,20 +442,22 @@ const KpiApontamentosPage: React.FC = () => {
                         </Button>
                       </div>
 
-                      {/* Gráfico de Evolução */}
+                      {/* Fixed: Wrap Recharts in div to prevent DOM nesting warning */}
                       {chartData.length > 1 && (
                         <div className="h-64">
                           <h5 className="font-medium text-foreground mb-2">Evolução Recente</h5>
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={chartData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="date" />
-                              <YAxis />
-                              <Tooltip />
-                              <Legend />
-                              <Line type="monotone" dataKey="value" stroke="#E53935" />
-                            </LineChart>
-                          </ResponsiveContainer>
+                          <div className="bg-white p-4 rounded-lg"> {/* Added wrapper div */}
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={chartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="date" />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Line type="monotone" dataKey="value" stroke="#E53935" />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
                         </div>
                       )}
 
