@@ -24,6 +24,14 @@ import { showSuccess, showError } from '@/utils/toast';
 import { format, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+// Add this type definition at the top of the file (after imports)
+interface KpiSmartDetail {
+  id: string;
+  description: string;
+  kpi_smart_type_id: string;
+  kpi_smart_frequencies: { description: string }[]; // Array from Supabase join
+}
+
 interface Appointment {
   id: string;
   kpi_smart_liberated_id: string;
@@ -76,8 +84,7 @@ const KpiApontamentosPage: React.FC = () => {
     console.log('Fetching liberated KPIs for user:', user.id);
 
     try {
-      // Fixed: Use a more robust query - first fetch liberated KPIs, then join data separately
-      // Step 1: Fetch liberated KPIs where user.id is in execution_user_ids array
+      // Fixed: Use .contains() for array field execution_user_ids
       const { data: liberatedData, error: liberatedError } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -111,10 +118,7 @@ const KpiApontamentosPage: React.FC = () => {
 
       console.log('Found liberated KPIs:', liberatedData.length);
 
-      // Step 2: Fetch kpi_smart details for all liberated KPIs
-      const kpiSmartIds = liberatedData.map(l => l.kpi_smart_id);
-      console.log('Fetching kpi details for IDs:', kpiSmartIds);
-
+      // Fixed: Added 'description' to the select query
       const { data: kpiDetails, error: kpiError } = await supabase
         .from('kpi_smarts')
         .select(`
@@ -123,7 +127,7 @@ const KpiApontamentosPage: React.FC = () => {
           kpi_smart_type_id,
           kpi_smart_frequencies(description)
         `)
-        .in('id', kpiSmartIds);
+        .in('id', liberatedData.map(l => l.kpi_smart_id)) as { data: KpiSmartDetail[]; error: any }; // Explicitly type as array
 
       console.log('Raw kpi details from Supabase:', kpiDetails);
       console.log('KPI details error:', kpiError);
@@ -135,7 +139,10 @@ const KpiApontamentosPage: React.FC = () => {
         return;
       }
 
-      // Step 3: Fetch appointments for all liberated KPIs
+      // Ensure kpiDetails is always an array (handle empty case)
+      const kpiDetailsArray: KpiSmartDetail[] = Array.isArray(kpiDetails) ? kpiDetails : [];
+
+      // Fetch appointments for all liberated KPIs
       const liberatedIds = liberatedData.map(l => l.id);
       console.log('Fetching appointments for liberated IDs:', liberatedIds);
 
@@ -155,14 +162,11 @@ const KpiApontamentosPage: React.FC = () => {
         return;
       }
 
-      // Fixed: Process data with proper type handling - map to ensure structure
-      // Ensure kpiDetails is always an array
-      const kpiDetailsArray = Array.isArray(kpiDetails) ? kpiDetails : [kpiDetails].filter(Boolean);
-      
+      // Process data with proper type handling - map to ensure structure
       const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
         // Fixed: Find the corresponding kpi detail from the array
-        const kpiDetail = kpiDetailsArray.find((kd: any) => kd.id === kpi.kpi_smart_id);
-        const frequency = kpiDetail?.kpi_smart_frequencies?.[0] || null;
+        const kpiDetail = kpiDetailsArray.find((kd: KpiSmartDetail) => kd.id === kpi.kpi_smart_id);
+        const frequency = kpiDetail?.kpi_smart_frequencies?.[0]?.description || null;
 
         console.log(`Processing KPI ${kpi.id}:`, { kpiDetail, frequency });
 
@@ -171,10 +175,10 @@ const KpiApontamentosPage: React.FC = () => {
           code: kpi.code,
           kpi_smart: kpiDetail ? {
             id: kpiDetail.id,
-            description: kpiDetail.description || 'N/A',
+            description: kpiDetail.description || 'N/A', // Now available from select
             kpi_smart_type_id: kpiDetail.kpi_smart_type_id || '1',
           } : null,
-          kpi_smart_frequency: frequency || { description: 'Diário' },
+          kpi_smart_frequency: { description: frequency || 'Diário' },
           kpi_smart_type: { code: kpiDetail?.kpi_smart_type_id || 1 },
           appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id).map((appt: any) => ({
             ...appt,
@@ -185,6 +189,10 @@ const KpiApontamentosPage: React.FC = () => {
 
       console.log('Final processed KPIs:', processedData.length);
       setLiberatedKpis(processedData);
+
+      if (processedData.length === 0) {
+        console.warn('No KPIs found - check Supabase data and user permissions');
+      }
     } catch (error) {
       console.error('Unexpected error in fetchLiberatedKpis:', error);
       setError(`Erro inesperado: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
@@ -360,13 +368,9 @@ const KpiApontamentosPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           {liberatedKpis.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">Nenhum KPI designado encontrado.</p>
-              <Button 
-                onClick={fetchLiberatedKpis} 
-                variant="outline" 
-                className="bg-accent/20 hover:bg-accent/30"
-              >
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Nenhum KPI designado encontrado. Verifique se você tem permissões de execução em KPIs liberados.</p>
+              <Button onClick={fetchLiberatedKpis} variant="outline" className="mt-4">
                 Atualizar Lista
               </Button>
             </div>
@@ -461,7 +465,7 @@ const KpiApontamentosPage: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Histórico */}
+                      {/* Histórico - Fixed: Render note as plain text to avoid HTML nesting */}
                       <div className="border-t pt-4">
                         <div className="flex items-center justify-between mb-3">
                           <h4 className="font-medium text-foreground">Histórico de Apontamentos</h4>
@@ -478,9 +482,15 @@ const KpiApontamentosPage: React.FC = () => {
                             <div key={appt.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                               <div className="flex-1">
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''}
-                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} -{' '}
+                                  {appt.note ? (
+                                    // If note might contain HTML, use a span instead of div inside p
+                                    <span className="font-medium">{appt.note.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, ' ')}</span>
+                                  ) : (
+                                    'Sem observação'
+                                  )}
+                                </p>
                               </div>
                               <div className="flex gap-2">
                                 <Button
