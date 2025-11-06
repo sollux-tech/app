@@ -23,7 +23,7 @@ import { usePageConfig } from '@/hooks/usePageConfig'; // Importar o novo hook
 import PageSettingsDialog from '@/components/PageSettingsDialog'; // Importar o novo componente
 import SectionWrapper from '@/components/SectionWrapper'; // Importar o novo componente
 
-// Helper to classify a percentage based on classification scales (duplicated for standalone page)
+// Helper to classify a percentage based on classification scales
 const classifyPercentage = (
   percentage: number,
   scales: ClassificationScale[],
