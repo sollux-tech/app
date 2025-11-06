@@ -66,7 +66,6 @@ const KpiApontamentosPage: React.FC = () => {
 
         let detailedKpis: KpiLiberated[] = [];
         if (liberated && liberated.length > 0) {
-          // Busca todos os KPIs smart de uma vez
           const smartIds = liberated.map(l => l.kpi_smart_id);
           const { data: kpiDetails, error: kpiErr } = await supabase
             .from('kpi_smarts')
@@ -81,7 +80,6 @@ const KpiApontamentosPage: React.FC = () => {
           }));
         }
 
-        // Carrega apontamentos para cada kpi liberado do usuário
         let allAppts: Record<string, Appointment[]> = {};
         if (liberated && liberated.length > 0) {
           const ids = liberated.map(l => l.id);
@@ -92,7 +90,6 @@ const KpiApontamentosPage: React.FC = () => {
             .order('appointment_date', { ascending: false });
 
           if (apptsError) throw apptsError;
-          // Agrupa por KPI id
           ids.forEach(id => { allAppts[id] = []; });
           (appts || []).forEach((a) => { allAppts[a.kpi_smart_liberated_id] = allAppts[a.kpi_smart_liberated_id] || []; allAppts[a.kpi_smart_liberated_id].push(a); });
         }
@@ -108,10 +105,8 @@ const KpiApontamentosPage: React.FC = () => {
       }
     };
     fetchData();
-    // eslint-disable-next-line
   }, [user?.id]);
 
-  // CRUD - registrar novo apontamento
   const handleRegister = async (kpi: KpiLiberated) => {
     const { value, note, date } = formData[kpi.id] || {};
     if (!value) {
@@ -126,7 +121,7 @@ const KpiApontamentosPage: React.FC = () => {
           kpi_smart_liberated_id: kpi.id,
           value: parseFloat(value),
           note: note || null,
-          appointment_date: date ? formatDate(date, 'yyyy-MM-dd') : formatDate(new Date(), 'yyyy-MM-dd'),
+          appointment_date: date ? formatDate(date, 'yyyy-MM-dd', { locale: ptBR }) : formatDate(new Date(), 'yyyy-MM-dd', { locale: ptBR }),
         });
       if (error) throw error;
       showSuccess('Apontamento registrado!');
@@ -153,14 +148,22 @@ const KpiApontamentosPage: React.FC = () => {
     }
   };
 
-  const getTypeName = (typeId?: string) => {
-    switch (typeId) {
-      case '1': return 'Quantitativo';
-      case '2': return 'Marco';
-      case '3': return 'Frequência';
-      case '4': return 'Intervalo';
-      default:  return 'Outro';
-    }
+  const handleEditAppointment = (appointment: Appointment) => {
+    setFormData((prev) => ({
+      ...prev,
+      [appointment.kpi_smart_liberated_id]: {
+        value: appointment.value?.toString() || '',
+        note: appointment.note || '',
+        date: new Date(appointment.appointment_date),
+      },
+    }));
+  };
+
+  const updateFormData = (kpiId: string, field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [kpiId]: { ...prev[kpiId], [field]: value },
+    }));
   };
 
   if (loading) {
@@ -187,7 +190,7 @@ const KpiApontamentosPage: React.FC = () => {
               {errorMsg}
             </div>
           )}
-          {(kpis.length === 0) && (
+          {(kpis.length === 0) && !errorMsg && (
             <div className="py-12 text-center text-muted-foreground">
               Nenhum KPI disponível para apontamento.<br />
               Fale com seu gestor para liberar KPIs para você na plataforma.
@@ -198,7 +201,7 @@ const KpiApontamentosPage: React.FC = () => {
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{kpi.kpi?.description || 'KPI não encontrado'}</CardTitle>
-                  <Badge>{getTypeName(kpi.kpi?.kpi_smart_type_id)}</Badge>
+                  <Badge>{kpi.kpi?.kpi_smart_type_id}</Badge> {/* Exibe o tipo do KPI */}
                 </div>
               </CardHeader>
               <CardContent>
@@ -216,7 +219,7 @@ const KpiApontamentosPage: React.FC = () => {
                         type="number"
                         step="0.01"
                         value={formData[kpi.id]?.value || ''}
-                        onChange={e => setFormData(f => ({ ...f, [kpi.id]: { ...f[kpi.id], value: e.target.value } }))}
+                        onChange={e => updateFormData(kpi.id, 'value', e.target.value)}
                         required
                         className="w-32"
                       />
@@ -225,14 +228,14 @@ const KpiApontamentosPage: React.FC = () => {
                       <Label>Data</Label>
                       <DatePicker
                         date={formData[kpi.id]?.date || new Date()}
-                        setDate={date => setFormData(f => ({ ...f, [kpi.id]: { ...f[kpi.id], date } }))}
+                        setDate={date => updateFormData(kpi.id, 'date', date)}
                       />
                     </div>
                     <div className="flex-1 min-w-[200px]">
                       <Label>Nota</Label>
                       <Textarea
                         value={formData[kpi.id]?.note || ''}
-                        onChange={e => setFormData(f => ({ ...f, [kpi.id]: { ...f[kpi.id], note: e.target.value } }))}
+                        onChange={e => updateFormData(kpi.id, 'note', e.target.value)}
                         placeholder="Comentário opcional"
                         rows={2}
                       />
@@ -274,6 +277,9 @@ const KpiApontamentosPage: React.FC = () => {
                             <td className="p-1">{formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</td>
                             <td className="p-1">{appt.note}</td>
                             <td className="p-1">
+                              <Button size="sm" variant="ghost" onClick={() => handleEditAppointment(appt)}>
+                                <Edit className="h-4 w-4 text-blue-600" />
+                              </Button>
                               <Button size="sm" variant="ghost" onClick={() => handleDelete(appt.id)}>
                                 <Trash2 className="h-4 w-4 text-sollux-red" />
                               </Button>
