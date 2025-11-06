@@ -44,6 +44,9 @@ interface LiberatedKpi {
   kpi_smart_frequency: {
     description: string;
   } | null;
+  kpi_smart_type: {
+    code: number;
+  };
   appointments: Appointment[];
 }
 
@@ -79,19 +82,11 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (liberatedError) throw liberatedError;
 
-      // Fixed: Fetch kpi_smart_type_id and frequency separately to avoid join parsing issues
-      const liberatedIds = liberatedData?.map(l => l.id) || [];
-      if (liberatedIds.length === 0) {
-        setLiberatedKpis([]);
-        setLoading(false);
-        return;
-      }
-
+      // Fixed: Remove .single() to return array for multiple IDs
       const { data: kpiDetails, error: kpiError } = await supabase
         .from('kpi_smarts')
         .select('id, kpi_smart_type_id, kpi_smart_frequencies(description)')
-        .in('id', liberatedData.map(l => l.kpi_smart_id))
-        .single(); // Use single() if one-to-one, or adjust for multiple
+        .in('id', liberatedData.map(l => l.kpi_smart_id));
 
       if (kpiError) throw kpiError;
 
@@ -99,28 +94,33 @@ const KpiApontamentosPage: React.FC = () => {
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('kpi_apontamentos')
         .select('*')
-        .in('kpi_smart_liberated_id', liberatedIds)
+        .in('kpi_smart_liberated_id', liberatedData.map(l => l.id))
         .order('appointment_date', { ascending: false });
 
       if (appointmentsError) throw appointmentsError;
 
       // Fixed: Process data with proper type handling - map to ensure structure
       const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
-        const kpiSmart = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id) || null;
-        const frequency = kpiSmart?.kpi_smart_frequencies?.[0] || null; // Handle array if needed
+        // Fixed: Handle array joins by taking first element [0] for kpi_smart
+        const kpiSmart = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id);
+        const frequency = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id)?.kpi_smart_frequencies?.[0] || null;
 
         return {
           id: kpi.id,
           code: kpi.code,
-          kpi_smart: {
-            id: kpi.kpi_smart_id,
-            description: kpiSmart?.description || 'N/A',
-            kpi_smart_type_id: kpiSmart?.kpi_smart_type_id || '1', // Default to 1 (Quantitativo)
-          },
-          kpi_smart_frequency: frequency || { description: 'Diário' }, // Default frequency
-          appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id),
+          kpi_smart: kpiSmart ? {
+            id: kpiSmart.id,
+            description: kpiSmart.description || 'N/A',
+            kpi_smart_type_id: kpiSmart.kpi_smart_type_id || '1',
+          } : null,
+          kpi_smart_frequency: frequency || { description: 'Diário' },
+          kpi_smart_type: { code: kpiSmart?.kpi_smart_type_id || 1 },
+          appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id).map((appt: any) => ({
+            ...appt,
+            kpi_smart_liberated_id: kpi.id,
+          })),
         };
-      }) as LiberatedKpi[]; // Type assertion after processing
+      });
 
       setLiberatedKpis(processedData);
     } catch (error) {
