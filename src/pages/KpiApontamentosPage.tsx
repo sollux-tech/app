@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
-import { DatePicker } from '@/components/DatePicker'; // Assumindo que você tem um DatePicker
+import DatePicker from '@/components/DatePicker'; // Fixed: Default import for DatePicker
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 
