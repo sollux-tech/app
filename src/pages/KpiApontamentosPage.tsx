@@ -8,11 +8,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 import DatePicker from '@/components/DatePicker';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, TrendingUp, Plus, Eye } from 'lucide-react';
+import { Loader2, Edit, Trash2, TrendingUp } from 'lucide-react';
 import { format as formatDate } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import ptBR from 'date-fns/locale/pt-BR';
 import { showSuccess, showError } from '@/utils/toast';
-import { useNavigate } from 'react-router-dom'; // Importar useNavigate
+import { useNavigate } from 'react-router-dom';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'; // FIX: Import Table components
 
 type SimpleKpi = {
   id: string;
@@ -36,7 +44,6 @@ type Appointment = {
   appointment_date: string;
 };
 
-// Interface para o estado do formulário de cada KPI
 interface FormDataState {
   value: string;
   note: string;
@@ -52,7 +59,7 @@ const KpiApontamentosPage: React.FC = () => {
   const [formData, setFormData] = useState<Record<string, FormDataState>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isEditingAppointment, setIsEditingAppointment] = useState<Appointment | null>(null); // Estado para edição
+  const [isEditingAppointment, setIsEditingAppointment] = useState<Appointment | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,7 +173,7 @@ const KpiApontamentosPage: React.FC = () => {
         date: new Date(appointment.appointment_date),
       },
     }));
-    setIsEditingAppointment(appointment); // Define o estado de edição
+    setIsEditingAppointment(appointment);
   };
 
   const updateFormData = (kpiId: string, field: string, value: any) => {
@@ -284,33 +291,33 @@ const KpiApontamentosPage: React.FC = () => {
                   {(appointments[kpi.id]?.length === 0) ? (
                     <div className="text-muted-foreground text-sm">Nenhum apontamento registrado ainda.</div>
                   ) : (
-                    <table className="w-full text-sm border-collapse">
-                      <thead>
-                        <tr>
-                          <th className="p-1 text-left">Valor</th>
-                          <th className="p-1 text-left">Data</th>
-                          <th className="p-1 text-left">Nota</th>
-                          <th className="p-1 text-left">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="p-1 text-left">Valor</TableHead>
+                          <TableHead className="p-1 text-left">Data</TableHead>
+                          <TableHead className="p-1 text-left">Nota</TableHead>
+                          <TableHead className="p-1 text-left">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {(appointments[kpi.id] || []).slice(0, 5).map(appt => (
                           <TableRow key={appt.id}>
                             <TableCell className="p-1 font-semibold">{appt.value}</TableCell>
                             <TableCell className="p-1">{formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</TableCell>
                             <TableCell className="p-1">{appt.note}</TableCell>
-                            <td className="p-1">
+                            <TableCell className="p-1">
                               <Button size="sm" variant="ghost" onClick={() => handleEditAppointment(appt)} className="text-blue-600 hover:bg-blue-50 rounded-lg">
                                 <Edit className="h-4 w-4" />
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => handleDelete(appt.id)} className="text-sollux-red hover:bg-red-50 rounded-lg">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </td>
+                            </TableCell>
                           </TableRow>
                         ))}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   )}
                 </div>
               </CardContent>
