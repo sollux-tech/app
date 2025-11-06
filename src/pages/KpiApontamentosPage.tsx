@@ -20,6 +20,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { showSuccess, showError } from '@/utils/toast'; // Fixed: Added missing imports
+import { format, subDays } from 'date-fns'; // Fixed: Added missing date-fns imports
 
 interface Appointment {
   id: string;
@@ -33,8 +35,14 @@ interface Appointment {
 interface LiberatedKpi {
   id: string;
   code: number;
-  kpi_smart_type: { code: number }; // 1=Quantitativo, 2=Marco, 3=Frequência, 4=Intervalo
-  kpi_smart_frequency: { description: string } | null; // Ex: 'Diário', 'Semanal'
+  kpi_smart: {
+    id: string;
+    description: string;
+    kpi_smart_type_id: string; // Fixed: Ensure this field exists in the join
+  } | null;
+  kpi_smart_frequency: {
+    description: string;
+  } | null;
   appointments: Appointment[];
 }
 
@@ -75,16 +83,19 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (error) throw error;
 
+      // Fixed: Handle array joins by taking first element [0]
       const processedData = (data || []).map(kpi => ({
         ...kpi,
-        kpi_smart_type: { code: kpi.kpi_smart.kpi_smart_type_id || 1 },
+        kpi_smart: Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart,
+        kpi_smart_type: { code: (Array.isArray(kpi.kpi_smart) ? kpi.kpi_smart[0] : kpi.kpi_smart)?.kpi_smart_type_id || 1 },
+        kpi_smart_frequency: Array.isArray(kpi.kpi_smart_frequency) ? kpi.kpi_smart_frequency[0] : kpi.kpi_smart_frequency,
         appointments: (kpi.appointments || []).sort((a: Appointment, b: Appointment) => new Date(b.appointment_date).getTime() - new Date(a.appointment_date).getTime()),
       }));
 
       setLiberatedKpis(processedData);
     } catch (error) {
       console.error('Erro ao buscar KPIs liberados:', error);
-      showError('Erro ao carregar KPIs liberados.');
+      showError('Erro ao carregar KPIs liberados.'); // Fixed: Now imported
     } finally {
       setLoading(false);
     }
@@ -109,7 +120,7 @@ const KpiApontamentosPage: React.FC = () => {
       .from('kpi_apontamentos')
       .select('id', { count: 'exact', head: true })
       .eq('kpi_smart_liberated_id', kpiId)
-      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd'));
+      .gte('appointment_date', format(subDays(now, daysBack), 'yyyy-MM-dd')); // Fixed: Now imported
 
     if (error) {
       console.error('Erro ao verificar frequência:', error);
@@ -122,19 +133,19 @@ const KpiApontamentosPage: React.FC = () => {
   const handleSubmitAppointment = async (kpiId: string, appointmentId?: string) => {
     const form = formData[kpiId];
     if (!form || !form.value) {
-      showError('Por favor, insira um valor para o apontamento.');
+      showError('Por favor, insira um valor para o apontamento.'); // Fixed: Now imported
       return;
     }
 
     const kpi = liberatedKpis.find(k => k.id === kpiId);
     if (!kpi?.kpi_smart_frequency?.description) {
-      showError('Frequência não definida para este KPI.');
+      showError('Frequência não definida para este KPI.'); // Fixed: Now imported
       return;
     }
 
     const canProceed = await canMakeAppointment(kpiId, kpi.kpi_smart_frequency.description);
     if (!canProceed) {
-      showError(`Você só pode fazer apontamentos ${kpi.kpi_smart_frequency.description.toLowerCase()}. O último foi recente.`);
+      showError(`Você só pode fazer apontamentos ${kpi.kpi_smart_frequency.description.toLowerCase()}. O último foi recente.`); // Fixed: Now imported
       return;
     }
 
@@ -146,7 +157,7 @@ const KpiApontamentosPage: React.FC = () => {
         user_id: user!.id,
         value: parseFloat(form.value) || null,
         note: form.note || null,
-        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        appointment_date: form.date ? format(form.date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'), // Fixed: Now imported
       };
 
       let result;
@@ -164,13 +175,13 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (result.error) throw result.error;
 
-      showSuccess(appointmentId ? 'Apontamento atualizado!' : 'Apontamento salvo!');
+      showSuccess(appointmentId ? 'Apontamento atualizado!' : 'Apontamento salvo!'); // Fixed: Now imported
       setFormData(prev => ({ ...prev, [kpiId]: { value: '', note: '', date: null } }));
       setEditingAppointment(null);
       fetchLiberatedKpis();
     } catch (error) {
       console.error('Erro ao salvar apontamento:', error);
-      showError('Erro ao salvar apontamento.');
+      showError('Erro ao salvar apontamento.'); // Fixed: Now imported
     } finally {
       setSubmitting(null);
     }
@@ -200,11 +211,11 @@ const KpiApontamentosPage: React.FC = () => {
 
       if (error) throw error;
 
-      showSuccess('Apontamento excluído!');
+      showSuccess('Apontamento excluído!'); // Fixed: Now imported
       fetchLiberatedKpis();
     } catch (error) {
       console.error('Erro ao excluir apontamento:', error);
-      showError('Erro ao excluir apontamento.');
+      showError('Erro ao excluir apontamento.'); // Fixed: Now imported
     }
   };
 
@@ -243,11 +254,11 @@ const KpiApontamentosPage: React.FC = () => {
           ) : (
             <div className="space-y-6">
               {liberatedKpis.map((kpi) => {
-                const typeName = kpi.kpi_smart_type.code === 1 ? 'Quantitativo' : kpi.kpi_smart_type.code === 2 ? 'Marco' : kpi.kpi_smart_type.code === 3 ? 'Frequência' : 'Intervalo';
+                const typeName = kpi.kpi_smart_type?.code === 1 ? 'Quantitativo' : kpi.kpi_smart_type?.code === 2 ? 'Marco' : kpi.kpi_smart_type?.code === 3 ? 'Frequência' : 'Intervalo';
                 const frequency = kpi.kpi_smart_frequency?.description || 'N/A';
                 const recentAppointments = kpi.appointments.slice(0, showMoreHistory[kpi.id] ? undefined : 5);
                 const chartData = recentAppointments.map(appt => ({
-                  date: format(new Date(appt.appointment_date), 'dd/MM'),
+                  date: format(new Date(appt.appointment_date), 'dd/MM'), // Fixed: Now imported
                   value: appt.value || 0,
                 }));
 
@@ -256,7 +267,7 @@ const KpiApontamentosPage: React.FC = () => {
                     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
                       <div>
                         <CardTitle className="text-xl font-semibold text-foreground">
-                          {kpi.code} - {typeName}
+                          {kpi.kpi_smart?.description || 'KPI Desconhecido'} ({typeName})
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant="secondary">{frequency}</Badge>
@@ -345,7 +356,7 @@ const KpiApontamentosPage: React.FC = () => {
                               <div className="flex-1">
                                 <div className="font-medium text-foreground">Valor: {appt.value || 'N/A'}</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy')} - {appt.note || ''}
+                                  {format(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })} - {appt.note || ''} {/* Fixed: Added locale import if needed */}
                                 </div>
                               </div>
                               <div className="flex gap-2">
