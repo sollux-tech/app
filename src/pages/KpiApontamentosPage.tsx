@@ -58,7 +58,7 @@ const KpiApontamentosPage: React.FC = () => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [formData, setFormData] = useState<Record<string, { value: string; note: string; date: Date | null }>>({});
   const [showMoreHistory, setShowMoreHistory] = useState<Record<string, boolean>>({});
-  const [error, setError] = useState<string | null>(null); // Added error state for better debugging
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLiberatedKpis();
@@ -66,15 +66,17 @@ const KpiApontamentosPage: React.FC = () => {
 
   const fetchLiberatedKpis = async () => {
     if (!user?.id) {
+      console.log('No user ID available, skipping fetch');
       setLoading(false);
       return;
     }
 
     setLoading(true);
     setError(null);
+    console.log('Fetching liberated KPIs for user:', user.id);
 
     try {
-      // Fixed: Use contains() for array field instead of eq()
+      // Fixed: Use .contains() for array field execution_user_ids
       const { data: liberatedData, error: liberatedError } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -82,14 +84,19 @@ const KpiApontamentosPage: React.FC = () => {
           code,
           kpi_smart_id,
           kpi_smart_frequency_id,
-          user_id
+          user_id,
+          execution_user_ids,
+          view_user_ids
         `)
         .contains('execution_user_ids', [user.id]) // Fixed: Correct array contains query
         .order('created_at', { ascending: false });
 
+      console.log('Raw liberated data from Supabase:', liberatedData);
+      console.log('Liberated error:', liberatedError);
+
       if (liberatedError) {
-        console.error('Supabase error:', liberatedError);
-        setError(`Erro ao buscar KPIs: ${liberatedError.message}`);
+        console.error('Supabase liberated query error:', liberatedError);
+        setError(`Erro ao buscar KPIs liberados: ${liberatedError.message}`);
         setLoading(false);
         return;
       }
@@ -104,30 +111,44 @@ const KpiApontamentosPage: React.FC = () => {
       console.log('Found liberated KPIs:', liberatedData.length);
 
       // Fetch kpi_smart_type_id and frequency separately to avoid join parsing issues
-      const liberatedIds = liberatedData.map(l => l.id);
       const kpiSmartIds = liberatedData.map(l => l.kpi_smart_id);
+      console.log('Fetching kpi details for IDs:', kpiSmartIds);
 
       const { data: kpiDetails, error: kpiError } = await supabase
         .from('kpi_smarts')
-        .select('id, description, kpi_smart_type_id, kpi_smart_frequencies(description)')
+        .select(`
+          id,
+          description,
+          kpi_smart_type_id,
+          kpi_smart_frequencies(description)
+        `)
         .in('id', kpiSmartIds);
 
+      console.log('Raw kpi details from Supabase:', kpiDetails);
+      console.log('KPI details error:', kpiError);
+
       if (kpiError) {
-        console.error('KPI details error:', kpiError);
+        console.error('KPI details query error:', kpiError);
         setError(`Erro ao buscar detalhes dos KPIs: ${kpiError.message}`);
         setLoading(false);
         return;
       }
 
       // Fetch appointments for all liberated KPIs
+      const liberatedIds = liberatedData.map(l => l.id);
+      console.log('Fetching appointments for liberated IDs:', liberatedIds);
+
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from('kpi_apontamentos')
         .select('*')
         .in('kpi_smart_liberated_id', liberatedIds)
         .order('appointment_date', { ascending: false });
 
+      console.log('Raw appointments data from Supabase:', appointmentsData);
+      console.log('Appointments error:', appointmentsError);
+
       if (appointmentsError) {
-        console.error('Appointments error:', appointmentsError);
+        console.error('Appointments query error:', appointmentsError);
         setError(`Erro ao buscar apontamentos: ${appointmentsError.message}`);
         setLoading(false);
         return;
@@ -135,19 +156,22 @@ const KpiApontamentosPage: React.FC = () => {
 
       // Process data with proper type handling - map to ensure structure
       const processedData: LiberatedKpi[] = liberatedData.map((kpi: any) => {
-        const kpiSmart = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id);
-        const frequency = kpiSmart?.kpi_smart_frequencies?.[0] || null;
+        // Find the corresponding kpi detail
+        const kpiDetail = kpiDetails?.find((kd: any) => kd.id === kpi.kpi_smart_id);
+        const frequency = kpiDetail?.kpi_smart_frequencies?.[0] || null;
+
+        console.log(`Processing KPI ${kpi.id}:`, { kpiDetail, frequency });
 
         return {
           id: kpi.id,
           code: kpi.code,
-          kpi_smart: kpiSmart ? {
-            id: kpiSmart.id,
-            description: kpiSmart.description || 'N/A',
-            kpi_smart_type_id: kpiSmart.kpi_smart_type_id || '1',
+          kpi_smart: kpiDetail ? {
+            id: kpiDetail.id,
+            description: kpiDetail.description || 'N/A',
+            kpi_smart_type_id: kpiDetail.kpi_smart_type_id || '1',
           } : null,
           kpi_smart_frequency: frequency || { description: 'Diário' },
-          kpi_smart_type: { code: kpiSmart?.kpi_smart_type_id || 1 },
+          kpi_smart_type: { code: kpiDetail?.kpi_smart_type_id || 1 },
           appointments: (appointmentsData || []).filter((appt: any) => appt.kpi_smart_liberated_id === kpi.id).map((appt: any) => ({
             ...appt,
             kpi_smart_liberated_id: kpi.id,
@@ -155,7 +179,7 @@ const KpiApontamentosPage: React.FC = () => {
         };
       });
 
-      console.log('Processed KPIs:', processedData.length);
+      console.log('Final processed KPIs:', processedData);
       setLiberatedKpis(processedData);
     } catch (error) {
       console.error('Unexpected error in fetchLiberatedKpis:', error);
