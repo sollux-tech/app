@@ -139,7 +139,7 @@ const KpiApontamentosPage: React.FC = () => {
                             ...prev,
                             [kpi.id]: { ...prev[kpi.id], date }
                           }))}
-                          className="mt-1"
+                          // Removed: className="mt-1" - DatePicker doesn't support this prop
                         />
                       </div>
                     </div>
