@@ -8,10 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSession } from '@/components/SessionContextProvider';
 import DatePicker from '@/components/DatePicker';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Edit, Trash2, TrendingUp } from 'lucide-react';
+import { Loader2, Edit, Trash2, TrendingUp, Plus, Eye } from 'lucide-react';
 import { format as formatDate } from 'date-fns';
-import { ptBR } from 'date-fns/locale'; // FIX: import ptBR specifically
+import { ptBR } from 'date-fns/locale';
 import { showSuccess, showError } from '@/utils/toast';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
 type SimpleKpi = {
   id: string;
@@ -35,14 +36,23 @@ type Appointment = {
   appointment_date: string;
 };
 
+// Interface para o estado do formulário de cada KPI
+interface FormDataState {
+  value: string;
+  note: string;
+  date: Date | null;
+}
+
 const KpiApontamentosPage: React.FC = () => {
   const { user } = useSession();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState<KpiLiberated[]>([]);
   const [appointments, setAppointments] = useState<Record<string, Appointment[]>>({});
-  const [formData, setFormData] = useState<Record<string, { value: string; note: string; date: Date | null }>>({});
+  const [formData, setFormData] = useState<Record<string, FormDataState>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isEditingAppointment, setIsEditingAppointment] = useState<Appointment | null>(null); // Estado para edição
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +66,6 @@ const KpiApontamentosPage: React.FC = () => {
           return;
         }
 
-        // KPIs liberados para o usuário
         const { data: liberated, error: liberatedError } = await supabase
           .from('kpi_smarts_liberated')
           .select('id, code, kpi_smart_id')
@@ -107,25 +116,25 @@ const KpiApontamentosPage: React.FC = () => {
     fetchData();
   }, [user?.id]);
 
-  const handleRegister = async (kpi: KpiLiberated) => {
-    const { value, note, date } = formData[kpi.id] || {};
+  const handleRegister = async (kpiId: string) => {
+    const { value, note, date } = formData[kpiId] || {};
     if (!value) {
       showError('Preencha o valor.');
       return;
     }
-    setSubmittingId(kpi.id);
+    setSubmittingId(kpiId);
     try {
       const { error } = await supabase
         .from('kpi_apontamentos')
         .insert({
-          kpi_smart_liberated_id: kpi.id,
+          kpi_smart_liberated_id: kpiId,
           value: parseFloat(value),
           note: note || null,
           appointment_date: date ? formatDate(date, 'yyyy-MM-dd', { locale: ptBR }) : formatDate(new Date(), 'yyyy-MM-dd', { locale: ptBR }),
         });
       if (error) throw error;
       showSuccess('Apontamento registrado!');
-      setFormData(prev => ({ ...prev, [kpi.id]: { value: '', note: '', date: null } }));
+      setFormData(prev => ({ ...prev, [kpiId]: { value: '', note: '', date: null } }));
       setLoading(true);
       setTimeout(() => setLoading(false), 500);
     } catch (err: any) {
@@ -157,6 +166,7 @@ const KpiApontamentosPage: React.FC = () => {
         date: new Date(appointment.appointment_date),
       },
     }));
+    setIsEditingAppointment(appointment); // Define o estado de edição
   };
 
   const updateFormData = (kpiId: string, field: string, value: any) => {
@@ -164,6 +174,16 @@ const KpiApontamentosPage: React.FC = () => {
       ...prev,
       [kpiId]: { ...prev[kpiId], [field]: value },
     }));
+  };
+
+  const getTypeName = (typeId?: string) => {
+    switch (typeId) {
+      case '1': return 'Quantitativo';
+      case '2': return 'Marco';
+      case '3': return 'Frequência';
+      case '4': return 'Intervalo';
+      default:  return 'Outro';
+    }
   };
 
   if (loading) {
@@ -201,14 +221,14 @@ const KpiApontamentosPage: React.FC = () => {
               <CardHeader>
                 <div className="flex flex-wrap items-center gap-2">
                   <CardTitle className="text-lg">{kpi.kpi?.description || 'KPI não encontrado'}</CardTitle>
-                  <Badge>{kpi.kpi?.kpi_smart_type_id}</Badge>
+                  <Badge>{getTypeName(kpi.kpi?.kpi_smart_type_id)}</Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <form
                   onSubmit={e => {
                     e.preventDefault();
-                    handleRegister(kpi);
+                    handleRegister(kpi.id);
                   }}
                   className="space-y-4"
                 >
@@ -257,6 +277,9 @@ const KpiApontamentosPage: React.FC = () => {
                 <div className="mt-6">
                   <div className="mb-2 flex justify-between items-center">
                     <div className="font-semibold text-foreground">Histórico recente</div>
+                    <Button variant="link" onClick={() => navigate(`/ops/shift/kpi-apontamentos/${kpi.id}`)} className="text-sollux-red hover:text-red-700">
+                      Ver todos
+                    </Button>
                   </div>
                   {(appointments[kpi.id]?.length === 0) ? (
                     <div className="text-muted-foreground text-sm">Nenhum apontamento registrado ainda.</div>
@@ -272,19 +295,19 @@ const KpiApontamentosPage: React.FC = () => {
                       </thead>
                       <tbody>
                         {(appointments[kpi.id] || []).slice(0, 5).map(appt => (
-                          <tr key={appt.id}>
-                            <td className="p-1 font-semibold">{appt.value}</td>
-                            <td className="p-1">{formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</td>
-                            <td className="p-1">{appt.note}</td>
+                          <TableRow key={appt.id}>
+                            <TableCell className="p-1 font-semibold">{appt.value}</TableCell>
+                            <TableCell className="p-1">{formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</TableCell>
+                            <TableCell className="p-1">{appt.note}</TableCell>
                             <td className="p-1">
-                              <Button size="sm" variant="ghost" onClick={() => handleEditAppointment(appt)}>
-                                <Edit className="h-4 w-4 text-blue-600" />
+                              <Button size="sm" variant="ghost" onClick={() => handleEditAppointment(appt)} className="text-blue-600 hover:bg-blue-50 rounded-lg">
+                                <Edit className="h-4 w-4" />
                               </Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleDelete(appt.id)}>
-                                <Trash2 className="h-4 w-4 text-sollux-red" />
+                              <Button size="sm" variant="ghost" onClick={() => handleDelete(appt.id)} className="text-sollux-red hover:bg-red-50 rounded-lg">
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </td>
-                          </tr>
+                          </TableRow>
                         ))}
                       </tbody>
                     </table>
