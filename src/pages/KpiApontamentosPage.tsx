@@ -18,8 +18,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DatePicker from '@/components/DatePicker';
 import { Appointment } from '@/types/appointment';
-import KpiApontamentosForm from '@/components/KpiApontamentosForm'; // Importar o novo componente de modal
-import { useParams, useNavigate } from 'react-router-dom'; // Importar useParams e useNavigate
+import KpiApontamentosForm from '@/components/KpiApontamentosForm';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // Schema de validação para o formulário de apontamento
 const appointmentFormSchema = z.object({
@@ -31,7 +31,7 @@ const appointmentFormSchema = z.object({
   appointment_date: z.date({ required_error: "A data do apontamento é obrigatória." }),
 });
 
-type AppointmentFormData = z.infer<typeof appointmentFormSchema>;
+type AppointmentFormData = z.infer<typeof formSchema>;
 
 const KpiApontamentosPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -47,7 +47,7 @@ const KpiApontamentosPage: React.FC = () => {
   const { data: kpiLiberatedDetails, isLoading: isLoadingKpiLiberatedDetails, error: errorKpiLiberatedDetails } = useQuery<any, Error>({
     queryKey: ['kpiSmartLiberatedDetails', kpiLiberatedIdFromUrl],
     queryFn: async () => {
-      if (!kpiLiberatedIdFromUrl || !user?.id) throw new Error("ID do KPI Smart Liberado ou usuário faltando.");
+      if (!kpiLiberatedIdFromUrl || !user?.id) return null; // Retorna null se faltar dados
       const { data, error } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -267,7 +267,7 @@ const KpiApontamentosPage: React.FC = () => {
         initialData={editingAppointment ? {
           value: editingAppointment.value?.toString() || '',
           note: editingAppointment.note || '',
-          date: new Date(editingAppointment.appointment_date),
+          appointment_date: new Date(editingAppointment.appointment_date),
         } : null}
         isLoading={isMutating}
         kpiLiberatedId={kpiLiberatedIdFromUrl!}
