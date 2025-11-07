@@ -130,9 +130,9 @@ const KpiApontamentosPage: React.FC = () => {
             throw apptsError;
           }
           ids.forEach(id => { allAppts[id] = []; });
-          (appts || []).forEach((a) => { 
-            allAppts[a.kpi_smart_liberated_id] = allAppts[a.kpi_smart_liberated_id] || []; 
-            allAppts[a.kpi_smart_liberated_id].push(a); 
+          (appts || []).forEach((a) => {
+            allAppts[a.kpi_smart_liberated_id] = allAppts[a.kpi_smart_liberated_id] || [];
+            allAppts[a.kpi_smart_liberated_id].push(a);
           });
           console.log('KpiApontamentosPage: All appointments:', allAppts);
         } else {
@@ -142,7 +142,7 @@ const KpiApontamentosPage: React.FC = () => {
         setKpis(detailedKpis);
         setAppointments(allAppts);
         console.
-log('KpiApontamentosPage: Data fetch completed. KPIs:', detailedKpis.length, 'Appointments:', Object.keys(allAppts).length);
+          log('KpiApontamentosPage: Data fetch completed. KPIs:', detailedKpis.length, 'Appointments:', Object.keys(allAppts).length);
       } catch (e: any) {
         console.error('KpiApontamentosPage: Fetch error:', e);
         setKpis([]);
@@ -227,137 +227,149 @@ log('KpiApontamentosPage: Data fetch completed. KPIs:', detailedKpis.length, 'Ap
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100vh-10rem)] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-sollux-red mr-2" />
-        <span className="text-muted-foreground">Carregando...</span>
-      </div>
+      <div className= "min-h-[calc(100vh-10rem)] flex items-center justify-center" >
+      <Loader2 className="h-8 w-8 animate-spin text-sollux-red mr-2" />
+        <span className="text-muted-foreground" > Carregando...</span>
+          < /div>
     );
   }
 
-  return (
-    <div className="space-y-6">
-      <Card className="bg-card border border-border shadow-lg rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-foreground">Apontamentos de KPIs</CardTitle>
-          <CardDescription className="text-lg text-muted-foreground">
-            Registre e visualize seus apontamentos de KPIs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {errorMsg && (
-            <div className="mb-4 text-red-700 bg-red-50 border border-red-300 rounded p-3">
-              {errorMsg}
-            </div>
-          )}
-          {(kpis.length === 0) && !errorMsg && (
-            <div className="py-12 text-center text-muted-foreground">
-              Nenhum KPI disponível para apontamento.<br />
-              Fale com seu gestor para liberar KPIs para você na plataforma.
-            </div>
-          )}
-          {kpis.map(kpi => (
-            <Card key={kpi.id} className="mb-8 border shadow rounded-xl bg-muted">
-              <CardHeader>
-                <div className="flex flex-wrap items-center gap-2">
-                  <CardTitle className="text-lg">{kpi.kpi?.description || 'KPI não encontrado'}</CardTitle>
-                  <Badge>{getTypeName(kpi.kpi?.kpi_smart_type_id)}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <form
-                  onSubmit={e => {
-                    e.preventDefault();
-                    handleRegister(kpi.id);
-                  }}
-                  className="space-y-4"
-                >
-                  <div className="flex flex-wrap gap-4">
-                    <div>
-                      <Label>Valor</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={formData[kpi.id]?.value || ''}
-                        onChange={e => updateFormData(kpi.id, 'value', e.target.value)}
-                        required
-                        className="w-32"
-                      />
-                    </div>
-                    <div>
-                      <Label>Data</Label>
-                      <DatePicker
-                        date={formData[kpi.id]?.date || new Date()}
-                        setDate={date => updateFormData(kpi.id, 'date', date)}
-                      />
-                    </div>
-                    <div className="flex-1 min-w-[200px]">
-                      <Label>Nota</Label>
-                      <Textarea
-                        value={formData[kpi.id]?.note || ''}
-                        onChange={e => updateFormData(kpi.id, 'note', e.target.value)}
-                        placeholder="Comentário opcional"
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Button
+return (
+  <div className= "space-y-6" >
+  <Card className="bg-card border border-border shadow-lg rounded-2xl" >
+    <CardHeader>
+    <CardTitle className="text-3xl font-bold text-foreground" > Apontamentos de KPIs < /CardTitle>
+      < CardDescription className = "text-lg text-muted-foreground" >
+        Registre e visualize seus apontamentos de KPIs.
+          < /CardDescription>
+          < /CardHeader>
+          <CardContent>
+{
+  errorMsg && (
+    <div className="mb-4 text-red-700 bg-red-50 border border-red-300 rounded p-3" >
+      { errorMsg }
+      < /div>
+          )
+}
+{
+  (kpis.length === 0) && !errorMsg && (
+    <div className="py-12 text-center text-muted-foreground" >
+      Nenhum KPI disponível para apontamento.< br />
+        Fale com seu gestor para liberar KPIs para você na plataforma.
+            < /div>
+          )
+}
+{
+  kpis.map(kpi => (
+    <Card key= { kpi.id } className = "mb-8 border shadow rounded-xl bg-muted" >
+    <CardHeader>
+    <div className="flex flex-wrap items-center gap-2" >
+  <CardTitle className="text-lg" > { kpi.kpi?.description || 'KPI não encontrado' } < /CardTitle>
+  < Badge > { getTypeName(kpi.kpi?.kpi_smart_type_id)
+} </Badge>
+  < /div>
+  < /CardHeader>
+  < CardContent >
+  <form
+                  onSubmit={
+  e => {
+    e.preventDefault();
+    handleRegister(kpi.id);
+  }
+}
+className = "space-y-4"
+  >
+  <div className="flex flex-wrap gap-4" >
+    <div>
+    <Label>Valor < /Label>
+    < Input
+type = "number"
+step = "0.01"
+value = { formData[kpi.id]?.value || '' }
+onChange = { e => updateFormData(kpi.id, 'value', e.target.value) }
+required
+className = "w-32"
+  />
+  </div>
+  < div >
+  <Label>Data < /Label>
+  < DatePicker
+date = { formData[kpi.id]?.date || new Date() }
+setDate = { date => updateFormData(kpi.id, 'date', date) }
+  />
+  </div>
+  < div className = "flex-1 min-w-[200px]" >
+    <Label>Nota < /Label>
+    < Textarea
+value = { formData[kpi.id]?.note || '' }
+onChange = { e => updateFormData(kpi.id, 'note', e.target.value) }
+placeholder = "Comentário opcional"
+rows = { 2}
+  />
+  </div>
+  < /div>
+  < div >
+  <Button
                       type="submit"
-                      disabled={submittingId === kpi.id}
-                      className="bg-sollux-red hover:bg-sollux-orange rounded-lg"
-                    >
-                      {submittingId === kpi.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
+disabled = { submittingId === kpi.id}
+className = "bg-sollux-red hover:bg-sollux-orange rounded-lg"
+  >
+  { submittingId === kpi.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <TrendingUp className="mr-2 h-4 w-4" />}
                       Registrar apontamento
-                    </Button>
-                  </div>
-                </form>
+  < /Button>
+  < /div>
+  < /form>
 
-                {/* Histórico de apontamentos */}
-                <div className="mt-6">
-                  <div className="mb-2 flex justify-between items-center">
-                    <div className="font-semibold text-foreground">Histórico recente</div>
-                    <Button variant="link" onClick={() => navigate(`/ops/shift/kpi-apontamentos/${kpi.id}`)} className="text-sollux-red hover:text-red-700">
-                      Ver todos
-                    </Button>
-                  </div>
-                  {(appointments[kpi.id]?.length === 0) ? (
-                    <div className="text-muted-foreground text-sm">Nenhum apontamento registrado ainda.</div>
+{/* Histórico de apontamentos */ }
+<div className="mt-6" >
+  <div className="mb-2 flex justify-between items-center" >
+    <div className="font-semibold text-foreground" > Histórico recente < /div>
+      < Button variant = "link" onClick = {() => navigate(`/ops/shift/kpi-apontamentos/${kpi.id}`)} className = "text-sollux-red hover:text-red-700" >
+        Ver todos
+          < /Button>
+          < /div>
+{
+  (appointments[kpi.id]?.length === 0) ? (
+    <div className= "text-muted-foreground text-sm" > Nenhum apontamento registrado ainda.< /div>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="p-1 text-left">Valor</TableHead>
-                          <TableHead className="p-1 text-left">Data</TableHead>
-                          <TableHead className="p-1 text-left">Nota</TableHead>
-                          <TableHead className="p-1 text-left">Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(appointments[kpi.id] || []).slice(0, 5).map(appt => (
-                          <TableRow key={appt.id}>
-                            <TableCell className="p-1 font-semibold">{appt.value}</TableCell>
-                            <TableCell className="p-1">{formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })}</TableCell>
-                            <TableCell className="p-1">{appt.note}</TableCell>
-                            <TableCell className="p-1">
-                              <Button size="sm" variant="ghost" onClick={() => handleEditAppointment(appt)} className="text-blue-600 hover:bg-blue-50 rounded-lg">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleDelete(appt.id)} className="text-sollux-red hover:bg-red-50 rounded-lg">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
+    <Table>
+    <TableHeader>
+    <TableRow>
+    <TableHead className= "p-1 text-left" > Valor < /TableHead>
+    < TableHead className = "p-1 text-left" > Data < /TableHead>
+      < TableHead className = "p-1 text-left" > Nota < /TableHead>
+        < TableHead className = "p-1 text-left" > Ações < /TableHead>
+          < /TableRow>
+          < /TableHeader>
+          <TableBody>
+  {
+    (appointments[kpi.id] || []).slice(0, 5).map(appt => (
+      <TableRow key= { appt.id } >
+      <TableCell className="p-1 font-semibold" > { appt.value } < /TableCell>
+    < TableCell className = "p-1" > { formatDate(new Date(appt.appointment_date), 'dd/MM/yyyy', { locale: ptBR })
+  } </TableCell>
+    < TableCell className = "p-1" > { appt.note } < /TableCell>
+      < TableCell className = "p-1" >
+        <Button size="sm" variant = "ghost" onClick = {() => handleEditAppointment(appt)
+} className = "text-blue-600 hover:bg-blue-50 rounded-lg" >
+  <Edit className="h-4 w-4" />
+    </Button>
+    < Button size = "sm" variant = "ghost" onClick = {() => handleDelete(appt.id)} className = "text-sollux-red hover:bg-red-50 rounded-lg" >
+      <Trash2 className="h-4 w-4" />
+        </Button>
+        < /TableCell>
+        < /TableRow>
                         ))}
-                      </TableBody>
-                    </Table>
+</TableBody>
+  < /Table>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+</div>
+  < /CardContent>
+  < /Card>
           ))}
-        </CardContent>
-      </Card>
-    </div>
+</CardContent>
+  < /Card>
+  < /div>
   );
 };
 
