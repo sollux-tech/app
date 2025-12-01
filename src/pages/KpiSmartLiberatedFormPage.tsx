@@ -128,7 +128,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
     if (isEditing && editingKpiSmartLiberated) {
       const kpiSmartPillarId = (editingKpiSmartLiberated.kpi_smarts as any)?.pillar_id || '';
       setSelectedPillarIdForKpiSmart(kpiSmartPillarId);
-      
+
       const fetchKpiSmartDetails = async () => {
         if (editingKpiSmartLiberated.kpi_smart_id) {
           const { data: kpiDetails, error } = await supabase
@@ -171,7 +171,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           view_user_ids: editingKpiSmartLiberated.view_user_ids || [],
           kpi_smart_frequency_id: editingKpiSmartLiberated.kpi_smart_frequency_id || '',
           kpi_smart_status_id: editingKpiSmartLiberated.kpi_smart_status_id || '',
-          
+
           logical_comparator: editingKpiSmartLiberated.logical_comparator || null,
           base_value: editingKpiSmartLiberated.base_value || null,
           target_value: editingKpiSmartLiberated.target_value || null,
@@ -368,7 +368,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
           kpi_smart_frequency_id: data.kpi_smart_frequency_id,
           kpi_smart_status_id: data.kpi_smart_status_id,
           pillar_id: data.pillar_id,
-          
+
           logical_comparator: data.logical_comparator,
           base_value: data.base_value,
           target_value: data.target_value,
@@ -738,6 +738,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                               setDate={field.onChange}
                               placeholder="Selecione a data limite"
                               disabled={isLoadingForm}
+                              fromYear={new Date().getFullYear()}
+                              toYear={new Date().getFullYear() + 50}
                             />
                           </FormControl>
                           <FormMessage />
@@ -764,6 +766,8 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                               setDate={field.onChange}
                               placeholder="Selecione a data planejada"
                               disabled={isLoadingForm}
+                              fromYear={new Date().getFullYear()}
+                              toYear={new Date().getFullYear() + 50}
                             />
                           </FormControl>
                           <FormMessage />
@@ -873,7 +877,7 @@ const KpiSmartLiberatedFormPage: React.FC = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-foreground">Valor Mínimo</FormLabel>
-                          
+
                           <FormControl>
                             <Input type="number" step="0.01" placeholder="Ex: 0" {...field} disabled={isLoadingForm} className="rounded-lg" />
                           </FormControl>

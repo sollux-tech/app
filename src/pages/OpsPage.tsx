@@ -1,8 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Brain, Target, TrendingUp, ListChecks } from 'lucide-react'; // Importar ListChecks
+import { Brain, Target, TrendingUp } from 'lucide-react';
 
 const OpsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,23 +12,11 @@ const OpsPage: React.FC = () => {
   };
 
   const handleShiftClick = () => {
-    navigate('/ops/shift'); // Rota para a nova ShiftPage
+    navigate('/ops/shift');
   };
 
   const handleFlowClick = () => {
-    navigate('/ops/flow'); // Navega para a nova página FlowPage
-  };
-
-  // Nova função para navegar para a página de apontamentos
-  const handleKpiApontamentosClick = () => {
-    // Precisamos decidir como navegar aqui. Se houver um KPI selecionado, ir para ele.
-    // Se não, talvez ir para uma página que lista os KPIs liberados e permite escolher.
-    // Por enquanto, vamos assumir que a navegação será feita a partir de uma lista de KPIs liberados.
-    // Se a intenção é ir para uma página que lista TODOS os KPIs liberados para o usuário,
-    // a rota seria /ops/shift/kpi-smarts-liberated.
-    // Se a intenção é ir para a página de apontamentos de UM KPI específico, a rota seria /ops/shift/kpi-apontamentos/:kpiLiberatedId
-    // Vamos assumir que o usuário irá para a lista de KPIs Liberados primeiro.
-    navigate('/ops/shift/kpi-smarts-liberated'); 
+    navigate('/ops/flow');
   };
 
   return (
@@ -59,13 +47,6 @@ const OpsPage: React.FC = () => {
               description="Acompanhamento contínuo da evolução dos indicadores."
               icon={TrendingUp}
               onClick={handleFlowClick}
-            />
-            {/* Novo Card para Apontamentos de KPIs */}
-            <FeatureCard
-              title="Apontamentos de KPIs"
-              description="Registre e visualize os valores e notas dos seus KPIs Smart."
-              icon={ListChecks} // Ícone apropriado para apontamentos/registros
-              onClick={handleKpiApontamentosClick}
             />
           </div>
         </CardContent>

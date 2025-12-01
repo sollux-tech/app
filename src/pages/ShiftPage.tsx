@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import FeatureCard from '@/components/FeatureCard';
-import { Briefcase, FileText, Calculator, ListChecks, PencilRuler } from 'lucide-react'; // Importar ListChecks e PencilRuler
+import { Briefcase, FileText, Calculator, ListChecks, PencilRuler, ShoppingBag } from 'lucide-react';
 
 const ShiftPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const ShiftPage: React.FC = () => {
 
   const handleKpiApontamentoClick = () => {
     // Navega para a página que lista os KPIs Liberados, de onde o usuário pode escolher um para adicionar apontamentos
-    navigate('/ops/shift/kpi-apontamentos'); 
+    navigate('/ops/shift/kpi-smarts-liberated');
   };
 
   return (
@@ -47,7 +47,7 @@ const ShiftPage: React.FC = () => {
             <FeatureCard
               title="Apontamento de KPIs"
               description="Registre os valores e notas para os KPIs Smart liberados."
-              icon={PencilRuler} // Ícone apropriado para apontamentos/registros
+              icon={PencilRuler}
               onClick={handleKpiApontamentoClick}
             />
           </div>

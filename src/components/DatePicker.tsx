@@ -12,10 +12,21 @@ interface DatePickerProps {
   setDate: (date: Date | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
+  fromYear?: number;
+  toYear?: number;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "Selecione uma data", disabled = false }) => {
+const DatePicker: React.FC<DatePickerProps> = ({
+  date,
+  setDate,
+  placeholder = "Selecione uma data",
+  disabled = false,
+  fromYear,
+  toYear
+}) => {
   const currentYear = new Date().getFullYear();
+  const defaultFromYear = fromYear ?? (currentYear - 100);
+  const defaultToYear = toYear ?? currentYear;
 
   return (
     <Popover>
@@ -40,8 +51,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, placeholder = "S
           initialFocus
           locale={ptBR} // Definir o locale para português
           captionLayout="dropdown-buttons"
-          fromYear={currentYear - 100}
-          toYear={currentYear}
+          fromYear={defaultFromYear}
+          toYear={defaultToYear}
         />
       </PopoverContent>
     </Popover>

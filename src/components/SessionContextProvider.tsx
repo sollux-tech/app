@@ -45,29 +45,66 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   }, [fetchUserProfile]);
 
   useEffect(() => {
-    // Set loading to true initially. The listener below will set it to false
-    // once the initial session is fetched.
-    setIsLoading(true);
+    let mounted = true;
 
-    // The onAuthStateChange listener is the single source of truth.
-    // It fires immediately with the current session, so we don't need a separate getSession() call.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
+    const initializeSession = async () => {
+      try {
+        console.log("SessionContextProvider: Iniciando verificação de sessão...");
+        setIsLoading(true);
 
-      if (currentUser) {
-        await fetchUserProfile(currentUser.id);
-      } else {
-        setProfile(null);
+        // Verifica a sessão atual explicitamente
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error("SessionContextProvider: Erro ao obter sessão inicial:", sessionError);
+          if (mounted) setIsLoading(false);
+          return;
+        }
+
+        if (mounted) {
+          if (initialSession) {
+            console.log("SessionContextProvider: Sessão inicial encontrada para:", initialSession.user.email);
+            setSession(initialSession);
+            setUser(initialSession.user);
+            await fetchUserProfile(initialSession.user.id);
+          } else {
+            console.log("SessionContextProvider: Nenhuma sessão inicial encontrada.");
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+          }
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("SessionContextProvider: Erro inesperado na inicialização:", error);
+        if (mounted) setIsLoading(false);
       }
-      
-      // This is crucial. The listener runs once on load, and then on subsequent changes.
-      // We set loading to false after the first check is complete.
-      setIsLoading(false);
+    };
+
+    initializeSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(`SessionContextProvider: Evento de Auth disparado: ${event}`);
+
+      if (mounted) {
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+          console.log("SessionContextProvider: Atualizando perfil para usuário:", currentUser.email);
+          await fetchUserProfile(currentUser.id);
+        } else {
+          console.log("SessionContextProvider: Usuário desconectado, limpando perfil.");
+          setProfile(null);
+        }
+
+        setIsLoading(false);
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [fetchUserProfile]);

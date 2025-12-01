@@ -8,25 +8,25 @@ import IdPage from './pages/IdPage';
 import CompanyManagementPage from './pages/CompanyManagementPage';
 import UserManagementPage from './pages/UserManagementPage';
 import { CompanyProvider } from './components/CompanyContext';
-import PulsePage from './pages/PulsePage'; 
-import CorePage from './pages/CorePage'; 
-import UserTypeManagementPage from './pages/UserTypeManagementPage'; 
-import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage'; 
-import PulseInformativeFormPage from './pages/PulseInformativeFormPage'; 
-import PublicInformativePage from './pages/PublicInformativePage'; 
+import PulsePage from './pages/PulsePage';
+import CorePage from './pages/CorePage';
+import UserTypeManagementPage from './pages/UserTypeManagementPage';
+import PulseInformativeManagementPage from './pages/PulseInformativeManagementPage';
+import PulseInformativeFormPage from './pages/PulseInformativeFormPage';
+import PublicInformativePage from './pages/PublicInformativePage';
 import GlobalSettingsPage from './pages/GlobalSettingsPage';
 import SidebarSettingsPage from './pages/SidebarSettingsPage';
 import NotificationManagementPage from './pages/NotificationManagementPage';
 import AllCompaniesManagementPage from './pages/AllCompaniesManagementPage';
 import CompanySharingPage from './pages/CompanySharingPage';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import ErrorBoundary from './components/ErrorBoundary';
 import DataDoctorPage from './pages/DataDoctorPage';
 import ConnectPage from './pages/ConnectPage';
 import JobsPage from './pages/JobsPage';
 import JobFormPage from './pages/JobFormPage';
-import JobSectorsPage from './pages/JobSectorsPage'; 
+import JobSectorsPage from './pages/JobSectorsPage';
 import ContractTypesPage from './pages/ContractTypesPage';
 import WorkModelsPage from './pages/WorkModelsPage';
 import PublicJobPage from './pages/PublicJobPage';
@@ -55,7 +55,7 @@ import DiagnosticStatusManagementPage from './pages/DiagnosticStatusManagementPa
 import DiagnosticManagementPage from './pages/DiagnosticManagementPage';
 import InsightPage from './pages/InsightPage';
 import DiagnosticQuestionnairePage from './pages/DiagnosticQuestionnairePage';
-import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage'; 
+import AnswerDiagnosticQuestionnairePage from './pages/AnswerDiagnosticQuestionnairePage';
 import ClassificationScaleManagementPage from './pages/ClassificationScaleManagementPage';
 import DiagnosticEvaluationPage from './pages/DiagnosticEvaluationPage';
 import FlowPage from './pages/FlowPage';
@@ -72,6 +72,7 @@ import ShiftPage from './pages/ShiftPage'; // Importar a nova página ShiftPage
 import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagementPage'; // Importar a nova página
 import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
 import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
+import KpiApontamentosPage from './pages/KpiApontamentosPage'; // Importar a página de apontamentos
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -110,7 +111,7 @@ const AppContent: React.FC = () => {
     if (!isLoadingProfile && profile?.theme) {
       console.log("AppContent: Setting theme from profile:", profile.theme); // Log para depuração
       setTheme(profile.theme); // Definir o tema do perfil assim que ele for carregado
-      
+
       // Forçar a atualização do atributo data-theme e color-scheme no elemento <html>
       const htmlElement = document.documentElement;
       if (htmlElement) { // Adicionar verificação para htmlElement
@@ -165,8 +166,8 @@ const AppContent: React.FC = () => {
             <ProtectedRoute>
               <Layout>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/pulse" replace />} /> 
-                  <Route path="/pulse" element={<PulsePage />} /> 
+                  <Route path="/" element={<Navigate to="/pulse" replace />} />
+                  <Route path="/pulse" element={<PulsePage />} />
                   <Route path="/pulse/informatives" element={<AllInformativesPage />} />
                   <Route path="/id" element={<IdPage />} />
                   <Route path="/id/companies" element={<CompanyManagementPage />} />
@@ -184,7 +185,7 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/insight" element={<InsightPage />} />
                   <Route path="/ops/diagnostics" element={<DiagnosticManagementPage />} />
                   <Route path="/ops/insight/questionnaires" element={<DiagnosticQuestionnairePage />} />
-                  <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} /> 
+                  <Route path="/ops/insight/answer-questionnaire" element={<AnswerDiagnosticQuestionnairePage />} />
                   <Route path="/ops/insight/evaluation" element={<DiagnosticEvaluationPage />} />
                   <Route path="/ops/flow" element={<FlowPage />} />
                   <Route path="/ops/flow/diagnostic-results/:id" element={<PublicDiagnosticResultsPage />} /> {/* Nova rota */}
@@ -193,14 +194,15 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> {/* Nova rota */}
-                  <Route path="/core" element={<CorePage />} /> 
-                  <Route path="/core/user-types" element={<UserTypeManagementPage />} /> 
+                  <Route path="/ops/shift/kpi-apontamentos/:id" element={<KpiApontamentosPage />} /> {/* Rota para apontamentos de KPI */}
+                  <Route path="/core" element={<CorePage />} />
+                  <Route path="/core/user-types" element={<UserTypeManagementPage />} />
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
-                  <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} /> 
-                  <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} /> 
+                  <Route path="/core/pulse-informatives/new" element={<PulseInformativeFormPage />} />
+                  <Route path="/core/pulse-informatives/:id" element={<PulseInformativeFormPage />} />
                   <Route path="/core/global-settings" element={<GlobalSettingsPage />} />
                   <Route path="/core/global-settings/jobs" element={<JobSettingsPage />} />
-                  <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} /> 
+                  <Route path="/core/global-settings/job-sectors" element={<JobSectorsPage />} />
                   <Route path="/core/global-settings/contract-types" element={<ContractTypesPage />} />
                   <Route path="/core/global-settings/work-models" element={<WorkModelsPage />} />
                   <Route path="/core/global-settings/ops" element={<OpsSettingsPage />} />
@@ -223,13 +225,13 @@ const AppContent: React.FC = () => {
                   <Route path="/core/notifications" element={<NotificationManagementPage />} />
                   <Route path="/core/all-companies" element={<AllCompaniesManagementPage />} />
                   <Route path="/core/data-doctor" element={<DataDoctorPage />} />
-                  <Route path="/core/markets" element={<MarketManagementPage />} /> 
+                  <Route path="/core/markets" element={<MarketManagementPage />} />
                   <Route path="/core/documents" element={<DocumentManagementPage />} />
                   <Route path="/shop" element={<ShopPage />} /> {/* Nova rota para ShopPage */}
-                  
+
                   {/* Rotas SOLLUX FORM™ */}
                   <Route path="/connect/forms" element={<FormsPage />} />
-                  <Route path="/connect/forms/new" element={<FormCreatePage />} /> 
+                  <Route path="/connect/forms/new" element={<FormCreatePage />} />
                   <Route path="/connect/forms/:id/edit" element={<FormEditPage />} />
                   <Route path="/connect/forms/:id/responses" element={<FormResponsesPage />} />
                 </Routes>
@@ -246,7 +248,7 @@ function App() {
   return (
     <Router>
       <ErrorBoundary>
-        <QueryClientProvider client={queryClient}> 
+        <QueryClientProvider client={queryClient}>
           <SessionContextProvider>
             <CompanyProvider>
               <Toaster />
