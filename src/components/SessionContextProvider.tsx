@@ -117,9 +117,14 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     }
 
     const isPublicInformativePage = location.pathname.startsWith('/informative/');
+    const isPublicJobPage = location.pathname.startsWith('/jobs/');
+    const isPublicFormPage = location.pathname.startsWith('/form/');
+    const isPublicDiagnosticResultsPage = location.pathname.startsWith('/ops/flow/diagnostic-results/');
     const isLoginPage = location.pathname === '/login';
 
-    if (!session && !isLoginPage && !isPublicInformativePage) {
+    const isPublicPage = isPublicInformativePage || isPublicJobPage || isPublicFormPage || isPublicDiagnosticResultsPage;
+
+    if (!session && !isLoginPage && !isPublicPage) {
       // If no session, not on login, and not on a public page, redirect to login.
       navigate('/login', { replace: true });
     } else if (session && isLoginPage) {
