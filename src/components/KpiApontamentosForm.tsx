@@ -2,14 +2,6 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -36,6 +28,7 @@ interface KpiApontamentosFormProps {
   initialData?: AppointmentFormData | null;
   isLoading: boolean;
   kpiLiberatedId: string;
+  unit?: string;
 }
 
 const KpiApontamentosForm: React.FC<KpiApontamentosFormProps> = ({
@@ -45,6 +38,7 @@ const KpiApontamentosForm: React.FC<KpiApontamentosFormProps> = ({
   initialData,
   isLoading,
   kpiLiberatedId,
+  unit,
 }) => {
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentFormSchema),
@@ -76,95 +70,87 @@ const KpiApontamentosForm: React.FC<KpiApontamentosFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-card backdrop-blur-md rounded-2xl shadow-lg border border-border">
-        <DialogHeader>
-          <DialogTitle className="text-foreground">{initialData ? 'Editar Apontamento' : 'Novo Apontamento'}</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Registre o valor e detalhes para o KPI Smart Liberado.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="value"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">Valor</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex: 150.50"
-                      {...field}
-                      value={field.value ?? ''}
-                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
-                      className="rounded-lg"
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="appointment_date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel className="text-foreground text-left">Data do Apontamento</FormLabel>
-                  <FormControl>
-                    <DatePicker
-                      date={field.value || undefined}
-                      setDate={field.onChange}
-                      placeholder="Selecione a data"
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="note"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-foreground">Nota (Opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Adicione um comentário opcional..."
-                      {...field}
-                      value={field.value || ''}
-                      className="rounded-lg"
-                      rows={3}
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="rounded-lg">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {initialData ? 'Salvando...' : 'Registrando...'}
-                  </>
-                ) : (
-                  initialData ? 'Salvar Alterações' : 'Registrar Apontamento'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="value"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-foreground">
+                Valor Atual {unit && <span className="text-muted-foreground ml-1">({unit})</span>}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Ex: 150.50"
+                  {...field}
+                  value={field.value ?? ''}
+                  onChange={(e) => field.onChange(e.target.value === '' ? undefined : parseFloat(e.target.value))}
+                  className="rounded-lg"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="appointment_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel className="text-foreground text-left">Data do Apontamento</FormLabel>
+              <FormControl>
+                <DatePicker
+                  date={field.value || undefined}
+                  setDate={field.onChange}
+                  placeholder="Selecione a data"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="note"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-foreground">Nota (Opcional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Adicione um comentário opcional..."
+                  {...field}
+                  value={field.value || ''}
+                  className="rounded-lg"
+                  rows={3}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div className="flex justify-end gap-2 pt-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading} className="rounded-lg">
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isLoading} className="rounded-lg bg-sollux-red hover:bg-sollux-orange">
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {initialData ? 'Salvando...' : 'Registrando...'}
+              </>
+            ) : (
+              initialData ? 'Salvar Alterações' : 'Registrar Apontamento'
+            )}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

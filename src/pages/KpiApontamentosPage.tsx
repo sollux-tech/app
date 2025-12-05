@@ -1,53 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Edit, Trash2, Loader2, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/components/SessionContextProvider';
-import { useCompany } from '@/components/CompanyContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import DatePicker from '@/components/DatePicker';
 import { Appointment } from '@/types/appointment';
-import KpiApontamentosForm from '@/components/KpiApontamentosForm';
 import { useParams, useNavigate } from 'react-router-dom';
-
-// Schema de validação para o formulário de apontamento
-const appointmentFormSchema = z.object({
-  value: z.coerce.number({
-    invalid_type_error: "O valor deve ser um número.",
-    required_error: "O valor é obrigatório."
-  }).positive({ message: "O valor deve ser positivo." }),
-  note: z.string().optional().nullable(),
-  appointment_date: z.date({ required_error: "A data do apontamento é obrigatória." }),
-});
-
-type AppointmentFormData = z.infer<typeof formSchema>;
 
 const KpiApontamentosPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
-  const { selectedCompany } = useCompany();
   const navigate = useNavigate();
-  const { id: kpiLiberatedIdFromUrl } = useParams<{ id: string }>(); // Obter o ID do KPI Liberado da URL
-
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
-  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const { id: kpiLiberatedIdFromUrl } = useParams<{ id: string }>();
 
   // Fetch details of the specific KpiSmartLiberated
   const { data: kpiLiberatedDetails, isLoading: isLoadingKpiLiberatedDetails, error: errorKpiLiberatedDetails } = useQuery<any, Error>({
     queryKey: ['kpiSmartLiberatedDetails', kpiLiberatedIdFromUrl],
     queryFn: async () => {
-      if (!kpiLiberatedIdFromUrl || !user?.id) return null; // Retorna null se faltar dados
+      if (!kpiLiberatedIdFromUrl || !user?.id) return null;
       const { data, error } = await supabase
         .from('kpi_smarts_liberated')
         .select(`
@@ -81,52 +56,7 @@ const KpiApontamentosPage: React.FC = () => {
     enabled: !!kpiLiberatedIdFromUrl && !!user?.id,
   });
 
-  // Mutation para criar um novo apontamento
-  const createAppointmentMutation = useMutation({
-    mutationFn: async (data: AppointmentFormData) => {
-      if (!kpiLiberatedIdFromUrl || !user?.id) throw new Error("ID do KPI Smart Liberado ou usuário faltando.");
-      const { error } = await supabase.from('kpi_apontamentos').insert({
-        kpi_smart_liberated_id: kpiLiberatedIdFromUrl,
-        value: data.value,
-        note: data.note || null,
-        appointment_date: format(data.appointment_date, 'yyyy-MM-dd'),
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', kpiLiberatedIdFromUrl, user?.id] });
-      showSuccess('Apontamento registrado com sucesso!');
-      setIsFormDialogOpen(false);
-      setEditingAppointment(null);
-    },
-    onError: (error: Error) => {
-      showError(`Erro ao registrar apontamento: ${error.message}`);
-    },
-  });
-
-  // Mutation para editar um apontamento
-  const updateAppointmentMutation = useMutation({
-    mutationFn: async (data: AppointmentFormData) => {
-      if (!editingAppointment?.id) throw new Error("ID do apontamento está faltando.");
-      const { error } = await supabase.from('kpi_apontamentos').update({
-        value: data.value,
-        note: data.note || null,
-        appointment_date: format(data.appointment_date, 'yyyy-MM-dd'),
-      }).eq('id', editingAppointment.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['appointments', kpiLiberatedIdFromUrl, user?.id] });
-      showSuccess('Apontamento atualizado com sucesso!');
-      setIsFormDialogOpen(false);
-      setEditingAppointment(null);
-    },
-    onError: (error: Error) => {
-      showError(`Erro ao atualizar apontamento: ${error.message}`);
-    },
-  });
-
-  // Mutation para excluir um apontamento
+  // Mutation to delete an appointment
   const deleteAppointmentMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('kpi_apontamentos').delete().eq('id', id);
@@ -141,22 +71,12 @@ const KpiApontamentosPage: React.FC = () => {
     },
   });
 
-  const handleFormSubmit = (data: AppointmentFormData) => {
-    if (editingAppointment) {
-      updateAppointmentMutation.mutate(data);
-    } else {
-      createAppointmentMutation.mutate(data);
-    }
-  };
-
   const handleAddClick = () => {
-    setEditingAppointment(null);
-    setIsFormDialogOpen(true);
+    navigate(`/ops/shift/kpi-apontamentos/${kpiLiberatedIdFromUrl}/new`);
   };
 
   const handleEditClick = (appointment: Appointment) => {
-    setEditingAppointment(appointment);
-    setIsFormDialogOpen(true);
+    navigate(`/ops/shift/kpi-apontamentos/${kpiLiberatedIdFromUrl}/edit/${appointment.id}`);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -165,7 +85,7 @@ const KpiApontamentosPage: React.FC = () => {
     }
   };
 
-  const isMutating = createAppointmentMutation.isPending || updateAppointmentMutation.isPending || deleteAppointmentMutation.isPending;
+  const isMutating = deleteAppointmentMutation.isPending;
 
   if (isLoadingKpiLiberatedDetails || isLoadingAppointments) {
     return <div className="text-center text-muted-foreground py-8">Carregando dados...</div>;
@@ -259,19 +179,6 @@ const KpiApontamentosPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
-
-      <KpiApontamentosForm
-        open={isFormDialogOpen}
-        onOpenChange={setIsFormDialogOpen}
-        onSubmit={handleFormSubmit}
-        initialData={editingAppointment ? {
-          value: editingAppointment.value?.toString() || '',
-          note: editingAppointment.note || '',
-          appointment_date: new Date(editingAppointment.appointment_date),
-        } : null}
-        isLoading={isMutating}
-        kpiLiberatedId={kpiLiberatedIdFromUrl!}
-      />
     </div>
   );
 };

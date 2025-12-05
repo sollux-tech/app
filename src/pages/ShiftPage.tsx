@@ -16,8 +16,8 @@ const ShiftPage: React.FC = () => {
   };
 
   const handleKpiApontamentoClick = () => {
-    // Navega para a página que lista os KPIs Liberados, de onde o usuário pode escolher um para adicionar apontamentos
-    navigate('/ops/shift/kpi-smarts-liberated');
+    // Navega para a página de seleção de KPI para apontamento
+    navigate('/ops/shift/kpi-selection');
   };
 
   return (

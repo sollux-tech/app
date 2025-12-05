@@ -73,6 +73,8 @@ import KpiSmartLiberatedManagementPage from './pages/KpiSmartLiberatedManagement
 import KpiSmartLiberatedFormPage from './pages/KpiSmartLiberatedFormPage'; // Importar a nova página de formulário
 import KpiSmartAcquiredManagementPage from './pages/KpiSmartAcquiredManagementPage'; // Importar a nova página
 import KpiApontamentosPage from './pages/KpiApontamentosPage'; // Importar a página de apontamentos
+import KpiSelectionPage from './pages/KpiSelectionPage'; // Importar a nova página de seleção
+import KpiApontamentoFormPage from './pages/KpiApontamentoFormPage'; // Importar a página de formulário de apontamento
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -194,7 +196,10 @@ const AppContent: React.FC = () => {
                   <Route path="/ops/shift/kpi-smarts-liberated/new" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-liberated/:id" element={<KpiSmartLiberatedFormPage />} /> {/* Nova rota */}
                   <Route path="/ops/shift/kpi-smarts-acquired" element={<KpiSmartAcquiredManagementPage />} /> {/* Nova rota */}
+                  <Route path="/ops/shift/kpi-selection" element={<KpiSelectionPage />} /> {/* Nova rota para seleção de KPI */}
                   <Route path="/ops/shift/kpi-apontamentos/:id" element={<KpiApontamentosPage />} /> {/* Rota para apontamentos de KPI */}
+                  <Route path="/ops/shift/kpi-apontamentos/:id/new" element={<KpiApontamentoFormPage />} /> {/* Nova rota para criar apontamento */}
+                  <Route path="/ops/shift/kpi-apontamentos/:id/edit/:appointmentId" element={<KpiApontamentoFormPage />} /> {/* Nova rota para editar apontamento */}
                   <Route path="/core" element={<CorePage />} />
                   <Route path="/core/user-types" element={<UserTypeManagementPage />} />
                   <Route path="/core/pulse-informatives" element={<PulseInformativeManagementPage />} />
